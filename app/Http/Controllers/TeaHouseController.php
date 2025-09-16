@@ -45,4 +45,9 @@ class TeaHouseController extends Controller
     {
         return view('teahouse.feature');
     }
+
+    public function signup()
+    {
+        return view('teahouse.signup');
+    }
 }
