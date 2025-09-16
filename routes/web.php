@@ -12,3 +12,4 @@ Route::get('/contact', [TeaHouseController::class, 'contact'])->name('contact');
 Route::get('/blog', [TeaHouseController::class, 'blog'])->name('blog');
 Route::get('/testimonial', [TeaHouseController::class, 'testimonial'])->name('testimonial');
 Route::get('/feature', [TeaHouseController::class, 'feature'])->name('feature');
+Route::get('/signup', [TeaHouseController::class, 'signup'])->name('signup');
