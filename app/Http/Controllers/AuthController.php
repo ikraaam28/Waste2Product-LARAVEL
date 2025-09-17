@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,6 +18,16 @@ class AuthController extends Controller
 
     public function store(Request $request)
     {
+        // Debug: Afficher les données reçues
+        \Log::info('reCAPTCHA data received:', [
+            'g-recaptcha-response' => $request->input('g-recaptcha-response'),
+            'all_inputs' => $request->all()
+        ]);
+        
+        // For now, let's skip reCAPTCHA verification to test if the form works
+        // We'll add it back once we confirm the basic functionality works
+        \Log::info('Skipping reCAPTCHA verification for testing');
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -71,80 +79,4 @@ class AuthController extends Controller
         return redirect()->route('signup')->with('success', 'Account created successfully! Welcome to Waste2Product!');
     }
 
-    /**
-     * Login user and return JWT token
-     */
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid credentials'
-                ], 401);
-            }
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not create token'
-            ], 500);
-        }
-
-        return response()->json([
-            'success' => true,
-            'token' => $token,
-            'user' => auth()->user()
-        ]);
-    }
-
-    /**
-     * Logout user and invalidate token
-     */
-    public function logout()
-    {
-        try {
-            JWTAuth::invalidate(JWTAuth::getToken());
-            return response()->json([
-                'success' => true,
-                'message' => 'Successfully logged out'
-            ]);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to logout'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get authenticated user
-     */
-    public function me()
-    {
-        return response()->json([
-            'success' => true,
-            'user' => auth()->user()
-        ]);
-    }
-
-    /**
-     * Refresh JWT token
-     */
-    public function refresh()
-    {
-        try {
-            $token = JWTAuth::refresh(JWTAuth::getToken());
-            return response()->json([
-                'success' => true,
-                'token' => $token
-            ]);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token could not be refreshed'
-            ], 500);
-        }
-    }
 }

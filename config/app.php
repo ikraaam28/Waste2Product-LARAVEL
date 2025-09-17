@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | reCAPTCHA Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for Google reCAPTCHA v2 integration
+    |
+    */
+
+    'recaptcha_site_key' => env('RECAPTCHA_SITE_KEY'),
+    'recaptcha_secret_key' => env('RECAPTCHA_SECRET_KEY'),
+
 ];

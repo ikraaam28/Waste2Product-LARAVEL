@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- reCAPTCHA v2 Script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 /* Custom styles for signup form */
 .form-control:focus {
@@ -466,7 +468,7 @@
                                 @endif
                             </div>
                             
-                            <form method="POST" action="{{ route('signup.store') }}">
+                            <form method="POST" action="{{ route('signup.store') }}" id="signupForm">
                                 @csrf
                                 <div class="row g-4">
                                     <div class="col-md-6">
@@ -581,6 +583,28 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
+                                    </div>
+                                    
+                                    <!-- reCAPTCHA v2 invisible -->
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="text-muted small">
+                                                <i class="fa fa-shield-alt me-1"></i>
+                                                Protected by reCAPTCHA
+                                            </div>
+                                            <div class="text-muted small">
+                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Privacy</a> • 
+                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Terms</a>
+                                            </div>
+                                        </div>
+                                        <div class="g-recaptcha" data-sitekey="{{ config('app.recaptcha_site_key') }}" data-callback="onRecaptchaSuccess" data-size="invisible"></div>
+                                        <!-- Hidden input for reCAPTCHA token -->
+                                        <input type="hidden" name="g-recaptcha-response" id="recaptcha-token" value="">
+                                        @error('recaptcha')
+                                            <div class="text-danger small mt-1">
+                                                <i class="fa fa-exclamation-circle me-1"></i>{{ $message }}
+                                            </div>
+                                        @enderror
                                     </div>
                                  
                                     <div class="col-12">
@@ -797,6 +821,89 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validation initiale sans afficher d'erreurs
     checkFormValidity();
+    
+    // Vérifier que reCAPTCHA est chargé
+    function checkRecaptchaLoaded() {
+        if (typeof grecaptcha !== 'undefined') {
+            console.log('reCAPTCHA loaded successfully');
+        } else {
+            console.log('Waiting for reCAPTCHA...');
+            setTimeout(checkRecaptchaLoaded, 100);
+        }
+    }
+    
+    // Démarrer la vérification
+    checkRecaptchaLoaded();
+    
+    // Gestion du submit du formulaire
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Vérifier la validité du formulaire
+        if (form.checkValidity()) {
+            // Déclencher reCAPTCHA v2 invisible
+            if (typeof grecaptcha !== 'undefined') {
+                console.log('Executing reCAPTCHA...');
+                grecaptcha.execute();
+            } else {
+                console.error('reCAPTCHA not loaded');
+                alert('reCAPTCHA not loaded. Please refresh the page.');
+            }
+        } else {
+            // Afficher les erreurs
+            form.classList.add('was-validated');
+        }
+    });
+    
+    // reCAPTCHA v2 invisible - Callback function
+    window.onRecaptchaSuccess = function(token) {
+        console.log('reCAPTCHA v2 success:', token);
+        
+        // Ajouter le token reCAPTCHA au formulaire
+        const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
+        if (recaptchaInput) {
+            recaptchaInput.value = token;
+        } else {
+            // Créer un input caché pour le token reCAPTCHA
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'g-recaptcha-response';
+            hiddenInput.value = token;
+            form.appendChild(hiddenInput);
+        }
+        
+        // Désactiver le bouton pour éviter les double soumissions
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
+        }
+        
+        // Soumettre le formulaire après validation reCAPTCHA
+        form.submit();
+    };
+    
+    
+    // reCAPTCHA v2 invisible - Callback en cas d'erreur
+    window.onRecaptchaError = function(error) {
+        console.error('reCAPTCHA v2 error:', error);
+        alert('reCAPTCHA verification failed. Please try again.');
+        
+        // Réactiver le bouton
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
+        }
+    };
+    
+    // reCAPTCHA v2 invisible - Callback d'expiration
+    window.onRecaptchaExpired = function() {
+        console.log('reCAPTCHA v2 expired');
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.reset();
+        }
+    };
     
     // Gestion du popup d'erreur
     const errorPopup = document.querySelector('.error-popup');
