@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Mail\WelcomeEmail;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -56,6 +60,91 @@ class AuthController extends Controller
             'terms_accepted' => true,
         ]);
 
+        // Envoyer l'email de bienvenue
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas bloquer l'inscription
+            \Log::error('Erreur envoi email bienvenue: ' . $e->getMessage());
+        }
+
         return redirect()->route('signup')->with('success', 'Account created successfully! Welcome to Waste2Product!');
+    }
+
+    /**
+     * Login user and return JWT token
+     */
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        try {
+            if (!$token = JWTAuth::attempt($credentials)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+        } catch (JWTException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not create token'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => auth()->user()
+        ]);
+    }
+
+    /**
+     * Logout user and invalidate token
+     */
+    public function logout()
+    {
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully logged out'
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to logout'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get authenticated user
+     */
+    public function me()
+    {
+        return response()->json([
+            'success' => true,
+            'user' => auth()->user()
+        ]);
+    }
+
+    /**
+     * Refresh JWT token
+     */
+    public function refresh()
+    {
+        try {
+            $token = JWTAuth::refresh(JWTAuth::getToken());
+            return response()->json([
+                'success' => true,
+                'token' => $token
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token could not be refreshed'
+            ], 500);
+        }
     }
 }
