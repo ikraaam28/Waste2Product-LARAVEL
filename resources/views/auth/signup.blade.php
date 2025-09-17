@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- reCAPTCHA v3 Script -->
+<script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 <style>
 /* Custom styles for signup form */
 .form-control:focus {
@@ -582,6 +584,26 @@
                                             @enderror
                                         </div>
                                     </div>
+                                    
+                                    <!-- reCAPTCHA v3 invisible -->
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="text-muted small">
+                                                <i class="fa fa-shield-alt me-1"></i>
+                                                Protected by reCAPTCHA
+                                            </div>
+                                            <div class="text-muted small">
+                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Privacy</a> • 
+                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Terms</a>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+                                        @error('recaptcha')
+                                            <div class="text-danger small mt-1">
+                                                <i class="fa fa-exclamation-circle me-1"></i>{{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
                                  
                                     <div class="col-12">
                                         <button class="btn btn-primary rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" type="submit" id="submitBtn" disabled style="background: linear-gradient(135deg, #6c757d, #495057); border: none; font-weight: 600; letter-spacing: 0.5px;">
@@ -797,6 +819,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validation initiale sans afficher d'erreurs
     checkFormValidity();
+    
+    // reCAPTCHA v3 - Générer le token au chargement de la page
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ env("RECAPTCHA_SITE_KEY") }}', {action: 'signup'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+        });
+    });
     
     // Gestion du popup d'erreur
     const errorPopup = document.querySelector('.error-popup');

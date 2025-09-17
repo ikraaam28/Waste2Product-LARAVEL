@@ -10,6 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
+use ReCaptcha\ReCaptcha;
 
 class AuthController extends Controller
 {
@@ -20,6 +21,23 @@ class AuthController extends Controller
 
     public function store(Request $request)
     {
+        // Vérifier reCAPTCHA
+        $recaptcha = new ReCaptcha(env('RECAPTCHA_SECRET_KEY'));
+        $recaptchaResponse = $recaptcha->verify($request->input('recaptcha_token'), $request->ip());
+        
+        if (!$recaptchaResponse->isSuccess()) {
+            return redirect()->back()
+                ->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])
+                ->withInput();
+        }
+        
+        // Vérifier le score reCAPTCHA (recommandé: >= 0.5)
+        if ($recaptchaResponse->getScore() < 0.5) {
+            return redirect()->back()
+                ->withErrors(['recaptcha' => 'reCAPTCHA score too low. Please try again.'])
+                ->withInput();
+        }
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -28,6 +46,7 @@ class AuthController extends Controller
             'city' => 'required|string|max:255',
             'password' => 'required|string|min:8|confirmed',
             'terms_accepted' => 'required|accepted',
+            'recaptcha_token' => 'required',
         ], [
             'first_name.required' => 'First name is required.',
             'last_name.required' => 'Last name is required.',
@@ -41,6 +60,7 @@ class AuthController extends Controller
             'password.confirmed' => 'Password confirmation does not match.',
             'terms_accepted.required' => 'You must accept the terms and conditions.',
             'terms_accepted.accepted' => 'You must accept the terms and conditions.',
+            'recaptcha_token.required' => 'reCAPTCHA verification is required.',
         ]);
 
         if ($validator->fails()) {
