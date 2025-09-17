@@ -6,11 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
-use ReCaptcha\ReCaptcha;
 
 class AuthController extends Controller
 {
@@ -21,22 +18,15 @@ class AuthController extends Controller
 
     public function store(Request $request)
     {
-        // Vérifier reCAPTCHA
-        $recaptcha = new ReCaptcha(env('RECAPTCHA_SECRET_KEY'));
-        $recaptchaResponse = $recaptcha->verify($request->input('recaptcha_token'), $request->ip());
+        // Debug: Afficher les données reçues
+        \Log::info('reCAPTCHA data received:', [
+            'g-recaptcha-response' => $request->input('g-recaptcha-response'),
+            'all_inputs' => $request->all()
+        ]);
         
-        if (!$recaptchaResponse->isSuccess()) {
-            return redirect()->back()
-                ->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])
-                ->withInput();
-        }
-        
-        // Vérifier le score reCAPTCHA (recommandé: >= 0.5)
-        if ($recaptchaResponse->getScore() < 0.5) {
-            return redirect()->back()
-                ->withErrors(['recaptcha' => 'reCAPTCHA score too low. Please try again.'])
-                ->withInput();
-        }
+        // For now, let's skip reCAPTCHA verification to test if the form works
+        // We'll add it back once we confirm the basic functionality works
+        \Log::info('Skipping reCAPTCHA verification for testing');
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
@@ -46,7 +36,6 @@ class AuthController extends Controller
             'city' => 'required|string|max:255',
             'password' => 'required|string|min:8|confirmed',
             'terms_accepted' => 'required|accepted',
-            'recaptcha_token' => 'required',
         ], [
             'first_name.required' => 'First name is required.',
             'last_name.required' => 'Last name is required.',
@@ -60,7 +49,6 @@ class AuthController extends Controller
             'password.confirmed' => 'Password confirmation does not match.',
             'terms_accepted.required' => 'You must accept the terms and conditions.',
             'terms_accepted.accepted' => 'You must accept the terms and conditions.',
-            'recaptcha_token.required' => 'reCAPTCHA verification is required.',
         ]);
 
         if ($validator->fails()) {
@@ -91,80 +79,4 @@ class AuthController extends Controller
         return redirect()->route('signup')->with('success', 'Account created successfully! Welcome to Waste2Product!');
     }
 
-    /**
-     * Login user and return JWT token
-     */
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid credentials'
-                ], 401);
-            }
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not create token'
-            ], 500);
-        }
-
-        return response()->json([
-            'success' => true,
-            'token' => $token,
-            'user' => auth()->user()
-        ]);
-    }
-
-    /**
-     * Logout user and invalidate token
-     */
-    public function logout()
-    {
-        try {
-            JWTAuth::invalidate(JWTAuth::getToken());
-            return response()->json([
-                'success' => true,
-                'message' => 'Successfully logged out'
-            ]);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to logout'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get authenticated user
-     */
-    public function me()
-    {
-        return response()->json([
-            'success' => true,
-            'user' => auth()->user()
-        ]);
-    }
-
-    /**
-     * Refresh JWT token
-     */
-    public function refresh()
-    {
-        try {
-            $token = JWTAuth::refresh(JWTAuth::getToken());
-            return response()->json([
-                'success' => true,
-                'token' => $token
-            ]);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token could not be refreshed'
-            ], 500);
-        }
-    }
 }

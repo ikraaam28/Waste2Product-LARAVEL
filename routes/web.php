@@ -15,13 +15,6 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/signup', [AuthController::class, 'signup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'store'])->name('signup.store');
 
-// Routes API JWT
-Route::prefix('api')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
-    Route::get('/me', [AuthController::class, 'me']);
-});
 
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
