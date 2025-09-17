@@ -13,6 +13,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Routes d'authentification
 Route::get('/signup', [AuthController::class, 'signup'])->name('signup');
+Route::post('/signup', [AuthController::class, 'store'])->name('signup.store');
 
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
