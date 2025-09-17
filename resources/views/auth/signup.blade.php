@@ -53,6 +53,302 @@
 .position-absolute:nth-child(2) {
     animation-delay: -3s;
 }
+
+/* Error Popup Styles */
+.error-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    animation: slideInRight 0.5s ease-out;
+}
+
+.error-popup-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    overflow: hidden;
+    position: relative;
+}
+
+.error-popup::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.error-popup-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(200, 35, 51, 0.1));
+    border-bottom: 1px solid rgba(220, 53, 69, 0.1);
+}
+
+.error-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    animation: pulse 2s infinite;
+}
+
+.error-icon i {
+    color: white;
+    font-size: 18px;
+}
+
+.error-title {
+    flex: 1;
+    margin: 0;
+    color: #dc3545;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.error-close {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-close:hover {
+    background: rgba(220, 53, 69, 0.1);
+    transform: scale(1.1);
+}
+
+.error-popup-body {
+    padding: 20px;
+}
+
+.error-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: rgba(220, 53, 69, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #dc3545;
+    transition: all 0.3s ease;
+}
+
+.error-item:last-child {
+    margin-bottom: 0;
+}
+
+.error-item:hover {
+    background: rgba(220, 53, 69, 0.1);
+    transform: translateX(5px);
+}
+
+.error-item i {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.error-item span {
+    color: #dc3545;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+/* Success Popup Styles */
+.success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    animation: slideInRight 0.5s ease-out;
+}
+
+.success-popup-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    overflow: hidden;
+    position: relative;
+}
+
+.success-popup::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.success-popup-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+    border-bottom: 1px solid rgba(40, 167, 69, 0.1);
+}
+
+.success-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    animation: successPulse 2s infinite;
+}
+
+.success-icon i {
+    color: white;
+    font-size: 18px;
+}
+
+.success-title {
+    flex: 1;
+    margin: 0;
+    color: #28a745;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.success-close {
+    background: none;
+    border: none;
+    color: #28a745;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-close:hover {
+    background: rgba(40, 167, 69, 0.1);
+    transform: scale(1.1);
+}
+
+.success-popup-body {
+    padding: 20px;
+}
+
+.success-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 12px;
+    background: rgba(40, 167, 69, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #28a745;
+    transition: all 0.3s ease;
+}
+
+.success-item:hover {
+    background: rgba(40, 167, 69, 0.1);
+    transform: translateX(5px);
+}
+
+.success-item i {
+    color: #28a745;
+    font-size: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.success-item span {
+    color: #28a745;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+@keyframes successPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .error-popup,
+    .success-popup {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
 </style>
 <!-- Signup Start -->
 <div class="container-xxl py-5">
@@ -60,7 +356,6 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <p class="fs-5 fw-medium fst-italic text-primary">Join Our Eco-Community</p>
                     <h1 class="display-6">Create Your Account</h1>
                     <p class="lead text-muted">Join thousands of eco-conscious individuals and transform waste into valuable products</p>
                 </div>
@@ -111,13 +406,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-center">
-                                <div class="bg-primary rounded p-4 text-white">
-                                    <i class="fa fa-recycle fa-3x mb-3"></i>
-                                    <h5>Transform Waste Into Value</h5>
-                                    <p class="mb-0">Every member contributes to a sustainable future</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     
@@ -127,31 +415,53 @@
                             <div class="position-absolute top-0 end-0" style="width: 100px; height: 100px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1)); border-radius: 0 0 0 100px;"></div>
                             <div class="position-absolute bottom-0 start-0" style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05)); border-radius: 0 80px 0 0;"></div>
                             
-                            <div class="text-center mb-4">
-                                <div class="btn-square mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #28a745, #20c997);">
-                                    <i class="fa fa-recycle fa-2x text-white"></i>
-                                </div>
-                                <h4 class="text-primary mb-2">Create Your Account</h4>
-                                <p class="text-muted">Join the waste transformation revolution</p>
+                             <div class="text-center mb-4">
+                                 <h4 class="text-primary mb-2">Create Your Account</h4>
+                                 <p class="text-muted">Join the waste transformation revolution</p>
                                 
                                 @if(session('success'))
-                                    <div class="alert alert-success alert-dismissible fade show rounded-pill" role="alert" style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white;">
-                                        <i class="fa fa-check-circle me-2"></i>
-                                        <strong>{{ session('success') }}</strong>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                                    <div class="success-popup" role="alert">
+                                        <div class="success-popup-content">
+                                            <div class="success-popup-header">
+                                                <div class="success-icon">
+                                                    <i class="fa fa-check-circle"></i>
+                                                </div>
+                                                <h6 class="success-title">Registration Successful!</h6>
+                                                <button type="button" class="success-close" data-bs-dismiss="alert">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="success-popup-body">
+                                                <div class="success-item">
+                                                    <i class="fa fa-check-circle me-2"></i>
+                                                    <span>{{ session('success') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 @endif
                                 
                                 @if($errors->any())
-                                    <div class="alert alert-danger alert-dismissible fade show rounded-pill" role="alert" style="background: linear-gradient(135deg, #dc3545, #c82333); border: none; color: white;">
-                                        <i class="fa fa-exclamation-triangle me-2"></i>
-                                        <strong>Please correct the following errors:</strong>
-                                        <ul class="mb-0 mt-2">
-                                            @foreach($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                                    <div class="error-popup" role="alert">
+                                        <div class="error-popup-content">
+                                            <div class="error-popup-header">
+                                                <div class="error-icon">
+                                                    <i class="fa fa-exclamation-circle"></i>
+                                                </div>
+                                                <h6 class="error-title">Registration Error</h6>
+                                                <button type="button" class="error-close" data-bs-dismiss="alert">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="error-popup-body">
+                                                @foreach($errors->all() as $error)
+                                                    <div class="error-item">
+                                                        <i class="fa fa-times-circle me-2"></i>
+                                                        <span>{{ $error }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -272,14 +582,6 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <div class="form-check p-3 bg-light rounded-3">
-                                            <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter_subscription" value="1" style="transform: scale(1.2);">
-                                            <label class="form-check-label ms-2" for="newsletter">
-                                                <i class="fa fa-bell me-2 text-primary"></i>Subscribe to our newsletter for recycling tips and eco-news
-                                            </label>
-                                        </div>
-                                    </div>
                                  
                                     <div class="col-12">
                                         <button class="btn btn-primary rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" type="submit" id="submitBtn" disabled style="background: linear-gradient(135deg, #6c757d, #495057); border: none; font-weight: 600; letter-spacing: 0.5px;">
@@ -313,8 +615,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const inputs = form.querySelectorAll('input, select');
     
+    // État de validation pour chaque champ
+    const fieldValidationState = {};
+    
     // Fonction pour valider un champ
-    function validateField(field) {
+    function validateField(field, showError = false) {
         const value = field.value.trim();
         const fieldName = field.name;
         let isValid = true;
@@ -330,22 +635,36 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(fieldName) {
             case 'first_name':
             case 'last_name':
-                if (value.length < 2) {
+                if (value.length === 0) {
+                    isValid = false;
+                    errorMessage = 'This field is required';
+                } else if (value.length < 2) {
                     isValid = false;
                     errorMessage = 'Must be at least 2 characters long';
                 }
                 break;
             case 'email':
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
+                if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Please enter a valid email address';
+                    errorMessage = 'Email is required';
+                } else {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Please enter a valid email address';
+                    }
                 }
                 break;
             case 'phone':
-                if (value.length < 8) {
+                if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Phone number must be at least 8 digits';
+                    errorMessage = 'Phone number is required';
+                } else {
+                    const phoneRegex = /^[0-9]{8}$/;
+                    if (!phoneRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Please enter exactly 8 digits';
+                    }
                 }
                 break;
             case 'city':
@@ -355,30 +674,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 break;
             case 'password':
-                if (value.length < 8) {
+                if (value.length === 0) {
+                    isValid = false;
+                    errorMessage = 'Password is required';
+                } else if (value.length < 8) {
                     isValid = false;
                     errorMessage = 'Password must be at least 8 characters long';
                 }
                 break;
             case 'password_confirmation':
-                const password = form.querySelector('input[name="password"]').value;
-                if (value !== password) {
+                if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Password confirmation does not match';
+                    errorMessage = 'Password confirmation is required';
+                } else {
+                    const password = form.querySelector('input[name="password"]').value;
+                    if (value !== password) {
+                        isValid = false;
+                        errorMessage = 'Password confirmation does not match';
+                    }
                 }
                 break;
         }
         
-        // Afficher l'erreur si nécessaire
-        if (!isValid) {
+        // Stocker l'état de validation
+        fieldValidationState[fieldName] = isValid;
+        
+        // Afficher l'erreur seulement si showError est true et qu'il y a une erreur
+        if (!isValid && showError) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'field-error text-danger small mt-1';
             errorDiv.innerHTML = `<i class="fa fa-exclamation-circle me-1"></i>${errorMessage}`;
             field.parentNode.appendChild(errorDiv);
             field.classList.add('is-invalid');
-        } else {
+        } else if (isValid && value.length > 0) {
             field.classList.remove('is-invalid');
             field.classList.add('is-valid');
+        } else if (!isValid) {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+        } else {
+            field.classList.remove('is-invalid', 'is-valid');
         }
         
         return isValid;
@@ -392,8 +727,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'city', 'password', 'password_confirmation'];
         requiredFields.forEach(fieldName => {
             const field = form.querySelector(`[name="${fieldName}"]`);
-            if (field && !validateField(field)) {
-                allValid = false;
+            if (field) {
+                const isValid = validateField(field, false); // Ne pas afficher d'erreur
+                if (!isValid || field.value.trim() === '') {
+                    allValid = false;
+                }
             }
         });
         
@@ -407,37 +745,108 @@ document.addEventListener('DOMContentLoaded', function() {
         if (allValid) {
             submitBtn.disabled = false;
             submitBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            submitBtn.style.cursor = 'pointer';
         } else {
             submitBtn.disabled = true;
             submitBtn.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+            submitBtn.style.cursor = 'not-allowed';
         }
     }
     
     // Ajouter les événements de validation
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
-            validateField(this);
+            validateField(this, true); // Afficher les erreurs au blur
             checkFormValidity();
         });
         
         input.addEventListener('input', function() {
-            // Validation en temps réel pour certains champs
-            if (['password', 'password_confirmation'].includes(this.name)) {
-                validateField(this);
-                // Re-valider la confirmation si on tape dans le mot de passe
-                if (this.name === 'password') {
-                    const confirmField = form.querySelector('input[name="password_confirmation"]');
-                    if (confirmField.value) {
-                        validateField(confirmField);
-                    }
+            // Limiter le téléphone à 8 caractères exactement
+            if (this.name === 'phone') {
+                // Supprimer tous les caractères non numériques
+                this.value = this.value.replace(/[^0-9]/g, '');
+                // Limiter à 8 caractères maximum
+                if (this.value.length > 8) {
+                    this.value = this.value.substring(0, 8);
                 }
             }
+            
+            // Validation immédiate pour la vérification du bouton
             checkFormValidity();
+            
+            // Validation immédiate pour l'affichage des erreurs
+            validateField(this, true);
+            
+            // Re-valider la confirmation si on tape dans le mot de passe
+            if (this.name === 'password') {
+                const confirmField = form.querySelector('input[name="password_confirmation"]');
+                if (confirmField.value) {
+                    validateField(confirmField, true);
+                }
+            }
         });
     });
     
-    // Validation initiale
+    // Événement pour la checkbox des termes
+    const termsCheckbox = form.querySelector('input[name="terms_accepted"]');
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener('change', function() {
+            checkFormValidity();
+        });
+    }
+    
+    // Validation initiale sans afficher d'erreurs
     checkFormValidity();
+    
+    // Gestion du popup d'erreur
+    const errorPopup = document.querySelector('.error-popup');
+    if (errorPopup) {
+        // Fermeture automatique après 8 secondes
+        setTimeout(() => {
+            if (errorPopup) {
+                errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    errorPopup.remove();
+                }, 500);
+            }
+        }, 8000);
+        
+        // Fermeture manuelle
+        const closeBtn = errorPopup.querySelector('.error-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    errorPopup.remove();
+                }, 500);
+            });
+        }
+    }
+    
+    // Gestion du popup de succès
+    const successPopup = document.querySelector('.success-popup');
+    if (successPopup) {
+        // Fermeture automatique après 5 secondes (plus rapide que l'erreur)
+        setTimeout(() => {
+            if (successPopup) {
+                successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    successPopup.remove();
+                }, 500);
+            }
+        }, 5000);
+        
+        // Fermeture manuelle
+        const closeBtn = successPopup.querySelector('.success-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    successPopup.remove();
+                }, 500);
+            });
+        }
+    }
 });
 </script>
 
