@@ -7,59 +7,7 @@
 @endpush
 
 @section('content')
-<div class="sidebar" data-background-color="dark">
-  <div class="sidebar-logo">
-    <div class="logo-header" data-background-color="dark">
-      <a href="#" class="logo">
-        <img src="{{ asset('vendor/kaiadmin/img/kaiadmin/logo_light.svg') }}" alt="navbar brand" class="navbar-brand" height="20" />
-      </a>
-      <div class="nav-toggle">
-        <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
-        <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
-      </div>
-      <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
-    </div>
-  </div>
-  <div class="sidebar-wrapper scrollbar scrollbar-inner">
-    <div class="sidebar-content">
-      <ul class="nav nav-secondary">
-        <li class="nav-item active">
-          <a data-bs-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
-            <i class="fas fa-home"></i>
-            <p>Dashboard</p>
-            <span class="caret"></span>
-          </a>
-          <div class="collapse show" id="dashboard">
-            <ul class="nav nav-collapse">
-              <li class="active"><a href="#"><span class="sub-item">Dashboard</span></a></li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<div class="main-panel">
-  <div class="main-header">
-    <div class="main-header-logo">
-      <div class="logo-header" data-background-color="dark">
-        <a href="#" class="logo">
-          <img src="{{ asset('vendor/kaiadmin/img/kaiadmin/logo_light.svg') }}" alt="navbar brand" class="navbar-brand" height="20" />
-        </a>
-        <div class="nav-toggle">
-          <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
-          <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
-        </div>
-        <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
-      </div>
-    </div>
-    <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
-      <div class="container-fluid"></div>
-    </nav>
-  </div>
-
-  <div class="container">
+<div class="container">
     <div class="page-inner">
       <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
         <div>
@@ -152,19 +100,7 @@
     </div>
   </div>
 
-  <footer class="footer">
-    <div class="container-fluid d-flex justify-content-between">
-      <nav class="pull-left">
-        <ul class="nav">
-          <li class="nav-item"><a class="nav-link" href="#">ThemeKita</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Help</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Licenses</a></li>
-        </ul>
-      </nav>
-      <div class="copyright">2024, made with <i class="fa fa-heart heart text-danger"></i></div>
-    </div>
-  </footer>
-</div>
+ </div>
 @endsection
 
 @push('scripts')

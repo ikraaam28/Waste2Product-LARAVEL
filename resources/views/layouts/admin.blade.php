@@ -35,7 +35,12 @@
   </head>
   <body>
     <div class="wrapper">
-      @yield('content')
+      @include('admin.partials.sidebar')
+      <div class="main-panel">
+        @include('admin.partials.header')
+        @yield('content')
+        @include('admin.partials.footer')
+      </div>
     </div>
 
     <!--   Core JS Files   -->
