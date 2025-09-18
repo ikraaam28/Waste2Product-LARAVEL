@@ -212,5 +212,31 @@ public function resetPassword(Request $request)
     return redirect()->route('login')->with('success', 'Password updated successfully!');
 }
 
+public function profile()
+{
+    $user = Auth::user(); // get the logged-in user
+    return view('auth.profile', compact('user'));
+}
+
+
+public function updateProfilePicture(Request $request)
+{
+    $request->validate([
+        'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+    ]);
+
+    $user = Auth::user();
+
+    if ($request->hasFile('profile_picture')) {
+        // Store image in public storage
+        $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+        $user->profile_picture = $path;
+        $user->save();
+    }
+
+    return redirect()->route('profile')->with('success', 'Photo de profil mise à jour !');
+}
+
+
 
 }

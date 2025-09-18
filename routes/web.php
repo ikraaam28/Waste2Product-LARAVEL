@@ -25,6 +25,11 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+});
+
+Route::post('/profile/picture', [AuthController::class, 'updateProfilePicture'])->name('profile.picture.update');
 
 
 // Routes des pages
