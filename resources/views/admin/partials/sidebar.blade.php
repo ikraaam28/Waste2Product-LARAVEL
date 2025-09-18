@@ -38,15 +38,15 @@
           </a>
           <div class="collapse" id="base">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/components/avatars') }}"><span class="sub-item">Avatars</span></a></li>
-              <li><a href="{{ url('admin/pages/components/buttons') }}"><span class="sub-item">Buttons</span></a></li>
-              <li><a href="{{ url('admin/pages/components/gridsystem') }}"><span class="sub-item">Grid System</span></a></li>
-              <li><a href="{{ url('admin/pages/components/panels') }}"><span class="sub-item">Panels</span></a></li>
-              <li><a href="{{ url('admin/pages/components/notifications') }}"><span class="sub-item">Notifications</span></a></li>
-              <li><a href="{{ url('admin/pages/components/sweetalert') }}"><span class="sub-item">Sweet Alert</span></a></li>
-              <li><a href="{{ url('admin/pages/components/font-awesome-icons') }}"><span class="sub-item">Font Awesome Icons</span></a></li>
-              <li><a href="{{ url('admin/pages/components/simple-line-icons') }}"><span class="sub-item">Simple Line Icons</span></a></li>
-              <li><a href="{{ url('admin/pages/components/typography') }}"><span class="sub-item">Typography</span></a></li>
+              <li><a href="{{ url('admin/components/avatars') }}"><span class="sub-item">Avatars</span></a></li>
+              <li><a href="{{ url('admin/components/buttons') }}"><span class="sub-item">Buttons</span></a></li>
+              <li><a href="{{ url('admin/components/gridsystem') }}"><span class="sub-item">Grid System</span></a></li>
+              <li><a href="{{ url('admin/components/panels') }}"><span class="sub-item">Panels</span></a></li>
+              <li><a href="{{ url('admin/components/notifications') }}"><span class="sub-item">Notifications</span></a></li>
+              <li><a href="{{ url('admin/components/sweetalert') }}"><span class="sub-item">Sweet Alert</span></a></li>
+              <li><a href="{{ url('admin/components/font-awesome-icons') }}"><span class="sub-item">Font Awesome Icons</span></a></li>
+              <li><a href="{{ url('admin/components/simple-line-icons') }}"><span class="sub-item">Simple Line Icons</span></a></li>
+              <li><a href="{{ url('admin/components/typography') }}"><span class="sub-item">Typography</span></a></li>
             </ul>
           </div>
         </li>
@@ -58,8 +58,8 @@
           </a>
           <div class="collapse" id="sidebarLayouts">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/sidebar-style-2') }}"><span class="sub-item">Sidebar Style 2</span></a></li>
-              <li><a href="{{ url('admin/pages/icon-menu') }}"><span class="sub-item">Icon Menu</span></a></li>
+              <li><a href="#"><span class="sub-item">Sidebar Style 2</span></a></li>
+              <li><a href="#"><span class="sub-item">Icon Menu</span></a></li>
             </ul>
           </div>
         </li>
@@ -71,7 +71,7 @@
           </a>
           <div class="collapse" id="forms">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/forms/forms') }}"><span class="sub-item">Basic Form</span></a></li>
+              <li><a href="{{ url('admin/forms/forms') }}"><span class="sub-item">Basic Form</span></a></li>
             </ul>
           </div>
         </li>
@@ -83,8 +83,8 @@
           </a>
           <div class="collapse" id="tables">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/tables/tables') }}"><span class="sub-item">Basic Table</span></a></li>
-              <li><a href="{{ url('admin/pages/tables/datatables') }}"><span class="sub-item">Datatables</span></a></li>
+              <li><a href="{{ url('admin/tables/tables') }}"><span class="sub-item">Basic Table</span></a></li>
+              <li><a href="{{ url('admin/tables/datatables') }}"><span class="sub-item">Datatables</span></a></li>
             </ul>
           </div>
         </li>
@@ -96,8 +96,8 @@
           </a>
           <div class="collapse" id="maps">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/maps/googlemaps') }}"><span class="sub-item">Google Maps</span></a></li>
-              <li><a href="{{ url('admin/pages/maps/jsvectormap') }}"><span class="sub-item">Jsvectormap</span></a></li>
+              <li><a href="{{ url('admin/maps/googlemaps') }}"><span class="sub-item">Google Maps</span></a></li>
+              <li><a href="{{ url('admin/maps/jsvectormap') }}"><span class="sub-item">Jsvectormap</span></a></li>
             </ul>
           </div>
         </li>
@@ -109,13 +109,13 @@
           </a>
           <div class="collapse" id="charts">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/pages/charts/charts') }}"><span class="sub-item">Chart Js</span></a></li>
-              <li><a href="{{ url('admin/pages/charts/sparkline') }}"><span class="sub-item">Sparkline</span></a></li>
+              <li><a href="{{ url('admin/charts/charts') }}"><span class="sub-item">Chart Js</span></a></li>
+              <li><a href="{{ url('admin/charts/sparkline') }}"><span class="sub-item">Sparkline</span></a></li>
             </ul>
           </div>
         </li>
         <li class="nav-item">
-          <a href="{{ url('admin/pages/widgets') }}">
+          <a href="{{ url('admin/widgets') }}">
             <i class="fas fa-desktop"></i>
             <p>Widgets</p>
             <span class="badge badge-success">4</span>
