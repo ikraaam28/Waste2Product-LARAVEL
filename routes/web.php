@@ -33,7 +33,72 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 // Admin
-Route::get('/admin', [AdminPageController::class, 'show'])->defaults('slug', 'index')->name('admin.dashboard');
-Route::get('/admin/pages/{slug?}', [AdminPageController::class, 'show'])
-    ->where('slug', '.*')
-    ->name('admin.pages.show');
+Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
+// Admin components
+Route::prefix('admin')->group(function () {
+    Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');
+    Route::view('/components/buttons', 'admin.components.buttons')->name('admin.components.buttons');
+    Route::view('/components/gridsystem', 'admin.components.gridsystem')->name('admin.components.gridsystem');
+    Route::view('/components/panels', 'admin.components.panels')->name('admin.components.panels');
+    Route::view('/components/notifications', 'admin.components.notifications')->name('admin.components.notifications');
+    Route::view('/components/sweetalert', 'admin.components.sweetalert')->name('admin.components.sweetalert');
+    Route::view('/components/font-awesome-icons', 'admin.components.font-awesome-icons')->name('admin.components.fontawesome');
+    Route::view('/components/simple-line-icons', 'admin.components.simple-line-icons')->name('admin.components.simpleline');
+    Route::view('/components/typography', 'admin.components.typography')->name('admin.components.typography');
+
+    // Forms
+    Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');
+
+    // Tables
+    Route::view('/tables/tables', 'admin.tables.tables')->name('admin.tables.tables');
+    Route::view('/tables/datatables', 'admin.tables.datatables')->name('admin.tables.datatables');
+
+    // Charts
+    Route::view('/charts/charts', 'admin.charts.charts')->name('admin.charts.charts');
+    Route::view('/charts/sparkline', 'admin.charts.sparkline')->name('admin.charts.sparkline');
+
+    // Maps
+    Route::view('/maps/googlemaps', 'admin.maps.googlemaps')->name('admin.maps.googlemaps');
+    Route::view('/maps/jsvectormap', 'admin.maps.jsvectormap')->name('admin.maps.jsvectormap');
+
+    // Widgets
+    Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
+});
+// Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
+
+// Legacy redirects: map old /admin/pages/* URLs to new Blade routes
+Route::redirect('/admin/pages', '/admin');
+Route::redirect('/admin/pages/', '/admin');
+Route::get('/admin/pages/{slug}', function (string $slug) {
+    $slug = trim($slug, '/');
+    if ($slug === '' || $slug === 'index' || $slug === 'index.html') {
+        return redirect()->to(url('admin'));
+    }
+
+    // drop trailing .html if present
+    if (substr($slug, -5) === '.html') {
+        $slug = substr($slug, 0, -5);
+    }
+
+    // Normalize any leading ./ or ../ segments
+    $slug = preg_replace('#^(?:\./)+#', '', $slug);
+    $slug = preg_replace('#^(?:\.+/)+#', '', $slug);
+
+    // Direct mappings for known sections
+    $sections = ['components', 'charts', 'tables', 'maps'];
+    foreach ($sections as $section) {
+        if (strpos($slug, $section . '/') === 0) {
+            $rest = substr($slug, strlen($section) + 1);
+            return redirect()->to(url("admin/{$section}/{$rest}"));
+        }
+    }
+
+    if ($slug === 'forms/forms') {
+        return redirect()->to(url('admin/forms/forms'));
+    }
+    if ($slug === 'widgets') {
+        return redirect()->to(url('admin/widgets'));
+    }
+
+    abort(404);
+});
