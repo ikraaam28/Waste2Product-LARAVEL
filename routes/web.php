@@ -7,6 +7,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\AdminPageController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,3 +31,9 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 
 // Routes du blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+
+// Admin
+Route::get('/admin', [AdminPageController::class, 'show'])->defaults('slug', 'index')->name('admin.dashboard');
+Route::get('/admin/pages/{slug?}', [AdminPageController::class, 'show'])
+    ->where('slug', '.*')
+    ->name('admin.pages.show');
