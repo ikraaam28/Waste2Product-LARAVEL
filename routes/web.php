@@ -22,6 +22,8 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/testimonial', [PageController::class, 'testimonial'])->name('testimonial');
 Route::get('/feature', [PageController::class, 'feature'])->name('feature');
+// Public Events page placeholder
+Route::view('/events', 'pages.events')->name('events');
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -63,6 +65,11 @@ Route::prefix('admin')->group(function () {
 
     // Widgets
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
+
+    // Events
+    Route::view('/events', 'admin.events.index')->name('admin.events.index');
+    Route::view('/events/drop', 'admin.events.drop')->name('admin.events.drop');
+    Route::view('/events/feedback', 'admin.events.feedback')->name('admin.events.feedback');
 });
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 
