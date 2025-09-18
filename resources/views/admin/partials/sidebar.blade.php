@@ -115,6 +115,20 @@
           </div>
         </li>
         <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#events">
+            <i class="fas fa-calendar-alt"></i>
+            <p>Events</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="events">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ url('admin/events') }}"><span class="sub-item">Events</span></a></li>
+              <li><a href="{{ url('admin/events/drop') }}"><span class="sub-item">Drop Event</span></a></li>
+              <li><a href="{{ url('admin/events/feedback') }}"><span class="sub-item">Feedback</span></a></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item">
           <a href="{{ url('admin/widgets') }}">
             <i class="fas fa-desktop"></i>
             <p>Widgets</p>
