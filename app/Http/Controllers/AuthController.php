@@ -143,4 +143,74 @@ class AuthController extends Controller
         return redirect()->route('login')
             ->with('success', 'Vous avez été déconnecté avec succès.');
     }
+ 
+
+// Affiche formulaire "mot de passe oublié"
+public function showForgotForm()
+{
+    return view('auth.forgot-password');
+}
+
+// Send reset password email
+public function sendResetLink(Request $request)
+{
+    $request->validate(['email' => 'required|email']);
+    
+    $user = User::where('email', $request->email)->first();
+    
+    if (!$user) {
+        return back()->withErrors(['email' => 'No user found with this email.']);
+    }
+
+    $token = \Str::random(64);
+
+    // Save the token in password_resets table
+    \DB::table('password_resets')->updateOrInsert(
+        ['email' => $user->email],
+        [
+            'token' => $token,
+            'created_at' => now()
+        ]
+    );
+
+    // Send custom reset password email
+    Mail::to($user->email)->send(new ResetPasswordEmail($user, $token));
+
+    return back()->with('success', 'Reset password email sent!');
+}
+
+// Show reset password form
+public function showResetForm($token)
+{
+    return view('auth.reset-password', ['token' => $token]);
+}
+
+// Update password
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $record = \DB::table('password_resets')->where('email', $request->email)
+                ->where('token', $request->token)
+                ->first();
+
+    if (!$record) {
+        return back()->withErrors(['email' => 'Invalid token or email.']);
+    }
+
+    $user = User::where('email', $request->email)->first();
+    $user->password = \Hash::make($request->password);
+    $user->save();
+
+    // Delete used token
+    \DB::table('password_resets')->where('email', $request->email)->delete();
+
+    return redirect()->route('login')->with('success', 'Password updated successfully!');
+}
+
+
 }
