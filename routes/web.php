@@ -15,7 +15,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Routes d'authentification
 Route::get('/signup', [AuthController::class, 'signup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'store'])->name('signup.store');
-
+Route::get('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
