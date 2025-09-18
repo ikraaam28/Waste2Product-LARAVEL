@@ -28,13 +28,21 @@
                 </div>
                 <div class="border-start ps-4 d-none d-lg-block">
                     <button type="button" class="btn btn-sm p-0 me-3"><i class="fa fa-search"></i></button>
-                    <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
+                    @guest
+                        <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
+                    @endguest
+                    @auth
+                        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+                                <i class="fa fa-power-off me-1"></i> Logout
+                            </button>
+                        </form>
+                    @endauth
                 </div>
             </div>
         </nav>
     </div>
 </div>
+
 <!-- Navbar End -->
-
-
-

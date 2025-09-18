@@ -428,7 +428,11 @@
                                                 <div class="success-icon">
                                                     <i class="fa fa-check-circle"></i>
                                                 </div>
-                                                <h6 class="success-title">Connexion réussie !</h6>
+                                                @if(session('success') === 'Vous avez été déconnecté avec succès.')
+                                                    <h6 class="success-title">Déconnexion</h6>
+                                                @else
+                                                    <h6 class="success-title">Succès !</h6>
+                                                @endif
                                                 <button type="button" class="success-close" data-bs-dismiss="alert">
                                                     <i class="fa fa-times"></i>
                                                 </button>
