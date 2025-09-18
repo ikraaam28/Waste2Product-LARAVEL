@@ -38,12 +38,16 @@
     </div>
     <!-- Spinner End -->
 
-    @include('components.navbar')
+    @if (!request()->routeIs('login') && !request()->routeIs('signup'))
+        @include('components.navbar')
+    @endif
 
     <!-- Main Content -->
     @yield('content')
 
-    @include('components.footer')
+    @if (!request()->routeIs('login') && !request()->routeIs('signup'))
+        @include('components.footer')
+    @endif
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>

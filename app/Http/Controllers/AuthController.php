@@ -138,4 +138,5 @@ class AuthController extends Controller
         return redirect()->route('login')
             ->with('success', 'Vous avez été déconnecté avec succès.');
     }
+ 
 }
