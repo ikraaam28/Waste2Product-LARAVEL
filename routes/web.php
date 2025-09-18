@@ -19,6 +19,14 @@ Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+
+
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');

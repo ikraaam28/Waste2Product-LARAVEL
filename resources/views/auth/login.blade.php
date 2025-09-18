@@ -528,6 +528,12 @@
                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
                                         </button>
                                     </div>
+                                    <div class="col-12 text-end">
+    <a href="{{ route('password.request') }}" class="text-decoration-none text-primary">
+        Mot de passe oublié ?
+    </a>
+</div>
+
                                     <div class="col-12 text-center">
                                         <div class="position-relative">
                                             <hr class="my-4">
