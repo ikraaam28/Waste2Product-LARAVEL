@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model as MongoModel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 
-class User extends MongoModel
+class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $connection = 'mongodb';   // ✅ connexion MongoDB
-    protected $collection = 'users';     // ✅ collection MongoDB
 
     /**
      * Les attributs qui peuvent être remplis en masse.
