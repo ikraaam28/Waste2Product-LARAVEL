@@ -28,6 +28,8 @@ class User extends Authenticatable
         'terms_accepted',
         'email_verified_at',
         'remember_token',
+        'profile_picture', 
+
     ];
 
     /**
