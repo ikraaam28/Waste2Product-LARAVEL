@@ -88,7 +88,7 @@ class AuthController extends Controller
             \Log::error('Erreur envoi email bienvenue: ' . $e->getMessage());
         }
 
-        return redirect()->route('signup')->with('success', 'Compte créé avec succès ! Bienvenue sur Waste2Product !');
+        return redirect()->route('login')->with('success', 'Compte créé avec succès ! Veuillez vous connecter pour continuer.');
     }
 
     /**
@@ -114,7 +114,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back(index)
+            return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
