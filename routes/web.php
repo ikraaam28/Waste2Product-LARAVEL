@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\EventController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -67,9 +68,22 @@ Route::prefix('admin')->group(function () {
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
 
     // Events
-    Route::view('/events', 'admin.events.index')->name('admin.events.index');
-    Route::view('/events/drop', 'admin.events.drop')->name('admin.events.drop');
-    Route::view('/events/feedback', 'admin.events.feedback')->name('admin.events.feedback');
+    Route::get('/events/dashboard', [EventController::class, 'dashboard'])->name('admin.events.dashboard');
+    Route::get('/events', [EventController::class, 'index'])->name('admin.events.index');
+    Route::get('/events/manage', [EventController::class, 'manage'])->name('admin.events.manage');
+    Route::get('/events/create', [EventController::class, 'create'])->name('admin.events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('admin.events.store');
+    Route::get('/events/qr-scanner', [EventController::class, 'qrScanner'])->name('admin.events.qr-scanner');
+    Route::post('/events/scan-qr', [EventController::class, 'scanQr'])->name('admin.events.scan-qr');
+    Route::get('/events/feedback', [EventController::class, 'feedback'])->name('admin.events.feedback');
+    Route::get('/events/badges', [EventController::class, 'badges'])->name('admin.events.badges');
+    Route::post('/events/badges', [EventController::class, 'createBadge'])->name('admin.events.create-badge');
+    Route::get('/events/api/events', [EventController::class, 'apiEvents'])->name('admin.events.api');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('admin.events.show');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('admin.events.edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('admin.events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('admin.events.destroy');
+    Route::patch('/events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('admin.events.toggle-status');
 });
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 

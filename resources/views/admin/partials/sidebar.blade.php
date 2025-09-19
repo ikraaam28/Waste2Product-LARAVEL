@@ -122,9 +122,12 @@
           </a>
           <div class="collapse" id="events">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/events') }}"><span class="sub-item">Events</span></a></li>
-              <li><a href="{{ url('admin/events/drop') }}"><span class="sub-item">Drop Event</span></a></li>
-              <li><a href="{{ url('admin/events/feedback') }}"><span class="sub-item">Feedback</span></a></li>
+              <li><a href="{{ route('admin.events.dashboard') }}"><span class="sub-item">Dashboard</span></a></li>
+              <li><a href="{{ route('admin.events.index') }}"><span class="sub-item">All Events</span></a></li>
+              <li><a href="{{ route('admin.events.manage') }}"><span class="sub-item">Event List</span></a></li>
+              <li><a href="{{ route('admin.events.qr-scanner') }}"><span class="sub-item">QR Scanner</span></a></li>
+              <li><a href="{{ route('admin.events.feedback') }}"><span class="sub-item">Feedback & Impact</span></a></li>
+              <li><a href="{{ route('admin.events.badges') }}"><span class="sub-item">Badges</span></a></li>
             </ul>
           </div>
         </li>
