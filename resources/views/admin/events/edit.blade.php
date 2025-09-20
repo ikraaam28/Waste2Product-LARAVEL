@@ -34,6 +34,7 @@
                                         @error('title')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="title-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -49,6 +50,7 @@
                                         @error('category')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="category-error"></div>
                                     </div>
                                 </div>
                             </div>
@@ -60,6 +62,7 @@
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="invalid-feedback" id="description-error"></div>
                             </div>
 
                             <div class="row">
@@ -71,6 +74,7 @@
                                         @error('date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="date-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -81,6 +85,7 @@
                                         @error('time')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="time-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -92,6 +97,7 @@
                                         @error('max_participants')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="max_participants-error"></div>
                                     </div>
                                 </div>
                             </div>
@@ -103,6 +109,7 @@
                                 @error('location')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="invalid-feedback" id="location-error"></div>
                             </div>
 
                             <div class="form-group">
@@ -202,6 +209,160 @@
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    
+    // Real-time validation for all fields
+    const fields = [
+        'title', 'category', 'description', 'date', 'time', 
+        'max_participants', 'location'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // Validate on input/change
+            field.addEventListener('input', () => validateField(fieldId));
+            field.addEventListener('change', () => validateField(fieldId));
+            field.addEventListener('blur', () => validateField(fieldId));
+        }
+    });
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous validation
+        clearValidation();
+        
+        // Validate all fields
+        let isValid = true;
+        fields.forEach(fieldId => {
+            if (!validateField(fieldId)) {
+                isValid = false;
+            }
+        });
+        
+        if (isValid) {
+            form.submit();
+        }
+    });
+    
+    function validateField(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return true;
+        
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Clear previous error
+        clearFieldError(fieldId);
+        
+        switch(fieldId) {
+            case 'title':
+                if (field.value.length < 3) {
+                    errorMessage = 'Title must be at least 3 characters';
+                    isValid = false;
+                } else if (field.value.length > 255) {
+                    errorMessage = 'Title must be less than 255 characters';
+                    isValid = false;
+                }
+                break;
+                
+            case 'category':
+                if (!field.value) {
+                    errorMessage = 'Please select a category';
+                    isValid = false;
+                }
+                break;
+                
+            case 'description':
+                if (field.value.length > 1000) {
+                    errorMessage = 'Description must be less than 1000 characters';
+                    isValid = false;
+                }
+                break;
+                
+            case 'date':
+                if (!field.value) {
+                    errorMessage = 'Date is required';
+                    isValid = false;
+                } else {
+                    const selectedDate = new Date(field.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    if (selectedDate < today) {
+                        errorMessage = 'Date cannot be in the past';
+                        isValid = false;
+                    }
+                }
+                break;
+                
+            case 'time':
+                if (!field.value) {
+                    errorMessage = 'Time is required';
+                    isValid = false;
+                }
+                break;
+                
+            case 'max_participants':
+                if (field.value && (field.value < 1 || field.value > 1000)) {
+                    errorMessage = 'Max participants must be between 1 and 1000';
+                    isValid = false;
+                }
+                break;
+                
+            case 'location':
+                if (!field.value.trim()) {
+                    errorMessage = 'Location is required';
+                    isValid = false;
+                } else if (field.value.length > 255) {
+                    errorMessage = 'Location must be less than 255 characters';
+                    isValid = false;
+                }
+                break;
+        }
+        
+        if (!isValid) {
+            showFieldError(fieldId, errorMessage);
+        }
+        
+        return isValid;
+    }
+    
+    function showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '-error');
+        
+        if (field && errorDiv) {
+            field.classList.add('is-invalid');
+            errorDiv.textContent = message;
+        }
+    }
+    
+    function clearFieldError(fieldId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '-error');
+        
+        if (field && errorDiv) {
+            field.classList.remove('is-invalid');
+            errorDiv.textContent = '';
+        }
+    }
+    
+    function clearValidation() {
+        const invalidFields = form.querySelectorAll('.is-invalid');
+        invalidFields.forEach(field => {
+            field.classList.remove('is-invalid');
+        });
+        
+        const errorMessages = form.querySelectorAll('.invalid-feedback');
+        errorMessages.forEach(error => {
+            error.textContent = '';
+        });
+    }
+});
+
 // Product selection functions
 function selectAllProducts(categoryId = null) {
     if (categoryId) {
