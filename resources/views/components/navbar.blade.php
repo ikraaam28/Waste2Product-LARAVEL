@@ -28,13 +28,34 @@
                 </div>
                 <div class="border-start ps-4 d-none d-lg-block">
                     <button type="button" class="btn btn-sm p-0 me-3"><i class="fa fa-search"></i></button>
-                    <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
+                    @guest
+                        <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
+                    @endguest
+                    @auth
+                        <!-- Profile Picture Button -->
+                        <a href="/profile" class="btn btn-sm p-0 me-3" style="border-radius: 50%; width: 35px; height: 35px; overflow: hidden; border: 2px solid #e9ecef;">
+                            @if(auth()->user()->profile_picture)
+                                <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" 
+                                     alt="Profile" 
+                                     class="img-fluid rounded-circle" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->full_name) }}&background=2E7D32&color=fff&size=35" 
+                                     alt="Avatar" 
+                                     class="img-fluid rounded-circle" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            @endif
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+                                <i class="fa fa-power-off me-1"></i> Logout
+                            </button>
+                        </form>
+                    @endauth
                 </div>
             </div>
         </nav>
     </div>
 </div>
 <!-- Navbar End -->
-
-
-

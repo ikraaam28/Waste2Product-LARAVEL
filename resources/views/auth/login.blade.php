@@ -4,7 +4,7 @@
 <!-- reCAPTCHA v2 Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
-/* Custom styles for signup form */
+/* Custom styles for login form (réutilisation des styles du signup) */
 .form-control:focus {
     border-color: #28a745 !important;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
@@ -352,27 +352,27 @@
     }
 }
 </style>
-<!-- Signup Start -->
+<!-- Login Start -->
 <div class="container-xxl py-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="display-6">Create Your Account</h1>
-                    <p class="lead text-muted">Join thousands of eco-conscious individuals and transform waste into valuable products</p>
+                    <h1 class="display-6">Se connecter à votre compte</h1>
+                    <p class="lead text-muted">Accédez à votre compte Waste2Product et continuez à transformer les déchets en valeur</p>
                 </div>
                 
                 <div class="row g-5">
                     <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                         <div class="bg-light rounded p-5 h-100">
-                            <h3 class="text-primary mb-4">Why Join Waste2Product?</h3>
+                            <h3 class="text-primary mb-4">Pourquoi se connecter ?</h3>
                             <div class="row g-3 mb-4">
                                 <div class="col-12">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-recycle"></i>
                                         </div>
-                                        <span>Access to innovative recycling solutions</span>
+                                        <span>Gérez vos projets de recyclage</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -380,7 +380,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-lightbulb"></i>
                                         </div>
-                                        <span>Creative upcycling ideas and tutorials</span>
+                                        <span>Accédez à des tutoriels exclusifs d'upcycling</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -388,7 +388,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-globe"></i>
                                         </div>
-                                        <span>Contribute to environmental sustainability</span>
+                                        <span>Suivez votre impact environnemental</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -396,7 +396,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-heart"></i>
                                         </div>
-                                        <span>Personalized waste reduction tips</span>
+                                        <span>Recevez des conseils éco-personnalisés</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -404,7 +404,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-users"></i>
                                         </div>
-                                        <span>Join our eco-conscious community</span>
+                                        <span>Connectez-vous avec notre communauté éco</span>
                                     </div>
                                 </div>
                             </div>
@@ -417,9 +417,9 @@
                             <div class="position-absolute top-0 end-0" style="width: 100px; height: 100px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1)); border-radius: 0 0 0 100px;"></div>
                             <div class="position-absolute bottom-0 start-0" style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05)); border-radius: 0 80px 0 0;"></div>
                             
-                             <div class="text-center mb-4">
-                                 <h4 class="text-primary mb-2">Create Your Account</h4>
-                                 <p class="text-muted">Join the waste transformation revolution</p>
+                            <div class="text-center mb-4">
+                                <h4 class="text-primary mb-2">Se connecter</h4>
+                                <p class="text-muted">Accédez à votre compte Waste2Product</p>
                                 
                                 @if(session('success'))
                                     <div class="success-popup" role="alert">
@@ -428,7 +428,11 @@
                                                 <div class="success-icon">
                                                     <i class="fa fa-check-circle"></i>
                                                 </div>
-                                                <h6 class="success-title">Registration Successful!</h6>
+                                                @if(session('success') === 'Vous avez été déconnecté avec succès.')
+                                                    <h6 class="success-title">Déconnexion</h6>
+                                                @else
+                                                    <h6 class="success-title">Succès !</h6>
+                                                @endif
                                                 <button type="button" class="success-close" data-bs-dismiss="alert">
                                                     <i class="fa fa-times"></i>
                                                 </button>
@@ -450,7 +454,7 @@
                                                 <div class="error-icon">
                                                     <i class="fa fa-exclamation-circle"></i>
                                                 </div>
-                                                <h6 class="error-title">Registration Error</h6>
+                                                <h6 class="error-title">Erreur de connexion</h6>
                                                 <button type="button" class="error-close" data-bs-dismiss="alert">
                                                     <i class="fa fa-times"></i>
                                                 </button>
@@ -468,36 +472,14 @@
                                 @endif
                             </div>
                             
-                            <form method="POST" action="{{ route('signup.store') }}" id="signupForm">
+                            <form method="POST" action="{{ route('login.authenticate') }}" id="loginForm">
                                 @csrf
                                 <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="form-floating">
-                                            <input type="text" class="form-control rounded-pill border-2 @error('first_name') is-invalid @enderror" id="firstName" name="first_name" placeholder="First Name" value="{{ old('first_name') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
-                                            <label for="firstName" class="text-muted">
-                                                <i class="fa fa-user me-2"></i>First Name
-                                            </label>
-                                            @error('first_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating">
-                                            <input type="text" class="form-control rounded-pill border-2 @error('last_name') is-invalid @enderror" id="lastName" name="last_name" placeholder="Last Name" value="{{ old('last_name') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
-                                            <label for="lastName" class="text-muted">
-                                                <i class="fa fa-user me-2"></i>Last Name
-                                            </label>
-                                            @error('last_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
                                     <div class="col-12">
                                         <div class="form-floating">
-                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Email Address" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
+                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Adresse email" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
                                             <label for="email" class="text-muted">
-                                                <i class="fa fa-envelope me-2"></i>Email Address
+                                                <i class="fa fa-envelope me-2"></i>Adresse email
                                             </label>
                                             @error('email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -506,56 +488,9 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="form-floating">
-                                            <input type="tel" class="form-control rounded-pill border-2 @error('phone') is-invalid @enderror" id="phone" name="phone" placeholder="Phone Number" value="{{ old('phone') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
-                                            <label for="phone" class="text-muted">
-                                                <i class="fa fa-phone me-2"></i>Phone Number
-                                            </label>
-                                            @error('phone')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-floating">
-                                            <select class="form-select rounded-pill border-2 @error('city') is-invalid @enderror" id="city" name="city" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
-                                                <option value="">Select your city</option>
-                                                <option value="Tunis" {{ old('city') == 'Tunis' ? 'selected' : '' }}>Tunis</option>
-                                                <option value="Sfax" {{ old('city') == 'Sfax' ? 'selected' : '' }}>Sfax</option>
-                                                <option value="Sousse" {{ old('city') == 'Sousse' ? 'selected' : '' }}>Sousse</option>
-                                                <option value="Kairouan" {{ old('city') == 'Kairouan' ? 'selected' : '' }}>Kairouan</option>
-                                                <option value="Bizerte" {{ old('city') == 'Bizerte' ? 'selected' : '' }}>Bizerte</option>
-                                                <option value="Gabès" {{ old('city') == 'Gabès' ? 'selected' : '' }}>Gabès</option>
-                                                <option value="Ariana" {{ old('city') == 'Ariana' ? 'selected' : '' }}>Ariana</option>
-                                                <option value="Gafsa" {{ old('city') == 'Gafsa' ? 'selected' : '' }}>Gafsa</option>
-                                                <option value="Monastir" {{ old('city') == 'Monastir' ? 'selected' : '' }}>Monastir</option>
-                                                <option value="Ben Arous" {{ old('city') == 'Ben Arous' ? 'selected' : '' }}>Ben Arous</option>
-                                                <option value="Kasserine" {{ old('city') == 'Kasserine' ? 'selected' : '' }}>Kasserine</option>
-                                                <option value="Medenine" {{ old('city') == 'Medenine' ? 'selected' : '' }}>Medenine</option>
-                                                <option value="Nabeul" {{ old('city') == 'Nabeul' ? 'selected' : '' }}>Nabeul</option>
-                                                <option value="Tataouine" {{ old('city') == 'Tataouine' ? 'selected' : '' }}>Tataouine</option>
-                                                <option value="Béja" {{ old('city') == 'Béja' ? 'selected' : '' }}>Béja</option>
-                                                <option value="Jendouba" {{ old('city') == 'Jendouba' ? 'selected' : '' }}>Jendouba</option>
-                                                <option value="Kébili" {{ old('city') == 'Kébili' ? 'selected' : '' }}>Kébili</option>
-                                                <option value="Le Kef" {{ old('city') == 'Le Kef' ? 'selected' : '' }}>Le Kef</option>
-                                                <option value="Mahdia" {{ old('city') == 'Mahdia' ? 'selected' : '' }}>Mahdia</option>
-                                                <option value="Manouba" {{ old('city') == 'Manouba' ? 'selected' : '' }}>Manouba</option>
-                                                <option value="Médenine" {{ old('city') == 'Médenine' ? 'selected' : '' }}>Médenine</option>
-                                                <option value="Siliana" {{ old('city') == 'Siliana' ? 'selected' : '' }}>Siliana</option>
-                                                <option value="Zaghouan" {{ old('city') == 'Zaghouan' ? 'selected' : '' }}>Zaghouan</option>
-                                            </select>
-                                            <label for="city" class="text-muted">
-                                                <i class="fa fa-map-marker-alt me-2"></i>City
-                                            </label>
-                                            @error('city')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-floating">
-                                            <input type="password" class="form-control rounded-pill border-2 @error('password') is-invalid @enderror" id="password" name="password" placeholder="Password" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
+                                            <input type="password" class="form-control rounded-pill border-2 @error('password') is-invalid @enderror" id="password" name="password" placeholder="Mot de passe" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
                                             <label for="password" class="text-muted">
-                                                <i class="fa fa-lock me-2"></i>Password
+                                                <i class="fa fa-lock me-2"></i>Mot de passe
                                             </label>
                                             @error('password')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -563,42 +498,25 @@
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <div class="form-floating">
-                                            <input type="password" class="form-control rounded-pill border-2 @error('password_confirmation') is-invalid @enderror" id="confirmPassword" name="password_confirmation" placeholder="Confirm Password" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
-                                            <label for="confirmPassword" class="text-muted">
-                                                <i class="fa fa-lock me-2"></i>Confirm Password
-                                            </label>
-                                            @error('password_confirmation')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
                                         <div class="form-check p-3 bg-light rounded-3">
-                                            <input class="form-check-input @error('terms_accepted') is-invalid @enderror" type="checkbox" id="terms" name="terms_accepted" value="1" required style="transform: scale(1.2);">
-                                            <label class="form-check-label ms-2" for="terms">
-                                                I agree to the <a href="#" class="text-primary fw-bold">Terms & Conditions</a> and <a href="#" class="text-primary fw-bold">Privacy Policy</a>
+                                            <input class="form-check-input" type="checkbox" id="remember" name="remember" style="transform: scale(1.2);">
+                                            <label class="form-check-label ms-2" for="remember">
+                                                Se souvenir de moi
                                             </label>
-                                            @error('terms_accepted')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
                                         </div>
                                     </div>
-                                    
-                                    <!-- reCAPTCHA v2 invisible -->
                                     <div class="col-12">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <div class="text-muted small">
                                                 <i class="fa fa-shield-alt me-1"></i>
-                                                Protected by reCAPTCHA
+                                                Protégé par reCAPTCHA
                                             </div>
                                             <div class="text-muted small">
-                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Privacy</a> • 
-                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Terms</a>
+                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Confidentialité</a> • 
+                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Conditions</a>
                                             </div>
                                         </div>
                                         <div class="g-recaptcha" data-sitekey="{{ config('app.recaptcha_site_key') }}" data-callback="onRecaptchaSuccess" data-size="invisible"></div>
-                                        <!-- Hidden input for reCAPTCHA token -->
                                         <input type="hidden" name="g-recaptcha-response" id="recaptcha-token" value="">
                                         @error('recaptcha')
                                             <div class="text-danger small mt-1">
@@ -606,26 +524,26 @@
                                             </div>
                                         @enderror
                                     </div>
-                                 
                                     <div class="col-12">
                                         <button class="btn btn-primary rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" type="submit" id="submitBtn" disabled style="background: linear-gradient(135deg, #6c757d, #495057); border: none; font-weight: 600; letter-spacing: 0.5px;">
                                             <span class="position-relative z-1">
-                                                <i class="fa fa-recycle me-2"></i>Join Waste2Product
+                                                <i class="fa fa-sign-in-alt me-2"></i>Se connecter
                                             </span>
                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
                                         </button>
                                     </div>
+                                    <div class="col-12 text-end">
+    <a href="{{ route('password.request') }}" class="text-decoration-none text-primary">
+        Mot de passe oublié ?
+    </a>
+</div>
+
                                     <div class="col-12 text-center">
                                         <div class="position-relative">
                                             <hr class="my-4">
-                                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</span>
+                                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">ou</span>
                                         </div>
-<p class="mb-0">
-    Already have an account? 
-    <a href="{{ route('login') }}" class="text-primary fw-bold text-decoration-none">
-        Sign In <i class="fa fa-arrow-right ms-1"></i>
-    </a>
-</p>
+                                        <p class="mb-0">Pas encore de compte ? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">S'inscrire <i class="fa fa-arrow-right ms-1"></i></a></p>
                                     </div>
                                 </div>
                             </form>
@@ -636,98 +554,55 @@
         </div>
     </div>
 </div>
-<!-- Signup End -->
+<!-- Login End -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.querySelector('#loginForm');
     const submitBtn = document.getElementById('submitBtn');
-    const inputs = form.querySelectorAll('input, select');
-    
+    const inputs = form.querySelectorAll('input');
+
     // État de validation pour chaque champ
     const fieldValidationState = {};
-    
+
     // Fonction pour valider un champ
     function validateField(field, showError = false) {
         const value = field.value.trim();
         const fieldName = field.name;
         let isValid = true;
         let errorMessage = '';
-        
+
         // Supprimer les anciens messages d'erreur
         const existingError = field.parentNode.querySelector('.field-error');
         if (existingError) {
             existingError.remove();
         }
-        
+
         // Validation selon le type de champ
         switch(fieldName) {
-            case 'first_name':
-            case 'last_name':
-                if (value.length === 0) {
-                    isValid = false;
-                    errorMessage = 'This field is required';
-                } else if (value.length < 2) {
-                    isValid = false;
-                    errorMessage = 'Must be at least 2 characters long';
-                }
-                break;
             case 'email':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Email is required';
+                    errorMessage = 'L\'adresse email est requise';
                 } else {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(value)) {
                         isValid = false;
-                        errorMessage = 'Please enter a valid email address';
+                        errorMessage = 'Veuillez entrer une adresse email valide';
                     }
-                }
-                break;
-            case 'phone':
-                if (value.length === 0) {
-                    isValid = false;
-                    errorMessage = 'Phone number is required';
-                } else {
-                    const phoneRegex = /^[0-9]{8}$/;
-                    if (!phoneRegex.test(value)) {
-                        isValid = false;
-                        errorMessage = 'Please enter exactly 8 digits';
-                    }
-                }
-                break;
-            case 'city':
-                if (!value) {
-                    isValid = false;
-                    errorMessage = 'Please select your city';
                 }
                 break;
             case 'password':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Password is required';
-                } else if (value.length < 8) {
-                    isValid = false;
-                    errorMessage = 'Password must be at least 8 characters long';
-                }
-                break;
-            case 'password_confirmation':
-                if (value.length === 0) {
-                    isValid = false;
-                    errorMessage = 'Password confirmation is required';
-                } else {
-                    const password = form.querySelector('input[name="password"]').value;
-                    if (value !== password) {
-                        isValid = false;
-                        errorMessage = 'Password confirmation does not match';
-                    }
+                    errorMessage = 'Le mot de passe est requis';
                 }
                 break;
         }
-        
+
         // Stocker l'état de validation
         fieldValidationState[fieldName] = isValid;
-        
+
         // Afficher l'erreur seulement si showError est true et qu'il y a une erreur
         if (!isValid && showError) {
             const errorDiv = document.createElement('div');
@@ -744,32 +619,26 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             field.classList.remove('is-invalid', 'is-valid');
         }
-        
+
         return isValid;
     }
-    
+
     // Fonction pour vérifier si tous les champs sont valides
     function checkFormValidity() {
         let allValid = true;
-        
+
         // Vérifier tous les champs requis
-        const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'city', 'password', 'password_confirmation'];
+        const requiredFields = ['email', 'password'];
         requiredFields.forEach(fieldName => {
             const field = form.querySelector(`[name="${fieldName}"]`);
             if (field) {
-                const isValid = validateField(field, false); // Ne pas afficher d'erreur
+                const isValid = validateField(field, false);
                 if (!isValid || field.value.trim() === '') {
                     allValid = false;
                 }
             }
         });
-        
-        // Vérifier les termes et conditions
-        const termsCheckbox = form.querySelector('input[name="terms_accepted"]');
-        if (termsCheckbox && !termsCheckbox.checked) {
-            allValid = false;
-        }
-        
+
         // Activer/désactiver le bouton
         if (allValid) {
             submitBtn.disabled = false;
@@ -781,52 +650,23 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.style.cursor = 'not-allowed';
         }
     }
-    
+
     // Ajouter les événements de validation
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
-            validateField(this, true); // Afficher les erreurs au blur
+            validateField(this, true);
             checkFormValidity();
         });
-        
+
         input.addEventListener('input', function() {
-            // Limiter le téléphone à 8 caractères exactement
-            if (this.name === 'phone') {
-                // Supprimer tous les caractères non numériques
-                this.value = this.value.replace(/[^0-9]/g, '');
-                // Limiter à 8 caractères maximum
-                if (this.value.length > 8) {
-                    this.value = this.value.substring(0, 8);
-                }
-            }
-            
-            // Validation immédiate pour la vérification du bouton
-            checkFormValidity();
-            
-            // Validation immédiate pour l'affichage des erreurs
             validateField(this, true);
-            
-            // Re-valider la confirmation si on tape dans le mot de passe
-            if (this.name === 'password') {
-                const confirmField = form.querySelector('input[name="password_confirmation"]');
-                if (confirmField.value) {
-                    validateField(confirmField, true);
-                }
-            }
+            checkFormValidity();
         });
     });
-    
-    // Événement pour la checkbox des termes
-    const termsCheckbox = form.querySelector('input[name="terms_accepted"]');
-    if (termsCheckbox) {
-        termsCheckbox.addEventListener('change', function() {
-            checkFormValidity();
-        });
-    }
-    
+
     // Validation initiale sans afficher d'erreurs
     checkFormValidity();
-    
+
     // Vérifier que reCAPTCHA est chargé
     function checkRecaptchaLoaded() {
         if (typeof grecaptcha !== 'undefined') {
@@ -836,14 +676,14 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(checkRecaptchaLoaded, 100);
         }
     }
-    
+
     // Démarrer la vérification
     checkRecaptchaLoaded();
-    
+
     // Gestion du submit du formulaire
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Vérifier la validité du formulaire
         if (form.checkValidity()) {
             // Déclencher reCAPTCHA v2 invisible
@@ -859,49 +699,41 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         }
     });
-    
+
     // reCAPTCHA v2 invisible - Callback function
     window.onRecaptchaSuccess = function(token) {
         console.log('reCAPTCHA v2 success:', token);
-        
+
         // Ajouter le token reCAPTCHA au formulaire
         const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
         if (recaptchaInput) {
             recaptchaInput.value = token;
         } else {
-            // Créer un input caché pour le token reCAPTCHA
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'g-recaptcha-response';
             hiddenInput.value = token;
             form.appendChild(hiddenInput);
         }
-        
+
         // Désactiver le bouton pour éviter les double soumissions
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
-        }
-        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Connexion en cours...';
+
         // Soumettre le formulaire après validation reCAPTCHA
         form.submit();
     };
-    
-    
+
     // reCAPTCHA v2 invisible - Callback en cas d'erreur
     window.onRecaptchaError = function(error) {
         console.error('reCAPTCHA v2 error:', error);
         alert('reCAPTCHA verification failed. Please try again.');
-        
+
         // Réactiver le bouton
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
-        }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Se connecter';
     };
-    
+
     // reCAPTCHA v2 invisible - Callback d'expiration
     window.onRecaptchaExpired = function() {
         console.log('reCAPTCHA v2 expired');
@@ -909,11 +741,10 @@ document.addEventListener('DOMContentLoaded', function() {
             grecaptcha.reset();
         }
     };
-    
+
     // Gestion du popup d'erreur
     const errorPopup = document.querySelector('.error-popup');
     if (errorPopup) {
-        // Fermeture automatique après 8 secondes
         setTimeout(() => {
             if (errorPopup) {
                 errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
@@ -922,8 +753,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         }, 8000);
-        
-        // Fermeture manuelle
+
         const closeBtn = errorPopup.querySelector('.error-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -934,11 +764,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     // Gestion du popup de succès
     const successPopup = document.querySelector('.success-popup');
     if (successPopup) {
-        // Fermeture automatique après 5 secondes (plus rapide que l'erreur)
         setTimeout(() => {
             if (successPopup) {
                 successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
@@ -947,8 +776,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         }, 5000);
-        
-        // Fermeture manuelle
+
         const closeBtn = successPopup.querySelector('.success-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -961,5 +789,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
 @endsection
