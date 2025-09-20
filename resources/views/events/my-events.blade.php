@@ -2,29 +2,11 @@
 
 @section('content')
 <!-- My Events Hero Section -->
-<div class="container-xxl py-5 bg-primary hero-header mb-5">
-    <div class="container my-5 py-5 px-lg-5">
-        <div class="row g-5 py-5">
-            <div class="col-lg-8">
-                <h1 class="text-white mb-4 animated slideInDown">My Events</h1>
-                <p class="text-white pb-3 animated slideInDown">
-                    Track all your event participations and manage your upcoming events.
-                </p>
-                <div class="d-flex flex-wrap gap-3 animated slideInDown">
-                    <div class="d-flex align-items-center text-white">
-                        <i class="fa fa-calendar-check me-2"></i>
-                        <span>{{ $participatedEvents->count() }} events participated</span>
-                    </div>
-                    <div class="d-flex align-items-center text-white">
-                        <i class="fa fa-user me-2"></i>
-                        <span>{{ auth()->user()->full_name }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 text-center text-lg-end">
-                <div class="bg-white rounded-4 shadow-lg p-4 animated zoomIn">
-                    <i class="fa fa-calendar-alt text-primary" style="font-size: 4rem;"></i>
-                </div>
+<div class="container-xxl mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 text-start">
+                <h1 class="text-primary mb-4 animated slideInDown" style="margin-top: 80px;">My Events</h1>
             </div>
         </div>
     </div>
@@ -34,15 +16,68 @@
 <div class="container-xxl py-5">
     <div class="container">
         @if($participatedEvents->count() > 0)
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa fa-calendar-check" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h4 class="text-primary mb-1">{{ $participatedEvents->count() }}</h4>
+                            <p class="text-muted mb-0">Total Events</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa fa-check" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h4 class="text-success mb-1">{{ $participatedEvents->where('pivot.scanned_at', '!=', null)->count() }}</h4>
+                            <p class="text-muted mb-0">Checked In</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa fa-clock" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h4 class="text-warning mb-1">{{ $participatedEvents->where('date', '>=', now())->count() }}</h4>
+                            <p class="text-muted mb-0">Upcoming</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa fa-trophy" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h4 class="text-info mb-1">{{ $participatedEvents->where('pivot.badge_earned', '!=', null)->count() }}</h4>
+                            <p class="text-muted mb-0">Badges Earned</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Grid -->
             <div class="row g-4">
-                @foreach($participatedEvents as $participation)
+                @foreach($participatedEvents as $event)
                     @php
-                        $event = $participation->event;
+                        // Get the participation data for this user
+                        $participation = $event->participants->first();
                         $isUpcoming = $event->date >= now();
                         $isPast = $event->date < now();
-                        $isScanned = $participation->pivot->scanned_at;
+                        $isScanned = $participation ? $participation->pivot->scanned_at : null;
                     @endphp
-                    <div class="col-lg-6 col-xl-4">
+                    <div class="col-lg-4 col-md-6">
                         <div class="card h-100 border-0 shadow-lg event-card">
                             <div class="position-relative">
                                 @if($event->image)
@@ -101,7 +136,7 @@
                                     <div class="col-12">
                                         <div class="d-flex align-items-center text-muted">
                                             <i class="fa fa-map-marker-alt me-2"></i>
-                                            <small>{{ $event->location }}</small>
+                                            <small>{{ $event->location }}, {{ $event->city }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -112,7 +147,7 @@
                                         <div class="col-6">
                                             <div class="d-flex flex-column">
                                                 <small class="text-muted">Registered</small>
-                                                <strong class="text-primary">{{ $participation->pivot->created_at->format('M j') }}</strong>
+                                                <strong class="text-primary">{{ $participation ? $participation->pivot->created_at->format('M j') : 'N/A' }}</strong>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -132,7 +167,7 @@
                                         <i class="fa fa-eye me-2"></i>View Details
                                     </a>
                                     
-                                    @if($isUpcoming && !$isScanned)
+                                    @if($isUpcoming && !$isScanned && $participation)
                                         <a href="{{ route('events.qr', [$event, $participation->pivot->participant_id]) }}" class="btn btn-primary">
                                             <i class="fa fa-qrcode me-2"></i>View QR Code
                                         </a>
@@ -167,68 +202,7 @@
     </div>
 </div>
 
-<!-- Statistics Section -->
-@if($participatedEvents->count() > 0)
-    <div class="container-xxl py-5 bg-light">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-calendar-check" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <h4 class="text-primary mb-1">{{ $participatedEvents->count() }}</h4>
-                            <p class="text-muted mb-0">Total Events</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-check" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <h4 class="text-success mb-1">{{ $participatedEvents->where('pivot.scanned_at', '!=', null)->count() }}</h4>
-                            <p class="text-muted mb-0">Checked In</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-clock" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <h4 class="text-warning mb-1">{{ $participatedEvents->where('event.date', '>=', now())->count() }}</h4>
-                            <p class="text-muted mb-0">Upcoming</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-trophy" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <h4 class="text-info mb-1">{{ $participatedEvents->where('pivot.badge_earned', '!=', null)->count() }}</h4>
-                            <p class="text-muted mb-0">Badges Earned</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
-
 <style>
-.hero-header {
-    background: linear-gradient(135deg, #28a745, #20c997);
-}
-
 .event-card {
     transition: all 0.3s ease;
     border-radius: 15px;

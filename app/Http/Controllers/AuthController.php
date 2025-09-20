@@ -215,7 +215,15 @@ public function resetPassword(Request $request)
 public function profile()
 {
     $user = Auth::user(); // get the logged-in user
-    return view('auth.profile', compact('user'));
+    
+    // Get user's participated events
+    $participatedEvents = $user->participatedEvents()
+        ->whereNotNull('events.id') // Ensure event exists
+        ->orderBy('events.created_at', 'desc')
+        ->limit(6) // Limit to 6 recent events
+        ->get();
+    
+    return view('auth.profile', compact('user', 'participatedEvents'));
 }
 
 

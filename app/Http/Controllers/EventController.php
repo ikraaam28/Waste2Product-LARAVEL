@@ -574,9 +574,16 @@ class EventController extends Controller
     public function myEvents()
     {
         $user = auth()->user();
-        $participatedEvents = $user->participatedEvents()
-            ->orderBy('created_at', 'desc')
-            ->get();
+        
+        // Get events that the user has participated in
+        $participatedEvents = Event::whereHas('participants', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+        ->with(['participants' => function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
 
         return view('events.my-events', compact('participatedEvents'));
     }

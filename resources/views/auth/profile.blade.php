@@ -173,6 +173,81 @@
                         </div>
                     </div>
 
+                    <!-- My Events Card -->
+                    @if($participatedEvents->count() > 0)
+                    <div class="p-4 border-top">
+                        <div class="card border-0 bg-white shadow-sm rounded-3">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <h5 class="card-title text-primary mb-0">
+                                        <i class="fas fa-calendar-alt me-2"></i>My Events
+                                    </h5>
+                                    <a href="{{ route('my-events') }}" class="btn btn-outline-primary btn-sm">
+                                        View All <i class="fa fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                                <p class="text-muted mb-4">Your latest event participations and upcoming events.</p>
+                                
+                                <div class="row g-3">
+                                    @foreach($participatedEvents->take(3) as $participation)
+                                        @php
+                                            $event = $participation->event;
+                                            if (!$event) continue;
+                                            
+                                            $isUpcoming = $event->date >= now();
+                                            $isScanned = $participation->pivot->scanned_at;
+                                        @endphp
+                                        <div class="col-md-4">
+                                            <div class="card border-0 shadow-sm h-100">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                                        <h6 class="card-title text-primary mb-1">{{ Str::limit($event->title, 20) }}</h6>
+                                                        @if($isScanned)
+                                                            <span class="badge bg-success">Checked In</span>
+                                                        @elseif($isUpcoming)
+                                                            <span class="badge bg-primary">Upcoming</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">Past</span>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="text-muted small mb-2">
+                                                        <div class="d-flex align-items-center mb-1">
+                                                            <i class="fa fa-calendar-alt me-2"></i>
+                                                            {{ $event->date->format('M j, Y') }}
+                                                        </div>
+                                                        <div class="d-flex align-items-center mb-1">
+                                                            <i class="fa fa-clock me-2"></i>
+                                                            {{ $event->time->format('g:i A') }}
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa fa-map-marker-alt me-2"></i>
+                                                            {{ Str::limit($event->location, 15) }}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex gap-2">
+                                                        <a href="{{ route('events.show', $event) }}" class="btn btn-outline-primary btn-sm flex-fill">
+                                                            <i class="fa fa-eye me-1"></i>View
+                                                        </a>
+                                                        @if($isUpcoming && !$isScanned)
+                                                            <a href="{{ route('events.qr', [$event, $participation->pivot->participant_id]) }}" class="btn btn-primary btn-sm flex-fill">
+                                                                <i class="fa fa-qrcode me-1"></i>QR
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                        </div>
+                    </div>
+
                     <!-- Stats Footer -->
                     <div class="bg-gradient-secondary text-white py-3 px-4">
                         <div class="row text-center">
@@ -195,6 +270,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     :root {
@@ -258,6 +334,45 @@
     .badge {
         font-size: 0.75rem;
         font-weight: 500;
+    }
+
+    .event-card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .event-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+    }
+
+    .event-card .card-img-top {
+        transition: transform 0.3s ease;
+    }
+
+    .event-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .btn {
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #218838, #1ea085);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
     }
 
     @media (max-width: 768px) {

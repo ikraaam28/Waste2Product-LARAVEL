@@ -41,19 +41,16 @@
                                          class="rounded-circle me-2" 
                                          style="width: 30px; height: 30px; object-fit: cover;">
                                 @else
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->full_name) }}&background=2E7D32&color=fff&size=30" 
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->first_name . ' ' . auth()->user()->last_name) }}&background=2E7D32&color=fff&size=30" 
                                          alt="Avatar" 
                                          class="rounded-circle me-2" 
                                          style="width: 30px; height: 30px; object-fit: cover;">
                                 @endif
-                                {{ auth()->user()->first_name }}
+                                {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
                             </a>
                             <div class="dropdown-menu bg-light rounded-0 m-0">
                                 <a href="{{ route('profile') }}" class="dropdown-item">
                                     <i class="fa fa-user me-2"></i>Profile
-                                </a>
-                                <a href="{{ route('my-events') }}" class="dropdown-item">
-                                    <i class="fa fa-calendar me-2"></i>My Events
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <form action="{{ route('logout') }}" method="POST" style="display: inline;">
