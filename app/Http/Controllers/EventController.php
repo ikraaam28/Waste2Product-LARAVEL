@@ -333,6 +333,7 @@ class EventController extends Controller
         $events = Event::with(['participants', 'products'])
             ->get()
             ->map(function ($event) {
+                $color = $this->getCategoryColor($event->category);
                 return [
                     'id' => $event->id,
                     'title' => $event->title,
@@ -342,8 +343,16 @@ class EventController extends Controller
                     'date' => $event->date->format('Y-m-d'),
                     'start' => $event->date->format('Y-m-d'),
                     'end' => $event->date->format('Y-m-d'),
-                    'color' => $this->getCategoryColor($event->category),
-                    'url' => route('admin.events.show', $event)
+                    'color' => $color,
+                    'backgroundColor' => $color,
+                    'borderColor' => $color,
+                    'textColor' => '#ffffff',
+                    'url' => route('admin.events.show', $event),
+                    'extendedProps' => [
+                        'category' => $event->category,
+                        'status' => $event->status ? 'Actif' : 'Inactif',
+                        'location' => $event->location
+                    ]
                 ];
             });
 
@@ -370,6 +379,14 @@ class EventController extends Controller
     private function getCategoryColor($category)
     {
         $colors = [
+            // Catégories en français (comme dans la base de données)
+            'Recyclage' => '#28a745',      // Vert
+            'Éducation' => '#007bff',      // Bleu
+            'Sensibilisation' => '#ffc107', // Jaune
+            'Collecte' => '#17a2b8',       // Cyan
+            'Atelier' => '#6f42c1',        // Violet
+            
+            // Catégories en anglais (pour compatibilité)
             'Recycling' => '#28a745',
             'Education' => '#007bff',
             'Awareness' => '#ffc107',

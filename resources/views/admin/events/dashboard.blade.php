@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Dashboard Événements')
+@section('title', 'Events Dashboard')
 @section('content')
 <div class="container">
     <div class="page-inner">
@@ -95,7 +95,7 @@
         </div>
 
         <div class="row">
-            <!-- Calendrier Compact -->
+            <!-- Compact Calendar -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -107,7 +107,7 @@
                 </div>
             </div>
 
-            <!-- Actions Rapides -->
+            <!-- Quick Actions -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -142,7 +142,7 @@
         </div>
 
         <div class="row">
-            <!-- Événements à Venir -->
+            <!-- Upcoming Events -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -161,13 +161,13 @@
                                     </div>
                                     <div class="flex-1 ml-3">
                                         <h6 class="mb-0">{{ $event->title }}</h6>
-                                        <small class="text-muted">{{ $event->date->format('d/m/Y') }} à {{ $event->time }}</small>
+                                        <small class="text-muted">{{ $event->date->format('d/m/Y') }} at {{ $event->time }}</small>
                                         <br>
                                         <small class="text-muted">{{ $event->location }}</small>
                                     </div>
                                     <div class="text-right">
                                         <span class="badge badge-{{ $event->status ? 'success' : 'danger' }}">
-                                            {{ $event->status ? 'Actif' : 'Inactif' }}
+                                            {{ $event->status ? 'Active' : 'Inactive' }}
                                         </span>
                                         <br>
                                         <small class="text-muted">{{ $event->total_participants_count }} participants</small>
@@ -175,13 +175,13 @@
                                 </div>
                             @endforeach
                         @else
-                            <p class="text-muted text-center">Aucun événement à venir</p>
+                            <p class="text-muted text-center">No upcoming events</p>
                         @endif
                     </div>
                 </div>
             </div>
 
-            <!-- Événements Récents -->
+            <!-- Recent Events -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -206,7 +206,7 @@
                                     </div>
                                     <div class="text-right">
                                         <span class="badge badge-{{ $event->status ? 'success' : 'danger' }}">
-                                            {{ $event->status ? 'Actif' : 'Inactif' }}
+                                            {{ $event->status ? 'Active' : 'Inactive' }}
                                         </span>
                                         <br>
                                         <small class="text-muted">{{ $event->feedbacks->count() }} feedbacks</small>
@@ -214,7 +214,7 @@
                                 </div>
                             @endforeach
                         @else
-                            <p class="text-muted text-center">Aucun événement récent</p>
+                            <p class="text-muted text-center">No recent events</p>
                         @endif
                     </div>
                 </div>
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'fr',
+        locale: 'en',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',

@@ -1,20 +1,20 @@
 @extends('layouts.admin')
-@section('title', 'Tous les Événements')
+@section('title', 'All Events')
 @section('content')
   <div class="container">
     <div class="page-inner">
       <div class="page-header">
-            <h3 class="fw-bold mb-3">Tous les Événements</h3>
+            <h3 class="fw-bold mb-3">All Events</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
           <li class="separator"><i class="icon-arrow-right"></i></li>
           <li class="nav-item"><a href="#">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item">Tous les Événements</li>
+                <li class="nav-item">All Events</li>
         </ul>
       </div>
 
-        <!-- Filtres -->
+        <!-- Filters -->
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
@@ -22,7 +22,7 @@
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher par titre ou description...">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search by title or description...">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" onclick="applyFilters()">
                                             <i class="fa fa-search"></i>
@@ -34,7 +34,7 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <select class="form-control" id="categoryFilter">
-                                    <option value="">Toutes les catégories</option>
+                                    <option value="">All Categories</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->value }}">{{ $category->name }}</option>
                                     @endforeach
@@ -42,20 +42,20 @@
                             </div>
                             <div class="col-md-3">
                                 <select class="form-control" id="statusFilter">
-                                    <option value="">Tous les statuts</option>
-                                    <option value="1">Actifs</option>
-                                    <option value="0">Inactifs</option>
+                                    <option value="">All Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <input type="date" class="form-control" id="dateFilter" placeholder="Filtrer par date">
+                                <input type="date" class="form-control" id="dateFilter" placeholder="Filter by date">
                             </div>
                             <div class="col-md-3">
                                 <button class="btn btn-primary" onclick="applyFilters()">
-                                    <i class="fa fa-filter"></i> Filtrer
+                                    <i class="fa fa-filter"></i> Filter
                                 </button>
                                 <button class="btn btn-secondary" onclick="clearFilters()">
-                                    <i class="fa fa-times"></i> Effacer
+                                    <i class="fa fa-times"></i> Clear
                                 </button>
                             </div>
                         </div>
@@ -64,14 +64,14 @@
             </div>
         </div>
 
-        <!-- Vue Calendrier -->
+        <!-- Calendar View -->
         <div class="row mb-4">
         <div class="col-md-12">
           <div class="card">
                     <div class="card-header">
                         <div class="card-title">Calendar View</div>
                         <div class="card-tools">
-                            <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#qrScannerModal">
+                            <button class="btn btn-sm btn-success" onclick="openQRScanner()">
                                 <i class="fa fa-qrcode"></i> Scan QR Code
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="toggleView('calendar')">
@@ -103,7 +103,7 @@
                                                 <p class="card-text text-muted">{{ Str::limit($event->description, 100) }}</p>
                                                 <div class="mb-2">
                                                     <span class="badge badge-{{ $event->status ? 'success' : 'danger' }}">
-                                                        {{ $event->status ? 'Actif' : 'Inactif' }}
+                                                        {{ $event->status ? 'Active' : 'Inactive' }}
                                                     </span>
                                                     <span class="badge badge-info">{{ $event->category }}</span>
                                                 </div>
@@ -125,10 +125,10 @@
                                                 </div>
                                                 <div class="d-flex justify-content-between">
                                                     <a href="{{ route('admin.events.show', $event) }}" class="btn btn-sm btn-primary">
-                                                        <i class="fa fa-eye"></i> Voir
+                                                        <i class="fa fa-eye"></i> View
                                                     </a>
                                                     <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-sm btn-warning">
-                                                        <i class="fa fa-edit"></i> Modifier
+                                                        <i class="fa fa-edit"></i> Edit
                                                     </a>
                                                 </div>
                                             </div>
@@ -150,7 +150,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">QR Code Scanner</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" onclick="closeQRScanner()">
                     <span>&times;</span>
                 </button>
             </div>
@@ -177,7 +177,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" onclick="closeQRScanner()">Close</button>
                 <button type="button" class="btn btn-success" onclick="startModalScanner()">
                     <i class="fa fa-play"></i> Start Scanner
                 </button>
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'fr',
+        locale: 'en',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
@@ -223,7 +223,15 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = info.event.url;
         },
         height: 'auto',
-        aspectRatio: 1.8
+        aspectRatio: 1.8,
+        eventDisplay: 'block',
+        eventTextColor: '#ffffff',
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit'
+        },
+        dayMaxEvents: 3,
+        moreLinkClick: 'popover'
     });
     calendar.render();
     
@@ -339,6 +347,18 @@ function loadFilteredEvents(successCallback, failureCallback) {
 }
 
 // Removed adjustCalendarView function to prevent infinite loop
+
+// QR Scanner functions
+function openQRScanner() {
+    // Show the modal using Bootstrap
+    $('#qrScannerModal').modal('show');
+}
+
+function closeQRScanner() {
+    // Hide the modal and stop scanner
+    stopModalScanner();
+    $('#qrScannerModal').modal('hide');
+}
 
 function applyFilters() {
     const search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
@@ -459,6 +479,14 @@ function stopModalScanner() {
         modalHtml5QrcodeScanner = null;
         document.getElementById('modal-qr-reader').innerHTML = '';
     }
+    
+    // Reset the scan result area
+    document.getElementById('modal-scan-result').innerHTML = `
+        <div class="text-center text-muted">
+            <i class="fa fa-qrcode fa-2x mb-2"></i>
+            <p>Scan a QR Code to see participant information</p>
+        </div>
+    `;
 }
 
 function scanManualModal() {
@@ -543,6 +571,12 @@ function displayModalError(message) {
 
 // Clean up scanner when modal is closed
 $('#qrScannerModal').on('hidden.bs.modal', function () {
+    stopModalScanner();
+});
+
+// Initialize modal when shown
+$('#qrScannerModal').on('shown.bs.modal', function () {
+    // Clear any previous scanner
     stopModalScanner();
 });
 </script>

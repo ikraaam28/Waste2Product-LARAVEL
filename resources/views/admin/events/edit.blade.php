@@ -1,16 +1,16 @@
 @extends('layouts.admin')
-@section('title', 'Modifier l\'Événement')
+@section('title', 'Edit Event')
 @section('content')
 <div class="container">
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Modifier l'Événement</h3>
+            <h3 class="fw-bold mb-3">Edit Event</h3>
             <ul class="breadcrumbs mb-3">
                 <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item"><a href="#">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item">Modifier</li>
+                <li class="nav-item">Edit</li>
             </ul>
         </div>
 
@@ -18,7 +18,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Informations de l'Événement</div>
+                        <div class="card-title">Event Information</div>
                     </div>
                     <div class="card-body">
                         <form action="{{ route('admin.events.update', $event) }}" method="POST" enctype="multipart/form-data">
@@ -28,7 +28,7 @@
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="form-group">
-                                        <label for="title">Titre de l'événement *</label>
+                                        <label for="title">Event Title *</label>
                                         <input type="text" class="form-control @error('title') is-invalid @enderror" 
                                                id="title" name="title" value="{{ old('title', $event->title) }}" required>
                                         @error('title')
@@ -38,10 +38,10 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="category">Catégorie *</label>
+                                        <label for="category">Category *</label>
                                         <select class="form-control @error('category') is-invalid @enderror" 
                                                 id="category" name="category" required>
-                                            <option value="">Sélectionner une catégorie</option>
+                                            <option value="">Select a category</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category->value }}" {{ old('category', $event->category) == $category->value ? 'selected' : '' }}>{{ $category->name }}</option>
                                             @endforeach
@@ -120,11 +120,11 @@
                                 @error('image')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="form-text text-muted">Formats acceptés: JPEG, PNG, JPG, GIF (max 2MB)</small>
+                                <small class="form-text text-muted">Accepted formats: JPEG, PNG, JPG, GIF (max 2MB)</small>
                             </div>
 
                             <div class="form-group">
-                                <label>Produits liés par catégorie</label>
+                                <label>Related Products by Category</label>
                                 <div class="row">
                                     @php
                                         $productCategories = \App\Models\ProductCategory::all();
@@ -132,17 +132,30 @@
                                     @foreach($productCategories as $productCategory)
                                         <div class="col-md-4">
                                             <div class="card">
-                                                <div class="card-header">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
                                                     <h6 class="mb-0" style="color: {{ $productCategory->color }}">
                                                         <i class="{{ $productCategory->icon }}"></i> {{ $productCategory->name }}
                                                     </h6>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                                onclick="selectAllProducts('category_{{ $productCategory->id }}')" 
+                                                                title="Select All">
+                                                            <i class="fa fa-check-square"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                                onclick="deselectAllProducts('category_{{ $productCategory->id }}')" 
+                                                                title="Deselect All">
+                                                            <i class="fa fa-square"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div class="card-body">
+                                                <div class="card-body" id="category_{{ $productCategory->id }}">
                                                     @foreach($products->where('category_id', $productCategory->id) as $product)
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" 
+                                                            <input class="form-check-input product-checkbox" type="checkbox" 
                                                                    name="products[]" value="{{ $product->id }}" 
                                                                    id="product_{{ $product->id }}"
+                                                                   data-category="category_{{ $productCategory->id }}"
                                                                    {{ in_array($product->id, old('products', $event->products->pluck('id')->toArray())) ? 'checked' : '' }}>
                                                             <label class="form-check-label" for="product_{{ $product->id }}">
                                                                 {{ $product->name }}
@@ -154,14 +167,29 @@
                                         </div>
                                     @endforeach
                                 </div>
+                                
+                                <!-- Global Selection Controls -->
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Global Selection</h6>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="selectAllProducts()">
+                                                <i class="fa fa-check-square"></i> Select All Products
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="deselectAllProducts()">
+                                                <i class="fa fa-square"></i> Deselect All Products
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group text-right">
                                 <a href="{{ route('admin.events.manage') }}" class="btn btn-secondary">
-                                    <i class="fa fa-arrow-left"></i> Annuler
+                                    <i class="fa fa-arrow-left"></i> Cancel
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-save"></i> Mettre à jour
+                                    <i class="fa fa-save"></i> Update Event
                                 </button>
                             </div>
                         </form>
@@ -171,5 +199,43 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+// Product selection functions
+function selectAllProducts(categoryId = null) {
+    if (categoryId) {
+        // Select all products in a specific category
+        const checkboxes = document.querySelectorAll(`#${categoryId} .product-checkbox`);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    } else {
+        // Select all products across all categories
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+}
+
+function deselectAllProducts(categoryId = null) {
+    if (categoryId) {
+        // Deselect all products in a specific category
+        const checkboxes = document.querySelectorAll(`#${categoryId} .product-checkbox`);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    } else {
+        // Deselect all products across all categories
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+}
+</script>
+@endpush
+
 @endsection
 

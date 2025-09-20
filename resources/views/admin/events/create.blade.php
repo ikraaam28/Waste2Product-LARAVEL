@@ -33,6 +33,7 @@
                                         @error('title')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="title-error"></div>
                                         <small class="form-text text-muted">Minimum 3 characters, maximum 255 characters</small>
                                     </div>
                                 </div>
@@ -41,7 +42,7 @@
                                         <label for="category">Category *</label>
                                         <select class="form-control @error('category') is-invalid @enderror" 
                                                 id="category" name="category" required>
-                                            <option value="">Sélectionner une catégorie</option>
+                                            <option value="">Select a category</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category->value }}" {{ old('category') == $category->value ? 'selected' : '' }}>{{ $category->name }}</option>
                                             @endforeach
@@ -49,6 +50,8 @@
                                         @error('category')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="category-error"></div>
+                                        <small class="form-text text-muted">Choose the event category</small>
                                     </div>
                                 </div>
                             </div>
@@ -60,6 +63,7 @@
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="invalid-feedback" id="description-error"></div>
                                 <small class="form-text text-muted">Maximum 1000 characters</small>
                             </div>
 
@@ -72,6 +76,7 @@
                                         @error('date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="date-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -82,6 +87,7 @@
                                         @error('time')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="time-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -93,6 +99,7 @@
                                         @error('max_participants')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="max_participants-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -103,6 +110,7 @@
                                         @error('organizer_email')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="organizer_email-error"></div>
                                     </div>
                                 </div>
                             </div>
@@ -121,6 +129,7 @@
                                         @error('city')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="city-error"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -131,6 +140,7 @@
                                         @error('location')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback" id="location-error"></div>
                                         <small class="form-text text-muted">Specific address or venue name</small>
                                     </div>
                                 </div>
@@ -147,7 +157,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Produits par Catégorie</label>
+                                <label>Products by Category</label>
                                 <div class="row">
                                     @php
                                         $productCategories = \App\Models\ProductCategory::all();
@@ -155,17 +165,30 @@
                                     @foreach($productCategories as $productCategory)
                                         <div class="col-md-4">
                                             <div class="card">
-                                                <div class="card-header">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
                                                     <h6 class="mb-0" style="color: {{ $productCategory->color }}">
                                                         <i class="{{ $productCategory->icon }}"></i> {{ $productCategory->name }}
                                                     </h6>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                                onclick="selectAllProducts('category_{{ $productCategory->id }}')" 
+                                                                title="Select All">
+                                                            <i class="fa fa-check-square"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                                onclick="deselectAllProducts('category_{{ $productCategory->id }}')" 
+                                                                title="Deselect All">
+                                                            <i class="fa fa-square"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div class="card-body">
+                                                <div class="card-body" id="category_{{ $productCategory->id }}">
                                                     @foreach($products->where('category_id', $productCategory->id) as $product)
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" 
+                                                            <input class="form-check-input product-checkbox" type="checkbox" 
                                                                    name="products[]" value="{{ $product->id }}" 
                                                                    id="product_{{ $product->id }}"
+                                                                   data-category="category_{{ $productCategory->id }}"
                                                                    {{ in_array($product->id, old('products', [])) ? 'checked' : '' }}>
                                                             <label class="form-check-label" for="product_{{ $product->id }}">
                                                                 {{ $product->name }}
@@ -176,6 +199,21 @@
                                             </div>
                                         </div>
                                     @endforeach
+                                </div>
+                                
+                                <!-- Global Selection Controls -->
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Global Selection</h6>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="selectAllProducts()">
+                                                <i class="fa fa-check-square"></i> Select All Products
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="deselectAllProducts()">
+                                                <i class="fa fa-square"></i> Deselect All Products
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -200,101 +238,162 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('eventForm');
     
+    // Real-time validation for all fields
+    const fields = [
+        'title', 'category', 'description', 'date', 'time', 
+        'organizer_email', 'max_participants', 'city', 'location'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // Validate on input/change
+            field.addEventListener('input', () => validateField(fieldId));
+            field.addEventListener('change', () => validateField(fieldId));
+            field.addEventListener('blur', () => validateField(fieldId));
+        }
+    });
+    
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Clear previous validation
         clearValidation();
         
-        // Validate form
-        if (validateForm()) {
+        // Validate all fields
+        let isValid = true;
+        fields.forEach(fieldId => {
+            if (!validateField(fieldId)) {
+                isValid = false;
+            }
+        });
+        
+        if (isValid) {
             form.submit();
         }
     });
     
-    function validateForm() {
+    function validateField(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return true;
+        
         let isValid = true;
+        let errorMessage = '';
         
-        // Title validation
-        const title = document.getElementById('title');
-        if (title.value.length < 3 || title.value.length > 255) {
-            showError(title, 'Title must be between 3 and 255 characters');
-            isValid = false;
+        // Clear previous error
+        clearFieldError(fieldId);
+        
+        switch(fieldId) {
+            case 'title':
+                if (field.value.length < 3) {
+                    errorMessage = 'Title must be at least 3 characters';
+                    isValid = false;
+                } else if (field.value.length > 255) {
+                    errorMessage = 'Title must be less than 255 characters';
+                    isValid = false;
+                }
+                break;
+                
+            case 'category':
+                if (!field.value) {
+                    errorMessage = 'Please select a category';
+                    isValid = false;
+                }
+                break;
+                
+            case 'description':
+                if (field.value.length > 1000) {
+                    errorMessage = 'Description must be less than 1000 characters';
+                    isValid = false;
+                }
+                break;
+                
+            case 'date':
+                if (!field.value) {
+                    errorMessage = 'Date is required';
+                    isValid = false;
+                } else {
+                    const selectedDate = new Date(field.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    if (selectedDate < today) {
+                        errorMessage = 'Date cannot be in the past';
+                        isValid = false;
+                    }
+                }
+                break;
+                
+            case 'time':
+                if (!field.value) {
+                    errorMessage = 'Time is required';
+                    isValid = false;
+                }
+                break;
+                
+            case 'organizer_email':
+                if (!field.value) {
+                    errorMessage = 'Organizer email is required';
+                    isValid = false;
+                } else {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(field.value)) {
+                        errorMessage = 'Please enter a valid email address';
+                        isValid = false;
+                    }
+                }
+                break;
+                
+            case 'max_participants':
+                if (field.value && (field.value < 1 || field.value > 1000)) {
+                    errorMessage = 'Max participants must be between 1 and 1000';
+                    isValid = false;
+                }
+                break;
+                
+            case 'city':
+                if (!field.value) {
+                    errorMessage = 'Please select a city';
+                    isValid = false;
+                }
+                break;
+                
+            case 'location':
+                if (!field.value.trim()) {
+                    errorMessage = 'Location is required';
+                    isValid = false;
+                } else if (field.value.length > 255) {
+                    errorMessage = 'Location must be less than 255 characters';
+                    isValid = false;
+                }
+                break;
         }
         
-        // Category validation
-        const category = document.getElementById('category');
-        if (!category.value) {
-            showError(category, 'Please select a category');
-            isValid = false;
-        }
-        
-        // Date validation
-        const date = document.getElementById('date');
-        const selectedDate = new Date(date.value);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        if (selectedDate < today) {
-            showError(date, 'Date cannot be in the past');
-            isValid = false;
-        }
-        
-        // Time validation
-        const time = document.getElementById('time');
-        if (!time.value) {
-            showError(time, 'Please select a time');
-            isValid = false;
-        }
-        
-        // Email validation
-        const email = document.getElementById('organizer_email');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email.value || !emailRegex.test(email.value)) {
-            showError(email, 'Please enter a valid email address');
-            isValid = false;
-        }
-        
-        // City validation
-        const city = document.getElementById('city');
-        if (!city.value) {
-            showError(city, 'Please select a city');
-            isValid = false;
-        }
-        
-        // Location validation
-        const location = document.getElementById('location');
-        if (!location.value || location.value.length > 255) {
-            showError(location, 'Location is required and must be less than 255 characters');
-            isValid = false;
-        }
-        
-        // Max participants validation
-        const maxParticipants = document.getElementById('max_participants');
-        if (maxParticipants.value && (maxParticipants.value < 1 || maxParticipants.value > 1000)) {
-            showError(maxParticipants, 'Max participants must be between 1 and 1000');
-            isValid = false;
-        }
-        
-        // Description validation
-        const description = document.getElementById('description');
-        if (description.value.length > 1000) {
-            showError(description, 'Description must be less than 1000 characters');
-            isValid = false;
+        if (!isValid) {
+            showFieldError(fieldId, errorMessage);
         }
         
         return isValid;
     }
     
-    function showError(field, message) {
-        field.classList.add('is-invalid');
-        let errorDiv = field.parentNode.querySelector('.invalid-feedback');
-        if (!errorDiv) {
-            errorDiv = document.createElement('div');
-            errorDiv.className = 'invalid-feedback';
-            field.parentNode.appendChild(errorDiv);
+    function showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '-error');
+        
+        if (field && errorDiv) {
+            field.classList.add('is-invalid');
+            errorDiv.textContent = message;
         }
-        errorDiv.textContent = message;
+    }
+    
+    function clearFieldError(fieldId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '-error');
+        
+        if (field && errorDiv) {
+            field.classList.remove('is-invalid');
+            errorDiv.textContent = '';
+        }
     }
     
     function clearValidation() {
@@ -309,6 +408,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Product selection functions
+function selectAllProducts(categoryId = null) {
+    if (categoryId) {
+        // Select all products in a specific category
+        const checkboxes = document.querySelectorAll(`#${categoryId} .product-checkbox`);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    } else {
+        // Select all products across all categories
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+}
+
+function deselectAllProducts(categoryId = null) {
+    if (categoryId) {
+        // Deselect all products in a specific category
+        const checkboxes = document.querySelectorAll(`#${categoryId} .product-checkbox`);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    } else {
+        // Deselect all products across all categories
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+}
 </script>
 @endpush
 @endsection

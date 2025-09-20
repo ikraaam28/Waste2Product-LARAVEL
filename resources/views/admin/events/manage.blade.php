@@ -1,27 +1,27 @@
 @extends('layouts.admin')
-@section('title', 'Gérer les Événements')
+@section('title', 'Manage Events')
 @section('content')
 <div class="container">
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Gérer les Événements</h3>
+            <h3 class="fw-bold mb-3">Manage Events</h3>
             <ul class="breadcrumbs mb-3">
                 <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item"><a href="#">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item">Gérer</li>
+                <li class="nav-item">Manage</li>
             </ul>
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Liste des Événements</div>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-title">Events List</div>
                         <div class="card-tools">
                             <a href="{{ route('admin.events.create') }}" class="btn btn-primary">
-                                <i class="fa fa-plus"></i> Nouvel Événement
+                                <i class="fa fa-plus"></i> New Event
                             </a>
                         </div>
                     </div>
@@ -31,12 +31,12 @@
                                 <thead>
                                     <tr>
                                         <th>Image</th>
-                                        <th>Nom</th>
-                                        <th>Catégorie</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
                                         <th>Date</th>
-                                        <th>Lieu</th>
+                                        <th>Location</th>
                                         <th>Participants</th>
-                                        <th>Statut</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -74,28 +74,28 @@
                                             </td>
                                             <td>
                                                 <span class="badge badge-{{ $event->status ? 'success' : 'danger' }}">
-                                                    {{ $event->status ? 'Actif' : 'Désactivé' }}
+                                                    {{ $event->status ? 'Active' : 'Inactive' }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ route('admin.events.show', $event) }}" class="btn btn-sm btn-info" title="Voir">
+                                                    <a href="{{ route('admin.events.show', $event) }}" class="btn btn-sm btn-info" title="View">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                                    <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-sm btn-warning" title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                     <form action="{{ route('admin.events.toggle-status', $event) }}" method="POST" style="display: inline;">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="btn btn-sm btn-{{ $event->status ? 'secondary' : 'success' }}" title="{{ $event->status ? 'Désactiver' : 'Activer' }}">
+                                                        <button type="submit" class="btn btn-sm btn-{{ $event->status ? 'secondary' : 'success' }}" title="{{ $event->status ? 'Deactivate' : 'Activate' }}">
                                                             <i class="fa fa-{{ $event->status ? 'pause' : 'play' }}"></i>
                                                         </button>
                                                     </form>
-                                                    <form action="{{ route('admin.events.destroy', $event) }}" method="POST" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
+                                                    <form action="{{ route('admin.events.destroy', $event) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this event?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
                                                     </form>
@@ -107,10 +107,10 @@
                                             <td colspan="8" class="text-center text-muted">
                                                 <i class="fa fa-calendar fa-3x mb-3"></i>
                                                 <br>
-                                                Aucun événement pour le moment
+                                                No events at the moment
                                                 <br>
                                                 <a href="{{ route('admin.events.create') }}" class="btn btn-primary mt-2">
-                                                    <i class="fa fa-plus"></i> Créer le premier événement
+                                                    <i class="fa fa-plus"></i> Create the first event
                                                 </a>
                                             </td>
                                         </tr>
@@ -130,7 +130,7 @@
 $(document).ready(function() {
     $('#eventsTable').DataTable({
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/English.json"
         },
         "pageLength": 25,
         "order": [[ 3, "desc" ]]
