@@ -169,9 +169,14 @@
                             </div>
                             
                             <div class="d-grid gap-2">
-                                <a href="{{ route('events.qr', [$event, $participantId]) }}" class="btn btn-outline-primary">
-                                    <i class="fa fa-qrcode me-2"></i>View QR Code
-                                </a>
+                                @php
+                                    $qrParticipantId = $participantId ?? session('participant_id');
+                                @endphp
+                                @if($qrParticipantId)
+                                    <a href="{{ route('events.qr', [$event, $qrParticipantId]) }}" class="btn btn-outline-primary">
+                                        <i class="fa fa-qrcode me-2"></i>View QR Code
+                                    </a>
+                                @endif
                                 <a href="{{ route('my-events') }}" class="btn btn-outline-secondary">
                                     <i class="fa fa-calendar me-2"></i>My Events
                                 </a>

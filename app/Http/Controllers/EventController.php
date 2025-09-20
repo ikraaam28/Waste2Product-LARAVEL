@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EventParticipationEmail;
+// QR Code generation will be handled client-side
 
 class EventController extends Controller
 {
@@ -459,6 +460,13 @@ class EventController extends Controller
                 $participantId = $participant->pivot->participant_id;
             }
         }
+        
+        // Si l'utilisateur vient de s'inscrire, récupérer le participant_id depuis la session
+        if (!$isParticipating && session('participant_id')) {
+            $participantId = session('participant_id');
+            $isParticipating = true;
+            // Ne pas nettoyer la session immédiatement, laisser la vue l'utiliser
+        }
 
         // Événements similaires
         $similarEvents = Event::active()
@@ -509,7 +517,8 @@ class EventController extends Controller
         }
 
         return redirect()->route('events.show', $event)
-            ->with('success', 'Vous êtes maintenant inscrit à cet événement ! Un email de confirmation avec votre QR code a été envoyé.');
+            ->with('success', 'Vous êtes maintenant inscrit à cet événement ! Un email de confirmation avec votre QR code a été envoyé.')
+            ->with('participant_id', $participantId);
     }
 
     /**
@@ -531,7 +540,32 @@ class EventController extends Controller
                 ->with('error', 'QR code non trouvé.');
         }
 
-        return view('events.qr-code', compact('event', 'participant', 'participantId'));
+        // Nettoyer la session après avoir affiché le QR code
+        session()->forget('participant_id');
+
+        // Préparer les données pour le QR code (informations de l'événement)
+        $user = auth()->user();
+        $fullName = trim($user->first_name . ' ' . $user->last_name);
+        
+        $qrData = [
+            'event_title' => $event->title,
+            'event_date' => $event->date->format('Y-m-d'),
+            'event_time' => $event->time->format('H:i'),
+            'event_location' => $event->location,
+            'event_city' => $event->city,
+            'event_category' => $event->category,
+            'participant_name' => $fullName,
+            'participant_email' => $user->email,
+            'participant_id' => $participantId
+        ];
+
+        // Les données QR seront générées côté client avec JavaScript
+        $qrCodeImage = null;
+
+        // Debug: vérifier les données
+        \Log::info('QR Data for event ' . $event->id . ':', $qrData);
+
+        return view('events.qr-code', compact('event', 'participant', 'participantId', 'qrData', 'qrCodeImage'));
     }
 
     /**
@@ -546,4 +580,5 @@ class EventController extends Controller
 
         return view('events.my-events', compact('participatedEvents'));
     }
+
 }
