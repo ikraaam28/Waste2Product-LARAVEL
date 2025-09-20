@@ -72,4 +72,14 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    /**
+     * Relation avec les événements participés
+     */
+    public function participatedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_participants')
+                    ->withPivot(['participant_id', 'scanned_at', 'badge_earned'])
+                    ->withTimestamps();
+    }
+
 }

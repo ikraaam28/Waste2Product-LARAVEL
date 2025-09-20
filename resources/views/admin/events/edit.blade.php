@@ -102,14 +102,35 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="location">Lieu *</label>
-                                <input type="text" class="form-control @error('location') is-invalid @enderror" 
-                                       id="location" name="location" value="{{ old('location', $event->location) }}" required>
-                                @error('location')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="invalid-feedback" id="location-error"></div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="city">City *</label>
+                                        <select class="form-control @error('city') is-invalid @enderror" 
+                                                id="city" name="city" required>
+                                            <option value="">Select a city</option>
+                                            @foreach(\App\Helpers\TunisiaCities::getCities() as $key => $city)
+                                                <option value="{{ $city }}" {{ old('city', $event->city ?? '') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('city')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                        <div class="invalid-feedback" id="city-error"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="location">Location *</label>
+                                        <input type="text" class="form-control @error('location') is-invalid @enderror" 
+                                               id="location" name="location" value="{{ old('location', $event->location) }}" required>
+                                        @error('location')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                        <div class="invalid-feedback" id="location-error"></div>
+                                        <small class="form-text text-muted">Specific address or venue name</small>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -215,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Real-time validation for all fields
     const fields = [
         'title', 'category', 'description', 'date', 'time', 
-        'max_participants', 'location'
+        'max_participants', 'city', 'location'
     ];
     
     fields.forEach(fieldId => {
@@ -308,6 +329,13 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'max_participants':
                 if (field.value && (field.value < 1 || field.value > 1000)) {
                     errorMessage = 'Max participants must be between 1 and 1000';
+                    isValid = false;
+                }
+                break;
+                
+            case 'city':
+                if (!field.value) {
+                    errorMessage = 'Please select a city';
                     isValid = false;
                 }
                 break;

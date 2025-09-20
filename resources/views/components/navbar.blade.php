@@ -32,26 +32,38 @@
                         <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
                     @endguest
                     @auth
-                        <!-- Profile Picture Button -->
-                        <a href="/profile" class="btn btn-sm p-0 me-3" style="border-radius: 50%; width: 35px; height: 35px; overflow: hidden; border: 2px solid #e9ecef;">
-                            @if(auth()->user()->profile_picture)
-                                <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" 
-                                     alt="Profile" 
-                                     class="img-fluid rounded-circle" 
-                                     style="width: 100%; height: 100%; object-fit: cover;">
-                            @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->full_name) }}&background=2E7D32&color=fff&size=35" 
-                                     alt="Avatar" 
-                                     class="img-fluid rounded-circle" 
-                                     style="width: 100%; height: 100%; object-fit: cover;">
-                            @endif
-                        </a>
-                        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                            @csrf
-                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
-                                <i class="fa fa-power-off me-1"></i> Logout
-                            </button>
-                        </form>
+                        <!-- User Dropdown -->
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
+                                @if(auth()->user()->profile_picture)
+                                    <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" 
+                                         alt="Profile" 
+                                         class="rounded-circle me-2" 
+                                         style="width: 30px; height: 30px; object-fit: cover;">
+                                @else
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->full_name) }}&background=2E7D32&color=fff&size=30" 
+                                         alt="Avatar" 
+                                         class="rounded-circle me-2" 
+                                         style="width: 30px; height: 30px; object-fit: cover;">
+                                @endif
+                                {{ auth()->user()->first_name }}
+                            </a>
+                            <div class="dropdown-menu bg-light rounded-0 m-0">
+                                <a href="{{ route('profile') }}" class="dropdown-item">
+                                    <i class="fa fa-user me-2"></i>Profile
+                                </a>
+                                <a href="{{ route('my-events') }}" class="dropdown-item">
+                                    <i class="fa fa-calendar me-2"></i>My Events
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fa fa-power-off me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     @endauth
                 </div>
             </div>

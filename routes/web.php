@@ -28,6 +28,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    Route::get('/my-events', [EventController::class, 'myEvents'])->name('my-events');
 });
 
 Route::post('/profile/picture', [AuthController::class, 'updateProfilePicture'])->name('profile.picture.update');
@@ -38,8 +39,11 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/testimonial', [PageController::class, 'testimonial'])->name('testimonial');
 Route::get('/feature', [PageController::class, 'feature'])->name('feature');
-// Public Events page placeholder
-Route::view('/events', 'pages.events')->name('events');
+// Public Events routes
+Route::get('/events', [EventController::class, 'publicIndex'])->name('events');
+Route::get('/events/{event}', [EventController::class, 'publicShow'])->name('events.show');
+Route::post('/events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
+Route::get('/events/{event}/qr/{participant}', [EventController::class, 'showQrCode'])->name('events.qr');
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');

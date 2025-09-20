@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('user_badges', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
             $table->foreignId('badge_id')->constrained('badges')->onDelete('cascade');
             $table->timestamp('earned_at');
             $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('set null');

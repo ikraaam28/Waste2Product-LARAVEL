@@ -9,23 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
-{
-    if (!Schema::hasColumn('users', 'profile_picture')) {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('profile_picture')->nullable()->after('city');
+    public function up(): void
+    {
+        Schema::table('events', function (Blueprint $table) {
+            $table->string('city')->nullable()->after('location');
         });
     }
-}
-
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        Schema::table('events', function (Blueprint $table) {
+            $table->dropColumn('city');
         });
     }
 };

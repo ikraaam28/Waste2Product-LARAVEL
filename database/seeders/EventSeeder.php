@@ -173,43 +173,91 @@ class EventSeeder extends Seeder
             $createdProducts[] = Product::create($productData);
         }
 
-        // Créer 3 événements de test
+        // Créer 6 événements de test avec villes tunisiennes
         $events = [
             [
-                'title' => 'Collecte de Plastique - Quartier Centre',
-                'description' => 'Grande collecte de déchets plastiques dans le quartier centre. Venez avec vos bouteilles, emballages et autres déchets plastiques.',
-                'category' => 'Collecte',
-                'date' => now()->addDays(7),
+                'title' => 'Plastic Collection - City Center',
+                'description' => 'Join us for a major plastic waste collection in the city center. Bring your bottles, packaging, and other plastic waste to help clean up our environment.',
+                'category' => 'Collection',
+                'date' => now()->addDays(3),
                 'time' => now()->setTime(14, 0),
-                'location' => 'Place de la République, Paris',
+                'location' => 'Place de la République',
+                'city' => 'Tunis',
                 'status' => true,
                 'max_participants' => 50,
                 'qr_code' => Str::random(32),
-                'created_by' => $createdUsers[0]->id
+                'created_by' => $createdUsers[0]->id,
+                'organizer_email' => 'events@teahouse.com'
             ],
             [
-                'title' => 'Atelier Recyclage Verre',
-                'description' => 'Apprenez à recycler le verre et découvrez les techniques de réutilisation. Atelier pratique avec démonstrations.',
-                'category' => 'Atelier',
-                'date' => now()->addDays(14),
+                'title' => 'Glass Recycling Workshop',
+                'description' => 'Learn how to recycle glass and discover reuse techniques. Hands-on workshop with demonstrations and practical exercises.',
+                'category' => 'Workshop',
+                'date' => now()->addDays(7),
                 'time' => now()->setTime(10, 0),
-                'location' => 'Centre Culturel, Lyon',
+                'location' => 'Centre Culturel',
+                'city' => 'Sousse',
                 'status' => true,
                 'max_participants' => 25,
                 'qr_code' => Str::random(32),
-                'created_by' => $createdUsers[0]->id
+                'created_by' => $createdUsers[0]->id,
+                'organizer_email' => 'workshops@teahouse.com'
             ],
             [
-                'title' => 'Sensibilisation Recyclage Métal',
-                'description' => 'Séance d\'information sur le recyclage des métaux. Découvrez l\'impact environnemental et les bonnes pratiques.',
-                'category' => 'Sensibilisation',
-                'date' => now()->subDays(5),
+                'title' => 'Metal Recycling Awareness Session',
+                'description' => 'Information session about metal recycling. Discover the environmental impact and best practices for sustainable living.',
+                'category' => 'Awareness',
+                'date' => now()->addDays(10),
                 'time' => now()->setTime(16, 30),
-                'location' => 'Bibliothèque Municipale, Marseille',
+                'location' => 'Bibliothèque Municipale',
+                'city' => 'Sfax',
                 'status' => true,
                 'max_participants' => 30,
                 'qr_code' => Str::random(32),
-                'created_by' => $createdUsers[1]->id
+                'created_by' => $createdUsers[1]->id,
+                'organizer_email' => 'awareness@teahouse.com'
+            ],
+            [
+                'title' => 'Eco-Friendly Living Education',
+                'description' => 'Comprehensive education session on eco-friendly living practices. Learn about sustainable choices and their impact on the environment.',
+                'category' => 'Education',
+                'date' => now()->addDays(14),
+                'time' => now()->setTime(18, 0),
+                'location' => 'Green Academy',
+                'city' => 'Monastir',
+                'status' => true,
+                'max_participants' => 40,
+                'qr_code' => Str::random(32),
+                'created_by' => $createdUsers[0]->id,
+                'organizer_email' => 'education@teahouse.com'
+            ],
+            [
+                'title' => 'Community Cleanup Drive',
+                'description' => 'Join our community cleanup drive to make our neighborhood cleaner and greener. All materials will be properly sorted and recycled.',
+                'category' => 'Collection',
+                'date' => now()->addDays(21),
+                'time' => now()->setTime(9, 0),
+                'location' => 'Parc du Lac',
+                'city' => 'Tunis',
+                'status' => true,
+                'max_participants' => 60,
+                'qr_code' => Str::random(32),
+                'created_by' => $createdUsers[1]->id,
+                'organizer_email' => 'cleanup@teahouse.com'
+            ],
+            [
+                'title' => 'Upcycling Craft Workshop',
+                'description' => 'Transform waste materials into beautiful and useful items. Learn creative upcycling techniques in this hands-on workshop.',
+                'category' => 'Workshop',
+                'date' => now()->addDays(28),
+                'time' => now()->setTime(15, 0),
+                'location' => 'Atelier d\'Art',
+                'city' => 'Nabeul',
+                'status' => true,
+                'max_participants' => 20,
+                'qr_code' => Str::random(32),
+                'created_by' => $createdUsers[0]->id,
+                'organizer_email' => 'crafts@teahouse.com'
             ]
         ];
 
@@ -227,6 +275,7 @@ class EventSeeder extends Seeder
         foreach ($createdEvents as $event) {
             foreach ($createdUsers as $user) {
                 $event->participants()->attach($user->id, [
+                    'participant_id' => Str::random(32),
                     'scanned_at' => rand(0, 1) ? now()->subDays(rand(1, 10)) : null,
                     'badge_earned' => rand(0, 1)
                 ]);

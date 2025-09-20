@@ -19,6 +19,7 @@ class Event extends Model
         'date',
         'time',
         'location',
+        'city',
         'image',
         'status',
         'max_participants',

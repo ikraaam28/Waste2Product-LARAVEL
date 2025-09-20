@@ -11,6 +11,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EventParticipationEmail;
 
 class EventController extends Controller
 {
@@ -77,7 +79,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load(['participants.user', 'products.category', 'feedbacks.user', 'creator']);
+        $event->load(['participants', 'products.category', 'feedbacks', 'creator']);
         return view('admin.events.show', compact('event'));
     }
 
@@ -268,7 +270,7 @@ class EventController extends Controller
     {
         try {
             $events = Event::where('date', '<', now())
-                ->with(['feedbacks.user', 'participants'])
+                ->with(['feedbacks', 'participants'])
                 ->get();
                 
             $totalCo2Saved = EventFeedback::sum('co2_saved') ?? 0;
@@ -365,11 +367,11 @@ class EventController extends Controller
     private function getEventCategories()
     {
         return [
-            (object)['name' => 'Recyclage', 'value' => 'Recycling'],
-            (object)['name' => 'Éducation', 'value' => 'Education'],
-            (object)['name' => 'Sensibilisation', 'value' => 'Awareness'],
-            (object)['name' => 'Collecte', 'value' => 'Collection'],
-            (object)['name' => 'Atelier', 'value' => 'Workshop']
+            (object)['name' => 'Collection', 'value' => 'Collection'],
+            (object)['name' => 'Workshop', 'value' => 'Workshop'],
+            (object)['name' => 'Awareness', 'value' => 'Awareness'],
+            (object)['name' => 'Education', 'value' => 'Education'],
+            (object)['name' => 'Recycling', 'value' => 'Recycling']
         ];
     }
 
@@ -395,5 +397,153 @@ class EventController extends Controller
         ];
 
         return $colors[$category] ?? '#6c757d';
+    }
+
+    /**
+     * Page publique des événements avec filtres
+     */
+    public function publicIndex(Request $request)
+    {
+        $query = Event::active()->upcoming()->with(['participants', 'creator']);
+
+        // Filtres
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%')
+                  ->orWhere('location', 'like', '%' . $request->search . '%')
+                  ->orWhere('city', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $events = $query->orderBy('date')->paginate(12);
+        $categories = $this->getEventCategories();
+        
+        // Statistiques
+        $totalEvents = Event::active()->upcoming()->count();
+        $totalParticipants = \DB::table('event_participants')->count();
+        
+        return view('events.index', compact('events', 'categories', 'totalEvents', 'totalParticipants'));
+    }
+
+    /**
+     * Afficher un événement public
+     */
+    public function publicShow(Event $event)
+    {
+        $event->load(['participants', 'products.category', 'creator']);
+        
+        // Vérifier si l'utilisateur est déjà inscrit
+        $isParticipating = false;
+        $participantId = null;
+        if (auth()->check()) {
+            $participant = $event->participants()->where('user_id', auth()->id())->first();
+            if ($participant) {
+                $isParticipating = true;
+                $participantId = $participant->pivot->participant_id;
+            }
+        }
+
+        // Événements similaires
+        $similarEvents = Event::active()
+            ->upcoming()
+            ->where('id', '!=', $event->id)
+            ->where('category', $event->category)
+            ->limit(3)
+            ->get();
+
+        return view('events.show', compact('event', 'isParticipating', 'participantId', 'similarEvents'));
+    }
+
+    /**
+     * Participer à un événement
+     */
+    public function participate(Request $request, Event $event)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Vous devez être connecté pour participer à un événement.');
+        }
+
+        // Vérifier si l'événement est actif et futur
+        if (!$event->status || $event->date < now()) {
+            return redirect()->back()->with('error', 'Cet événement n\'est plus disponible.');
+        }
+
+        // Vérifier si l'utilisateur est déjà inscrit
+        if ($event->participants()->where('user_id', auth()->id())->exists()) {
+            return redirect()->back()->with('error', 'Vous êtes déjà inscrit à cet événement.');
+        }
+
+        // Vérifier la limite de participants
+        if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
+            return redirect()->back()->with('error', 'Cet événement est complet.');
+        }
+
+        // Inscrire l'utilisateur
+        $participantId = Str::random(32);
+        $event->participants()->attach(auth()->id(), [
+            'participant_id' => $participantId
+        ]);
+
+        // Envoyer l'email de confirmation avec QR code
+        try {
+            Mail::to(auth()->user()->email)->send(new EventParticipationEmail($event, auth()->user(), $participantId));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi email participation: ' . $e->getMessage());
+        }
+
+        return redirect()->route('events.show', $event)
+            ->with('success', 'Vous êtes maintenant inscrit à cet événement ! Un email de confirmation avec votre QR code a été envoyé.');
+    }
+
+    /**
+     * Afficher le QR code d'un participant
+     */
+    public function showQrCode(Event $event, $participantId)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $participant = $event->participants()
+            ->where('user_id', auth()->id())
+            ->where('participant_id', $participantId)
+            ->first();
+
+        if (!$participant) {
+            return redirect()->route('events.show', $event)
+                ->with('error', 'QR code non trouvé.');
+        }
+
+        return view('events.qr-code', compact('event', 'participant', 'participantId'));
+    }
+
+    /**
+     * Mes événements (page profil)
+     */
+    public function myEvents()
+    {
+        $user = auth()->user();
+        $participatedEvents = $user->participatedEvents()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('events.my-events', compact('participatedEvents'));
     }
 }
