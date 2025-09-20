@@ -55,7 +55,7 @@ class EventController extends Controller
             ->orderBy('date')
             ->get();
             
-        $categories = ProductCategory::all();
+        $categories = $this->getEventCategories();
         
         return view('admin.events.index', compact('events', 'categories'));
     }
@@ -86,7 +86,7 @@ class EventController extends Controller
      */
     public function create()
     {
-        $categories = ProductCategory::all();
+        $categories = $this->getEventCategories();
         $products = Product::with('category')->get();
         return view('admin.events.create', compact('categories', 'products'));
     }
@@ -134,7 +134,7 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
-        $categories = ProductCategory::all();
+        $categories = $this->getEventCategories();
         $products = Product::with('category')->get();
         $event->load('products');
         return view('admin.events.edit', compact('event', 'categories', 'products'));
@@ -336,6 +336,10 @@ class EventController extends Controller
                 return [
                     'id' => $event->id,
                     'title' => $event->title,
+                    'description' => $event->description,
+                    'category' => $event->category,
+                    'status' => $event->status,
+                    'date' => $event->date->format('Y-m-d'),
                     'start' => $event->date->format('Y-m-d'),
                     'end' => $event->date->format('Y-m-d'),
                     'color' => $this->getCategoryColor($event->category),
@@ -347,16 +351,30 @@ class EventController extends Controller
     }
 
     /**
+     * Obtenir les catégories d'événements
+     */
+    private function getEventCategories()
+    {
+        return [
+            (object)['name' => 'Recyclage', 'value' => 'Recycling'],
+            (object)['name' => 'Éducation', 'value' => 'Education'],
+            (object)['name' => 'Sensibilisation', 'value' => 'Awareness'],
+            (object)['name' => 'Collecte', 'value' => 'Collection'],
+            (object)['name' => 'Atelier', 'value' => 'Workshop']
+        ];
+    }
+
+    /**
      * Obtenir la couleur d'une catégorie
      */
     private function getCategoryColor($category)
     {
         $colors = [
-            'Recyclage' => '#28a745',
-            'Éducation' => '#007bff',
-            'Sensibilisation' => '#ffc107',
-            'Collecte' => '#17a2b8',
-            'Atelier' => '#6f42c1'
+            'Recycling' => '#28a745',
+            'Education' => '#007bff',
+            'Awareness' => '#ffc107',
+            'Collection' => '#17a2b8',
+            'Workshop' => '#6f42c1'
         ];
 
         return $colors[$category] ?? '#6c757d';

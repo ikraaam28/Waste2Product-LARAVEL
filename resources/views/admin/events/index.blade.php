@@ -19,12 +19,24 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-      <div class="row">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher par titre ou description...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" onclick="applyFilters()">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-3">
                                 <select class="form-control" id="categoryFilter">
                                     <option value="">Toutes les catégories</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                        <option value="{{ $category->value }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -77,7 +89,7 @@
                         <div id="gridView" style="display: none;">
                             <div class="row" id="eventsGrid">
                                 @foreach($events as $event)
-                                    <div class="col-md-4 mb-4 event-card" data-category="{{ $event->category }}" data-status="{{ $event->status ? '1' : '0' }}" data-date="{{ $event->date->format('Y-m-d') }}">
+                                    <div class="col-md-4 mb-4 event-card" data-category="{{ $event->category }}" data-status="{{ $event->status ? '1' : '0' }}" data-date="{{ $event->date->format('Y-m-d') }}" data-title="{{ strtolower($event->title) }}" data-description="{{ strtolower($event->description) }}">
                                         <div class="card">
                                             @if($event->image)
                                                 <img class="card-img-top" src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->title }}" style="height: 200px; object-fit: cover;">
@@ -180,22 +192,70 @@
 <script>
 let modalHtml5QrcodeScanner = null;
 
+let calendar = null;
+
+// Helper function to get category name from value
+function getCategoryName(value) {
+    const categories = {
+        'Recycling': 'Recyclage',
+        'Education': 'Éducation', 
+        'Awareness': 'Sensibilisation',
+        'Collection': 'Collecte',
+        'Workshop': 'Atelier'
+    };
+    return categories[value] || value;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'en',
+        locale: 'fr',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listWeek'
+            right: 'dayGridMonth,dayGridYear,listWeek'
         },
-        events: '{{ route("admin.events.api") }}',
+        events: function(info, successCallback, failureCallback) {
+            loadFilteredEvents(successCallback, failureCallback);
+        },
         eventClick: function(info) {
             window.location.href = info.event.url;
-        }
+        },
+        height: 'auto',
+        aspectRatio: 1.8
     });
     calendar.render();
+    
+    // Add real-time search functionality
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            applyFilters();
+        });
+    }
+    
+    // Add event listeners for existing filters
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function() {
+            applyFilters();
+        });
+    }
+    
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            applyFilters();
+        });
+    }
+    
+    const dateFilter = document.getElementById('dateFilter');
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            applyFilters();
+        });
+    }
 });
 
 function toggleView(view) {
@@ -208,41 +268,159 @@ function toggleView(view) {
     }
 }
 
+function loadFilteredEvents(successCallback, failureCallback) {
+    const search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+    const category = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : '';
+    const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
+    const date = document.getElementById('dateFilter') ? document.getElementById('dateFilter').value : '';
+    
+    // Get all events from the server
+    fetch('{{ route("admin.events.api") }}')
+        .then(response => response.json())
+        .then(events => {
+            // Filter events based on current filters
+            const filteredEvents = events.filter(event => {
+                let show = true;
+                
+                // Search filter
+                if (search) {
+                    const title = (event.title || '').toLowerCase();
+                    const description = (event.description || '').toLowerCase();
+                    if (!title.includes(search) && !description.includes(search)) {
+                        show = false;
+                    }
+                }
+                
+                // Category filter - try multiple matching strategies
+                if (category) {
+                    const eventCategory = event.category || '';
+                    
+                    // Try exact match first
+                    let categoryMatch = eventCategory === category;
+                    
+                    // If no exact match, try with the category name mapping
+                    if (!categoryMatch) {
+                        const categoryName = getCategoryName(category);
+                        categoryMatch = eventCategory === categoryName;
+                    }
+                    
+                    // If still no match, try case-insensitive
+                    if (!categoryMatch) {
+                        categoryMatch = eventCategory.toLowerCase() === category.toLowerCase();
+                    }
+                    
+                    if (!categoryMatch) {
+                        show = false;
+                    }
+                }
+                
+                // Status filter
+                if (status && event.status !== (status === '1')) {
+                    show = false;
+                }
+                
+                // Date filter
+                if (date) {
+                    const eventDate = new Date(event.date).toISOString().split('T')[0];
+                    if (eventDate !== date) {
+                        show = false;
+                    }
+                }
+                
+                return show;
+            });
+            
+            successCallback(filteredEvents);
+        })
+        .catch(error => {
+            console.error('Error loading events:', error);
+            failureCallback(error);
+        });
+}
+
+// Removed adjustCalendarView function to prevent infinite loop
+
 function applyFilters() {
-    const category = document.getElementById('categoryFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    const date = document.getElementById('dateFilter').value;
+    const search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+    const category = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : '';
+    const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
+    const date = document.getElementById('dateFilter') ? document.getElementById('dateFilter').value : '';
     
     const eventCards = document.querySelectorAll('.event-card');
     
     eventCards.forEach(card => {
         let show = true;
         
-        if (category && card.dataset.category !== category) {
-            show = false;
+        // Search filter
+        if (search) {
+            const title = card.dataset.title || '';
+            const description = card.dataset.description || '';
+            if (!title.includes(search) && !description.includes(search)) {
+                show = false;
+            }
         }
         
+        // Category filter - use the same matching logic as calendar
+        if (category) {
+            const eventCategory = card.dataset.category || '';
+            let categoryMatch = eventCategory === category;
+            
+            if (!categoryMatch) {
+                const categoryName = getCategoryName(category);
+                categoryMatch = eventCategory === categoryName;
+            }
+            
+            if (!categoryMatch) {
+                categoryMatch = eventCategory.toLowerCase() === category.toLowerCase();
+            }
+            
+            if (!categoryMatch) {
+                show = false;
+            }
+        }
+        
+        // Status filter
         if (status && card.dataset.status !== status) {
             show = false;
         }
         
+        // Date filter
         if (date && card.dataset.date !== date) {
             show = false;
         }
         
         card.style.display = show ? 'block' : 'none';
     });
+    
+    // Update calendar if it exists - but only refetch, don't adjust view
+    if (calendar) {
+        calendar.refetchEvents();
+    }
 }
 
 function clearFilters() {
-    document.getElementById('categoryFilter').value = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('dateFilter').value = '';
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (categoryFilter) categoryFilter.value = '';
+    if (statusFilter) statusFilter.value = '';
+    if (dateFilter) dateFilter.value = '';
     
     const eventCards = document.querySelectorAll('.event-card');
     eventCards.forEach(card => {
         card.style.display = 'block';
     });
+    
+    // Update calendar if it exists
+    if (calendar) {
+        // Reset calendar to current month view
+        calendar.changeView('dayGridMonth');
+        calendar.gotoDate(new Date());
+        calendar.refetchEvents();
+    }
 }
 
 // Modal QR Scanner functions

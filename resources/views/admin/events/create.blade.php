@@ -41,12 +41,10 @@
                                         <label for="category">Category *</label>
                                         <select class="form-control @error('category') is-invalid @enderror" 
                                                 id="category" name="category" required>
-                                            <option value="">Select a category</option>
-                                            <option value="Recycling" {{ old('category') == 'Recycling' ? 'selected' : '' }}>Recycling</option>
-                                            <option value="Education" {{ old('category') == 'Education' ? 'selected' : '' }}>Education</option>
-                                            <option value="Awareness" {{ old('category') == 'Awareness' ? 'selected' : '' }}>Awareness</option>
-                                            <option value="Collection" {{ old('category') == 'Collection' ? 'selected' : '' }}>Collection</option>
-                                            <option value="Workshop" {{ old('category') == 'Workshop' ? 'selected' : '' }}>Workshop</option>
+                                            <option value="">Sélectionner une catégorie</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->value }}" {{ old('category') == $category->value ? 'selected' : '' }}>{{ $category->name }}</option>
+                                            @endforeach
                                         </select>
                                         @error('category')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -149,18 +147,21 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Products by Category</label>
+                                <label>Produits par Catégorie</label>
                                 <div class="row">
-                                    @foreach($categories as $category)
+                                    @php
+                                        $productCategories = \App\Models\ProductCategory::all();
+                                    @endphp
+                                    @foreach($productCategories as $productCategory)
                                         <div class="col-md-4">
                                             <div class="card">
                                                 <div class="card-header">
-                                                    <h6 class="mb-0" style="color: {{ $category->color }}">
-                                                        <i class="{{ $category->icon }}"></i> {{ $category->name }}
+                                                    <h6 class="mb-0" style="color: {{ $productCategory->color }}">
+                                                        <i class="{{ $productCategory->icon }}"></i> {{ $productCategory->name }}
                                                     </h6>
                                                 </div>
                                                 <div class="card-body">
-                                                    @foreach($products->where('category_id', $category->id) as $product)
+                                                    @foreach($products->where('category_id', $productCategory->id) as $product)
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" 
                                                                    name="products[]" value="{{ $product->id }}" 
