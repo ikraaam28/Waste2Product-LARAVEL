@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Détails de l\'Événement')
+@section('title', 'Event Details')
 @section('content')
 <div class="container">
     <div class="page-inner">
@@ -10,7 +10,7 @@
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item"><a href="#">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item">Détails</li>
+                <li class="nav-item">Details</li>
             </ul>
         </div>
 
@@ -19,7 +19,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Informations de l'Événement</div>
+                        <div class="card-title">Event Information</div>
                         <div class="card-tools">
                             <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-warning btn-sm">
                                 <i class="fa fa-edit"></i> Modifier
@@ -36,7 +36,7 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <strong>Catégorie:</strong>
+                                <strong>Category:</strong>
                                 <span class="badge badge-info">{{ $event->category }}</span>
                             </div>
                             <div class="col-md-6">
@@ -84,7 +84,7 @@
 
                         @if($event->products->count() > 0)
                             <div class="mb-3">
-                                <strong>Produits liés:</strong>
+                                <strong>Related Products:</strong>
                                 <div class="row mt-2">
                                     @foreach($event->products as $product)
                                         <div class="col-md-4 mb-2">
@@ -125,7 +125,7 @@
                                     <span class="icon"><i class="fa fa-qrcode"></i></span>
                                     <p>
                                         <span class="number">{{ $event->scanned_participants_count }}</span>
-                                        <span class="title">Scannés</span>
+                                        <span class="title">Scanned</span>
                                     </p>
                                 </div>
                             </div>
@@ -147,7 +147,7 @@
                                 @method('PATCH')
                                 <button type="submit" class="btn btn-{{ $event->status ? 'warning' : 'success' }} w-100">
                                     <i class="fa fa-{{ $event->status ? 'pause' : 'play' }}"></i>
-                                    {{ $event->status ? 'Désactiver' : 'Activer' }}
+                                    {{ $event->status ? 'Disable' : 'Enable' }}
                                 </button>
                             </form>
                             <a href="{{ route('admin.events.feedback') }}" class="btn btn-info">
@@ -174,7 +174,7 @@
                                         <tr>
                                             <th>Nom</th>
                                             <th>Email</th>
-                                            <th>Téléphone</th>
+                                            <th>Phone</th>
                                             <th>Ville</th>
                                             <th>Statut Scan</th>
                                             <th>Badge</th>
@@ -190,7 +190,7 @@
                                                 <td>
                                                     @if($participant->pivot->scanned_at)
                                                         <span class="badge badge-success">
-                                                            <i class="fa fa-check"></i> Scanné
+                                                            <i class="fa fa-check"></i> Scanned
                                                         </span>
                                                         <br>
                                                         <small class="text-muted">{{ $participant->pivot->scanned_at->format('d/m/Y H:i') }}</small>
@@ -249,12 +249,12 @@
                                                 @endif
                                                 <div class="row text-center">
                                                     <div class="col-4">
-                                                        <small class="text-muted">Recyclé</small>
+                                                        <small class="text-muted">Recycled</small>
                                                         <br>
                                                         <strong>{{ $feedback->recycled_quantity }}kg</strong>
                                                     </div>
                                                     <div class="col-4">
-                                                        <small class="text-muted">CO₂ Économisé</small>
+                                                        <small class="text-muted">CO₂ Saved</small>
                                                         <br>
                                                         <strong>{{ $feedback->co2_saved }}kg</strong>
                                                     </div>

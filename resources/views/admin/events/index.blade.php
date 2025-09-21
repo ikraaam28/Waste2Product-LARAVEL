@@ -198,7 +198,7 @@ let calendar = null;
 function getCategoryName(value) {
     const categories = {
         'Recycling': 'Recyclage',
-        'Education': 'Éducation', 
+        'Education': 'Education', 
         'Awareness': 'Sensibilisation',
         'Collection': 'Collecte',
         'Workshop': 'Atelier'

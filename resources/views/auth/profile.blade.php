@@ -23,7 +23,7 @@
                             <div class="position-relative">
                                 @if($user->profile_picture)
                                 <img src="{{ asset('storage/' . $user->profile_picture) }}" 
-                                     alt="Photo de profil" 
+                                     alt="Profile Picture" 
                                      class="rounded-circle border-white border-4 shadow-lg"
                                      width="160" height="160" 
                                      style="object-fit: cover;">
@@ -52,7 +52,7 @@
                                     <input type="file" name="profile_picture" id="profile_picture" class="form-control border-0 px-3" 
                                            accept="image/*" style="max-width: 250px;">
                                     <button type="submit" class="btn btn-light px-4 fw-semibold">
-                                        <i class="fas fa-upload me-1"></i>Mettre à jour
+                                        <i class="fas fa-upload me-1"></i>Update
                                     </button>
                                 </div>
                                 @error('profile_picture')
@@ -69,7 +69,7 @@
                     <div class="bg-light py-4 px-4 border-bottom">
                         <div class="text-center">
                             <h2 class="h3 mb-1 text-dark fw-bold">{{ $user->first_name }} {{ $user->last_name }}</h2>
-                            <p class="text-muted mb-0">Membre depuis {{ $user->created_at->format('d F Y') }}</p>
+                            <p class="text-muted mb-0">Member since {{ $user->created_at->format('d F Y') }}</p>
                         </div>
                     </div>
 
@@ -81,7 +81,7 @@
                                 <div class="card border-0 bg-white shadow-sm rounded-3 h-100">
                                     <div class="card-body p-4">
                                         <h5 class="card-title text-primary mb-3">
-                                            <i class="fas fa-user-circle me-2"></i>Informations
+                                            <i class="fas fa-user-circle me-2"></i>Information
                                         </h5>
                                         <ul class="list-unstyled mb-0">
                                             <li class="mb-3">
@@ -97,8 +97,8 @@
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-phone text-primary me-3 fs-5"></i>
                                                     <div>
-                                                        <small class="text-muted d-block">Téléphone</small>
-                                                        <span class="fw-semibold">{{ $user->phone ?? 'Non renseigné' }}</span>
+                                                        <small class="text-muted d-block">Phone</small>
+                                                        <span class="fw-semibold">{{ $user->phone ?? 'Not provided' }}</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -106,8 +106,8 @@
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-map-marker-alt text-primary me-3 fs-5"></i>
                                                     <div>
-                                                        <small class="text-muted d-block">Ville</small>
-                                                        <span class="fw-semibold">{{ $user->city ?? 'Non renseignée' }}</span>
+                                                        <small class="text-muted d-block">City</small>
+                                                        <span class="fw-semibold">{{ $user->city ?? 'Not provided' }}</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -121,7 +121,7 @@
                                 <div class="card border-0 bg-white shadow-sm rounded-3 h-100">
                                     <div class="card-body p-4">
                                         <h5 class="card-title text-success mb-3">
-                                            <i class="fas fa-cog me-2"></i>Paramètres
+                                            <i class="fas fa-cog me-2"></i>Settings
                                         </h5>
                                         <ul class="list-unstyled mb-0">
                                             <li class="mb-3">
@@ -130,11 +130,11 @@
                                                         <i class="fas fa-newspaper text-success me-3 fs-5"></i>
                                                         <div>
                                                             <small class="text-muted d-block">Newsletter</small>
-                                                            <span class="fw-semibold">Abonné{{ $user->newsletter_subscription ? '' : 'e' }}</span>
+                                                            <span class="fw-semibold">{{ $user->newsletter_subscription ? 'Subscribed' : 'Not subscribed' }}</span>
                                                         </div>
                                                     </div>
                                                     <span class="badge {{ $user->newsletter_subscription ? 'bg-success' : 'bg-secondary' }} rounded-pill px-3 py-2">
-                                                        {{ $user->newsletter_subscription ? 'Actif' : 'Inactif' }}
+                                                        {{ $user->newsletter_subscription ? 'Active' : 'Inactive' }}
                                                     </span>
                                                 </div>
                                             </li>
@@ -144,11 +144,11 @@
                                                         <i class="fas fa-file-contract text-success me-3 fs-5"></i>
                                                         <div>
                                                             <small class="text-muted d-block">Conditions</small>
-                                                            <span class="fw-semibold">Acceptées</span>
+                                                            <span class="fw-semibold">Accepted</span>
                                                         </div>
                                                     </div>
                                                     <span class="badge {{ $user->terms_accepted ? 'bg-success' : 'bg-warning' }} rounded-pill px-3 py-2">
-                                                        {{ $user->terms_accepted ? 'Validé' : 'En attente' }}
+                                                        {{ $user->terms_accepted ? 'Validated' : 'Pending' }}
                                                     </span>
                                                 </div>
                                             </li>
@@ -157,8 +157,8 @@
                                                     <div class="d-flex align-items-center">
                                                         <i class="fas fa-calendar-check text-success me-3 fs-5"></i>
                                                         <div>
-                                                            <small class="text-muted d-block">Inscrit le</small>
-                                                            <span class="fw-semibold">{{ $user->created_at->format('d/m/Y à H:i') }}</span>
+                                                            <small class="text-muted d-block">Registered on</small>
+                                                            <span class="fw-semibold">{{ $user->created_at->format('d/m/Y at H:i') }}</span>
                                                         </div>
                                                     </div>
                                                     <span class="badge bg-info rounded-pill px-3 py-2">
@@ -251,15 +251,15 @@
                         <div class="row text-center">
                             <div class="col-4">
                                 <div class="h5 mb-0 fw-bold">0</div>
-                                <small class="opacity-75">Publications</small>
+                                <small class="opacity-75">Posts</small>
                             </div>
                             <div class="col-4">
                                 <div class="h5 mb-0 fw-bold">0</div>
-                                <small class="opacity-75">Abonnements</small>
+                                <small class="opacity-75">Subscriptions</small>
                             </div>
                             <div class="col-4">
                                 <div class="h5 mb-0 fw-bold">0</div>
-                                <small class="opacity-75">Abonnés</small>
+                                <small class="opacity-75">Subscribers</small>
                             </div>
                         </div>
                     </div>
@@ -272,7 +272,7 @@
 <!-- Bouton pour ouvrir le modal -->
 <div class="mt-4 text-center">
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
-        Modifier mes informations
+        Edit my information
     </button>
 </div>
 
@@ -281,14 +281,14 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="updateProfileModalLabel">Modifier mes informations</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                <h5 class="modal-title" id="updateProfileModalLabel">Edit my information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="{{ route('profile.update') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label for="first_name" class="form-label">Prénom</label>
+                        <label for="first_name" class="form-label">First Name</label>
                         <input type="text" name="first_name" id="first_name" class="form-control" value="{{ old('first_name', $user->first_name) }}">
                         @error('first_name')
                             <small class="text-danger">{{ $message }}</small>
@@ -296,7 +296,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="last_name" class="form-label">Nom</label>
+                        <label for="last_name" class="form-label">Last Name</label>
                         <input type="text" name="last_name" id="last_name" class="form-control" value="{{ old('last_name', $user->last_name) }}">
                         @error('last_name')
                             <small class="text-danger">{{ $message }}</small>
@@ -312,7 +312,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="phone" class="form-label">Téléphone</label>
+                        <label for="phone" class="form-label">Phone</label>
                         <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
                         @error('phone')
                             <small class="text-danger">{{ $message }}</small>
@@ -320,7 +320,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="city" class="form-label">Ville</label>
+                        <label for="city" class="form-label">City</label>
                         <input type="text" name="city" id="city" class="form-control" value="{{ old('city', $user->city) }}">
                         @error('city')
                             <small class="text-danger">{{ $message }}</small>
@@ -329,12 +329,12 @@
 
                     <div class="form-check mb-3">
                         <input type="checkbox" name="newsletter_subscription" id="newsletter_subscription" class="form-check-input" {{ $user->newsletter_subscription ? 'checked' : '' }}>
-                        <label for="newsletter_subscription" class="form-check-label">S'abonner à la newsletter</label>
+                        <label for="newsletter_subscription" class="form-check-label">Subscribe to newsletter</label>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                        <button type="submit" class="btn btn-success">Mettre à jour</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Update</button>
                     </div>
                 </form>
             </div>
@@ -343,7 +343,7 @@
 </div>
 
 <a href="{{ route('profile.reset-password') }}" class="btn btn-warning me-2">
-    <i class="fas fa-key me-1"></i>Changer mon mot de passe
+    <i class="fas fa-key me-1"></i>Change my password
 </a>
 
 <style>

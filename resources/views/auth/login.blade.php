@@ -4,7 +4,7 @@
 <!-- reCAPTCHA v2 Script -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
-/* Custom styles for login form (réutilisation des styles du signup) */
+/* Custom styles for login form (reusing signup styles) */
 .form-control:focus {
     border-color: #28a745 !important;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
@@ -358,21 +358,21 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="display-6">Se connecter à votre compte</h1>
-                    <p class="lead text-muted">Accédez à votre compte Waste2Product et continuez à transformer les déchets en valeur</p>
+                    <h1 class="display-6">Sign in to your account</h1>
+                    <p class="lead text-muted">Access your Waste2Product account and continue transforming waste into value</p>
                 </div>
                 
                 <div class="row g-5">
                     <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                         <div class="bg-light rounded p-5 h-100">
-                            <h3 class="text-primary mb-4">Pourquoi se connecter ?</h3>
+                            <h3 class="text-primary mb-4">Why sign in?</h3>
                             <div class="row g-3 mb-4">
                                 <div class="col-12">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-recycle"></i>
                                         </div>
-                                        <span>Gérez vos projets de recyclage</span>
+                                        <span>Manage your recycling projects</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -380,7 +380,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-lightbulb"></i>
                                         </div>
-                                        <span>Accédez à des tutoriels exclusifs d'upcycling</span>
+                                        <span>Access exclusive upcycling tutorials</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -388,7 +388,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-globe"></i>
                                         </div>
-                                        <span>Suivez votre impact environnemental</span>
+                                        <span>Track your environmental impact</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -396,7 +396,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-heart"></i>
                                         </div>
-                                        <span>Recevez des conseils éco-personnalisés</span>
+                                        <span>Get personalized eco-advice</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -404,7 +404,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-users"></i>
                                         </div>
-                                        <span>Connectez-vous avec notre communauté éco</span>
+                                        <span>Connect with our eco-community</span>
                                     </div>
                                 </div>
                             </div>
@@ -418,8 +418,8 @@
                             <div class="position-absolute bottom-0 start-0" style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05)); border-radius: 0 80px 0 0;"></div>
                             
                             <div class="text-center mb-4">
-                                <h4 class="text-primary mb-2">Se connecter</h4>
-                                <p class="text-muted">Accédez à votre compte Waste2Product</p>
+                                <h4 class="text-primary mb-2">Sign In</h4>
+                                <p class="text-muted">Access your Waste2Product account</p>
                                 
                                 @if(session('success'))
                                     <div class="success-popup" role="alert">
@@ -428,10 +428,10 @@
                                                 <div class="success-icon">
                                                     <i class="fa fa-check-circle"></i>
                                                 </div>
-                                                @if(session('success') === 'Vous avez été déconnecté avec succès.')
-                                                    <h6 class="success-title">Déconnexion</h6>
+                                                @if(session('success') === 'You have been successfully logged out.')
+                                                    <h6 class="success-title">Logout</h6>
                                                 @else
-                                                    <h6 class="success-title">Succès !</h6>
+                                                    <h6 class="success-title">Success!</h6>
                                                 @endif
                                                 <button type="button" class="success-close" data-bs-dismiss="alert">
                                                     <i class="fa fa-times"></i>
@@ -454,7 +454,7 @@
                                                 <div class="error-icon">
                                                     <i class="fa fa-exclamation-circle"></i>
                                                 </div>
-                                                <h6 class="error-title">Erreur de connexion</h6>
+                                                <h6 class="error-title">Login Error</h6>
                                                 <button type="button" class="error-close" data-bs-dismiss="alert">
                                                     <i class="fa fa-times"></i>
                                                 </button>
@@ -477,9 +477,9 @@
                                 <div class="row g-4">
                                     <div class="col-12">
                                         <div class="form-floating">
-                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Adresse email" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
+                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Email address" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
                                             <label for="email" class="text-muted">
-                                                <i class="fa fa-envelope me-2"></i>Adresse email
+                                                <i class="fa fa-envelope me-2"></i>Email address
                                             </label>
                                             @error('email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -488,9 +488,9 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="form-floating">
-                                            <input type="password" class="form-control rounded-pill border-2 @error('password') is-invalid @enderror" id="password" name="password" placeholder="Mot de passe" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
+                                            <input type="password" class="form-control rounded-pill border-2 @error('password') is-invalid @enderror" id="password" name="password" placeholder="Password" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
                                             <label for="password" class="text-muted">
-                                                <i class="fa fa-lock me-2"></i>Mot de passe
+                                                <i class="fa fa-lock me-2"></i>Password
                                             </label>
                                             @error('password')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -501,7 +501,7 @@
                                         <div class="form-check p-3 bg-light rounded-3">
                                             <input class="form-check-input" type="checkbox" id="remember" name="remember" style="transform: scale(1.2);">
                                             <label class="form-check-label ms-2" for="remember">
-                                                Se souvenir de moi
+                                                Remember me
                                             </label>
                                         </div>
                                     </div>
@@ -509,11 +509,11 @@
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <div class="text-muted small">
                                                 <i class="fa fa-shield-alt me-1"></i>
-                                                Protégé par reCAPTCHA
+                                                Protected by reCAPTCHA
                                             </div>
                                             <div class="text-muted small">
-                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Confidentialité</a> • 
-                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Conditions</a>
+                                                <a href="https://policies.google.com/privacy" target="_blank" class="text-decoration-none">Privacy</a> • 
+                                                <a href="https://policies.google.com/terms" target="_blank" class="text-decoration-none">Terms</a>
                                             </div>
                                         </div>
                                         <div class="g-recaptcha" data-sitekey="{{ config('app.recaptcha_site_key') }}" data-callback="onRecaptchaSuccess" data-size="invisible"></div>
@@ -527,23 +527,23 @@
                                     <div class="col-12">
                                         <button class="btn btn-primary rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" type="submit" id="submitBtn" disabled style="background: linear-gradient(135deg, #6c757d, #495057); border: none; font-weight: 600; letter-spacing: 0.5px;">
                                             <span class="position-relative z-1">
-                                                <i class="fa fa-sign-in-alt me-2"></i>Se connecter
+                                                <i class="fa fa-sign-in-alt me-2"></i>Sign In
                                             </span>
                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
                                         </button>
                                     </div>
                                     <div class="col-12 text-end">
     <a href="{{ route('password.request') }}" class="text-decoration-none text-primary">
-        Mot de passe oublié ?
+        Forgot password?
     </a>
 </div>
 
                                     <div class="col-12 text-center">
                                         <div class="position-relative">
                                             <hr class="my-4">
-                                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">ou</span>
+                                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</span>
                                         </div>
-                                        <p class="mb-0">Pas encore de compte ? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">S'inscrire <i class="fa fa-arrow-right ms-1"></i></a></p>
+                                        <p class="mb-0">Don't have an account yet? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">Sign up <i class="fa fa-arrow-right ms-1"></i></a></p>
                                     </div>
                                 </div>
                             </form>
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const inputs = form.querySelectorAll('input');
 
-    // État de validation pour chaque champ
+    // Validation state for each field
     const fieldValidationState = {};
 
     // Fonction pour valider un champ
@@ -583,19 +583,19 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'email':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'L\'adresse email est requise';
+                    errorMessage = 'Email address is required';
                 } else {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(value)) {
                         isValid = false;
-                        errorMessage = 'Veuillez entrer une adresse email valide';
+                        errorMessage = 'Please enter a valid email address';
                     }
                 }
                 break;
             case 'password':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Le mot de passe est requis';
+                    errorMessage = 'Password is required';
                 }
                 break;
         }
@@ -718,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Désactiver le bouton pour éviter les double soumissions
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Connexion en cours...';
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Signing in...';
 
         // Soumettre le formulaire après validation reCAPTCHA
         form.submit();
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Réactiver le bouton
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Se connecter';
+        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Sign In';
     };
 
     // reCAPTCHA v2 invisible - Callback d'expiration

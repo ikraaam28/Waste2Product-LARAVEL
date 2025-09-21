@@ -227,14 +227,14 @@ function generateQRCodeWithLibrary() {
         qrElement.innerHTML = '';
         
         // Create QR code with formatted text (simple and readable)
-        const qrText = `🎫 ÉVÉNEMENT: ${qrData.event_title || 'N/A'}
-📅 DATE: ${qrData.event_date || 'N/A'} à ${qrData.event_time || 'N/A'}
-📍 LIEU: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
-🏷️ CATÉGORIE: ${qrData.event_category || 'N/A'}
+        const qrText = `🎫 EVENT: ${qrData.event_title || 'N/A'}
+📅 DATE: ${qrData.event_date || 'N/A'} at ${qrData.event_time || 'N/A'}
+📍 LOCATION: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
+🏷️ CATEGORY: ${qrData.event_category || 'N/A'}
 👤 PARTICIPANT: ${qrData.participant_name || 'N/A'}
 🆔 ID: ${qrData.participant_id || 'N/A'}
 
-Scanné depuis TeaHouse Event Manager`;
+Scanned from TeaHouse Event Manager`;
         
         QRCode.toCanvas(qrElement, qrText, {
             width: 300,
@@ -279,14 +279,14 @@ function generateScannableQRCode() {
         qrElement.innerHTML = '';
         
         // Create QR code with formatted text (simple and readable)
-        const qrText = `🎫 ÉVÉNEMENT: ${qrData.event_title || 'N/A'}
-📅 DATE: ${qrData.event_date || 'N/A'} à ${qrData.event_time || 'N/A'}
-📍 LIEU: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
-🏷️ CATÉGORIE: ${qrData.event_category || 'N/A'}
+        const qrText = `🎫 EVENT: ${qrData.event_title || 'N/A'}
+📅 DATE: ${qrData.event_date || 'N/A'} at ${qrData.event_time || 'N/A'}
+📍 LOCATION: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
+🏷️ CATEGORY: ${qrData.event_category || 'N/A'}
 👤 PARTICIPANT: ${qrData.participant_name || 'N/A'}
 🆔 ID: ${qrData.participant_id || 'N/A'}
 
-Scanné depuis TeaHouse Event Manager`;
+Scanned from TeaHouse Event Manager`;
         
         const qrSize = 300;
         const qrUrl = `https://chart.googleapis.com/chart?chs=${qrSize}x${qrSize}&cht=qr&chl=${encodeURIComponent(qrText)}&choe=UTF-8`;
@@ -326,14 +326,14 @@ function generateFallbackQR() {
         qrElement.innerHTML = '';
         
         // Create QR code with formatted text (simple and readable)
-        const qrText = `🎫 ÉVÉNEMENT: ${qrData.event_title || 'N/A'}
-📅 DATE: ${qrData.event_date || 'N/A'} à ${qrData.event_time || 'N/A'}
-📍 LIEU: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
-🏷️ CATÉGORIE: ${qrData.event_category || 'N/A'}
+        const qrText = `🎫 EVENT: ${qrData.event_title || 'N/A'}
+📅 DATE: ${qrData.event_date || 'N/A'} at ${qrData.event_time || 'N/A'}
+📍 LOCATION: ${qrData.event_location || 'N/A'}, ${qrData.event_city || 'N/A'}
+🏷️ CATEGORY: ${qrData.event_category || 'N/A'}
 👤 PARTICIPANT: ${qrData.participant_name || 'N/A'}
 🆔 ID: ${qrData.participant_id || 'N/A'}
 
-Scanné depuis TeaHouse Event Manager`;
+Scanned from TeaHouse Event Manager`;
         
         const qrSize = 300;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(qrText)}`;

@@ -210,7 +210,7 @@
                             
                             <div class="d-grid">
                                 <a href="{{ route('events.show', $event) }}" class="btn btn-primary">
-                                    <i class="fa fa-eye me-2"></i>Voir les détails
+                                    <i class="fa fa-eye me-2"></i>View Details
                                 </a>
                             </div>
                         </div>
@@ -245,7 +245,7 @@
         @if($events->hasPages())
             <div class="row mt-5">
                 <div class="col-12">
-                    <nav aria-label="Pagination des événements">
+                    <nav aria-label="Events pagination">
                         {{ $events->appends(request()->query())->links() }}
                     </nav>
                 </div>
