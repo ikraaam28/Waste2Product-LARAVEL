@@ -14,11 +14,27 @@ class PublicationController extends Controller
     /**
      * Afficher la liste paginée des publications
      */
-    public function index()
-    {
-        $publications = Publication::with('user')->latest()->paginate(10);  // Liste paginée
-        return view('publications.index', compact('publications'));
-    }
+public function index()
+{
+    $publications = Publication::with('user')->latest()->paginate(10);
+    return view('publications.index', compact('publications'));
+}
+
+
+public function myPublications()
+{
+    $myPublications = Publication::with('user')
+        ->where('user_id', Auth::id())
+        ->latest()
+        ->get();
+
+    $otherPublications = Publication::with('user')
+        ->where('user_id', '!=', Auth::id())
+        ->latest()
+        ->paginate(10);
+
+    return view('publications.my-publications', compact('myPublications', 'otherPublications'));
+}
 
     /**
      * Afficher le formulaire pour créer une nouvelle publication
@@ -32,33 +48,34 @@ class PublicationController extends Controller
      * Enregistrer une nouvelle publication
      */
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'titre' => 'required|string|max:255',
-            'contenu' => 'required|string',
-            'categorie' => 'required|in:reemploi,reparation,transformation',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',  // Ou vidéo si vous ajoutez
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'titre' => 'required|string|max:255',
+        'contenu' => 'required|string',
+        'categorie' => 'required|in:reemploi,reparation,transformation',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('publications', 'public');
-        }
-
-        Publication::create([
-            'titre' => $request->titre,
-            'contenu' => $request->contenu,
-            'categorie' => $request->categorie,
-            'image' => $imagePath,
-            'user_id' => Auth::id(),
-        ]);
-
-        return redirect()->route('publications.index')->with('success', 'Publication créée !');
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
+
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('publications', 'public');
+    }
+
+    Publication::create([
+        'titre' => $request->titre,
+        'contenu' => $request->contenu,
+        'categorie' => $request->categorie,
+        'image' => $imagePath,
+        'user_id' => Auth::id(),
+    ]);
+
+    // Change this line to redirect to your my-publications page
+    return redirect()->route('publications.my')->with('success', 'Publication créée !');
+}
 
     /**
      * Afficher une publication spécifique avec ses commentaires
@@ -87,66 +104,56 @@ class PublicationController extends Controller
     /**
      * Mettre à jour une publication existante
      */
-    public function update(Request $request, $id)
-    {
-        $publication = Publication::findOrFail($id);
+   public function update(Request $request, $id)
+{
+    $publication = Publication::findOrFail($id);
 
-        // Vérifier que l'utilisateur est le propriétaire de la publication
-        if ($publication->user_id !== Auth::id()) {
-            return redirect()->route('publications.index')->with('error', 'Vous n\'êtes pas autorisé à modifier cette publication.');
-        }
-
-        $validator = Validator::make($request->all(), [
-            'titre' => 'required|string|max:255',
-            'contenu' => 'required|string',
-            'categorie' => 'required|in:reemploi,reparation,transformation',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $imagePath = $publication->image; // Garder l'image existante par défaut
-        if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image si elle existe
-            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
-            }
-            // Stocker la nouvelle image
-            $imagePath = $request->file('image')->store('publications', 'public');
-        }
-
-        $publication->update([
-            'titre' => $request->titre,
-            'contenu' => $request->contenu,
-            'categorie' => $request->categorie,
-            'image' => $imagePath,
-        ]);
-
-        return redirect()->route('publications.show', $publication->id)->with('success', 'Publication mise à jour !');
+    if ($publication->user_id !== Auth::id()) {
+        return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à modifier cette publication.');
     }
 
-    /**
-     * Supprimer une publication
-     */
-    public function destroy($id)
-    {
-        $publication = Publication::findOrFail($id);
+    $validator = Validator::make($request->all(), [
+        'titre' => 'required|string|max:255',
+        'contenu' => 'required|string',
+        'categorie' => 'required|in:reemploi,reparation,transformation',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+    ]);
 
-        // Vérifier que l'utilisateur est le propriétaire de la publication
-        if ($publication->user_id !== Auth::id()) {
-            return redirect()->route('publications.index')->with('error', 'Vous n\'êtes pas autorisé à supprimer cette publication.');
-        }
-
-        // Supprimer l'image associée si elle existe
-        if ($publication->image && Storage::disk('public')->exists($publication->image)) {
-            Storage::disk('public')->delete($publication->image);
-        }
-
-        // Supprimer la publication (les commentaires sont supprimés automatiquement grâce à onDelete('cascade'))
-        $publication->delete();
-
-        return redirect()->route('publications.index')->with('success', 'Publication supprimée !');
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
+
+    $imagePath = $publication->image;
+    if ($request->hasFile('image')) {
+        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+            Storage::disk('public')->delete($imagePath);
+        }
+        $imagePath = $request->file('image')->store('publications', 'public');
+    }
+
+    $publication->update([
+        'titre' => $request->titre,
+        'contenu' => $request->contenu,
+        'categorie' => $request->categorie,
+        'image' => $imagePath,
+    ]);
+
+    return redirect()->route('publications.my')->with('success', 'Publication mise à jour !');
 }
+
+public function destroy($id)
+{
+    $publication = Publication::findOrFail($id);
+
+    if ($publication->user_id !== Auth::id()) {
+        return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à supprimer cette publication.');
+    }
+
+    if ($publication->image && Storage::disk('public')->exists($publication->image)) {
+        Storage::disk('public')->delete($publication->image);
+    }
+
+    $publication->delete();
+
+    return redirect()->route('publications.my')->with('success', 'Publication supprimée !');
+}}

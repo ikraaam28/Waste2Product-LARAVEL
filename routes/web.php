@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\PublicationController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -49,6 +50,16 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 // Routes du blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
+
+// Routes pour publications
+Route::middleware('auth')->group(function () {
+    // Redéfinir la route pour /publications vers myPublications
+    Route::get('/publications', [PublicationController::class, 'myPublications'])->name('publications.my');
+    Route::post('publications/{publication}/commentaires', [CommentaireController::class, 'store'])->name('commentaires.store');
+
+    // Garder resource pour les autres méthodes (store, show, etc.) si nécessaire
+    Route::resource('publications', PublicationController::class)->except(['index']);
+});
 // Admin
 Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
 // Admin components
@@ -80,6 +91,9 @@ Route::prefix('admin')->group(function () {
 
     // Widgets
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
+
+
+
 
     // Events
     Route::view('/events', 'admin.events.index')->name('admin.events.index');
