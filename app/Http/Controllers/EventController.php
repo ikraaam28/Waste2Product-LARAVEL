@@ -223,44 +223,50 @@ class EventController extends Controller
     public function scanQr(Request $request)
     {
         $request->validate([
-            'qr_code' => 'required|string'
+            'participant_id' => 'required|string'
         ]);
 
-        $event = Event::where('qr_code', $request->qr_code)->first();
-        
-        if (!$event) {
-            return response()->json([
-                'success' => false,
-                'message' => 'QR Code invalide'
-            ]);
-        }
-
-        $participant = $event->participants()
-            ->where('user_id', $request->user_id)
+        // Find participant by participant_id in the pivot table
+        $participant = \DB::table('event_participants')
+            ->where('participant_id', $request->participant_id)
             ->first();
-
+        
         if (!$participant) {
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non inscrit à cet événement'
+                'message' => 'Invalid participant ID - QR Code not found',
+                'type' => 'error'
             ]);
         }
 
-        if ($participant->pivot->scanned_at) {
+        // Get the event and user details
+        $event = Event::find($participant->event_id);
+        $user = \App\Models\User::find($participant->user_id);
+
+        if (!$event || !$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'QR Code déjà scanné',
-                'scanned_at' => $participant->pivot->scanned_at
+                'message' => 'Invalid participant data - Event or user not found',
+                'type' => 'error'
             ]);
         }
 
-        $participant->pivot->update(['scanned_at' => now()]);
+        // Always return success for valid participant IDs, regardless of scan status
+        // Only mark as scanned if not already scanned
+        if (!$participant->scanned_at) {
+            \DB::table('event_participants')
+                ->where('participant_id', $request->participant_id)
+                ->update(['scanned_at' => now()]);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'QR Code scanné avec succès',
+            'message' => 'QR Code validated successfully - Participant information displayed',
+            'type' => 'success',
             'event' => $event,
-            'participant' => $participant
+            'participant' => $user,
+            'participant_id' => $request->participant_id,
+            'scanned_at' => $participant->scanned_at
         ]);
     }
 

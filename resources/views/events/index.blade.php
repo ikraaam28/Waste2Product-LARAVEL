@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Events Hero Section -->
-<div class="container-xxl py-3 bg-primary hero-header mb-4">
+<div class="container-xxl py-3 bg-primary hero-header mb-4" style="margin-top: 80px;">
     <div class="container py-3 px-lg-5">
         <div class="row g-3 py-3">
             <div class="col-lg-8 text-center text-lg-start">
