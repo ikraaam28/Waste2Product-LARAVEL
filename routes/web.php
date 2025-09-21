@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\TutoController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -111,3 +112,9 @@ Route::get('/admin/pages/{slug}', function (string $slug) {
 
     abort(404);
 });
+Route::get('/tutos', [TutoController::class, 'index'])->name('tutos.index');
+Route::get('/tutos/create', [TutoController::class, 'create'])->name('tutos.create')->middleware('auth');
+Route::post('/tutos', [TutoController::class, 'store'])->name('tutos.store')->middleware('auth');
+Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('tutos.show');
+Route::post('/tutos/{tuto}/react', [TutoController::class, 'react'])->name('tutos.react')->middleware('auth');
+Route::post('/tutos/{tuto}/question', [TutoController::class, 'askQuestion'])->name('tutos.question')->middleware('auth');
