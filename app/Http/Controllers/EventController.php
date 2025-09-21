@@ -271,6 +271,103 @@ class EventController extends Controller
     }
 
     /**
+     * Store event feedback
+     */
+    public function storeFeedback(Request $request, Event $event)
+    {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // Check if event has ended
+        if ($event->date >= now()) {
+            return redirect()->back()->with('error', 'Feedback can only be submitted after the event has ended.');
+        }
+
+        // Check if user participated in this event
+        $participation = $event->participants()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$participation) {
+            return redirect()->back()->with('error', 'You must participate in this event to submit feedback.');
+        }
+
+        // Check if user already submitted feedback
+        $existingFeedback = \App\Models\EventFeedback::where('event_id', $event->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        // Validate the request
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'satisfaction_level' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        // Handle photo uploads
+        $photoPaths = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('feedback-photos', 'public');
+                $photoPaths[] = $path;
+            }
+        }
+
+        // Prepare feedback data
+        $feedbackData = [
+            'rating' => $request->rating,
+            'satisfaction_level' => $request->satisfaction_level,
+            'comment' => $request->comment,
+            'recycled_quantity' => 0,
+            'co2_saved' => 0,
+        ];
+
+        // Handle photos - merge existing and new photos
+        $finalPhotos = [];
+        
+        // Get existing photos if any
+        if ($existingFeedback && $existingFeedback->photo) {
+            $existingPhotos = json_decode($existingFeedback->photo, true) ?: [];
+            $finalPhotos = $existingPhotos;
+        }
+        
+        // Remove photos that user wants to delete
+        if ($request->has('removed_photos')) {
+            $removedPhotos = is_array($request->removed_photos) ? $request->removed_photos : [$request->removed_photos];
+            $finalPhotos = array_filter($finalPhotos, function($photo) use ($removedPhotos) {
+                return !in_array($photo, $removedPhotos);
+            });
+        }
+        
+        // Add new photos
+        if (!empty($photoPaths)) {
+            $finalPhotos = array_merge($finalPhotos, $photoPaths);
+        }
+        
+        // Ensure we don't exceed 5 photos total
+        $finalPhotos = array_slice($finalPhotos, 0, 5);
+        
+        $feedbackData['photo'] = !empty($finalPhotos) ? json_encode($finalPhotos) : null;
+
+        if ($existingFeedback) {
+            // Update existing feedback
+            $existingFeedback->update($feedbackData);
+            $message = 'Your feedback has been updated successfully!';
+        } else {
+            // Create new feedback
+            $feedbackData['event_id'] = $event->id;
+            $feedbackData['user_id'] = auth()->id();
+            \App\Models\EventFeedback::create($feedbackData);
+            $message = 'Thank you for sharing your experience! Your feedback has been submitted successfully.';
+        }
+
+        return redirect()->back()->with('feedback_success', $message);
+    }
+
+    /**
      * Feedback et impact
      */
     public function feedback()
@@ -283,12 +380,20 @@ class EventController extends Controller
             $totalCo2Saved = EventFeedback::sum('co2_saved') ?? 0;
             $totalRecycled = EventFeedback::sum('recycled_quantity') ?? 0;
             $averageRating = EventFeedback::avg('rating') ?? 0;
+            $totalFeedbacks = EventFeedback::count();
+            
+            // Get all feedbacks with user and event relationships
+            $feedbacks = EventFeedback::with(['user', 'event'])
+                ->orderBy('created_at', 'desc')
+                ->get();
             
             return view('admin.events.feedback', compact(
                 'events',
                 'totalCo2Saved',
                 'totalRecycled',
-                'averageRating'
+                'averageRating',
+                'totalFeedbacks',
+                'feedbacks'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in feedback method: ' . $e->getMessage());
@@ -296,7 +401,9 @@ class EventController extends Controller
                 'events' => collect(),
                 'totalCo2Saved' => 0,
                 'totalRecycled' => 0,
-                'averageRating' => 0
+                'averageRating' => 0,
+                'totalFeedbacks' => 0,
+                'feedbacks' => collect()
             ]);
         }
     }
@@ -439,7 +546,7 @@ class EventController extends Controller
             });
         }
 
-        $events = $query->orderBy('date')->paginate(12);
+        $events = $query->orderBy('date')->paginate(6);
         $categories = $this->getEventCategories();
         
         // Statistiques
@@ -474,6 +581,14 @@ class EventController extends Controller
             // Ne pas nettoyer la session immédiatement, laisser la vue l'utiliser
         }
 
+        // Récupérer le feedback existant de l'utilisateur pour cet événement
+        $existingFeedback = null;
+        if (auth()->check() && $event->date < now()) {
+            $existingFeedback = \App\Models\EventFeedback::where('event_id', $event->id)
+                ->where('user_id', auth()->id())
+                ->first();
+        }
+
         // Événements similaires
         $similarEvents = Event::active()
             ->upcoming()
@@ -482,7 +597,7 @@ class EventController extends Controller
             ->limit(3)
             ->get();
 
-        return view('events.show', compact('event', 'isParticipating', 'participantId', 'similarEvents'));
+        return view('events.show', compact('event', 'isParticipating', 'participantId', 'similarEvents', 'existingFeedback'));
     }
 
     /**

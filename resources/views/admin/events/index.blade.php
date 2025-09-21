@@ -89,7 +89,7 @@
                         <div id="gridView" style="display: none;">
                             <div class="row" id="eventsGrid">
                                 @foreach($events as $event)
-                                    <div class="col-md-4 mb-4 event-card" data-category="{{ $event->category }}" data-status="{{ $event->status ? '1' : '0' }}" data-date="{{ $event->date->format('Y-m-d') }}" data-title="{{ strtolower($event->title) }}" data-description="{{ strtolower($event->description) }}">
+                                    <div class="col-md-4 mb-4 event-card" data-category="{{ $event->category }}" data-status="{{ $event->status ? '1' : '0' }}" data-date="{{ $event->date ? \Carbon\Carbon::parse($event->date)->format('Y-m-d') : '' }}" data-title="{{ strtolower($event->title) }}" data-description="{{ strtolower($event->description) }}">
                                         <div class="card">
                                             @if($event->image)
                                                 <img class="card-img-top" src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->title }}" style="height: 200px; object-fit: cover;">
@@ -109,7 +109,7 @@
                                                 </div>
                                                 <div class="mb-2">
                                                     <small class="text-muted">
-                                                        <i class="fa fa-calendar"></i> {{ $event->date->format('d/m/Y') }}
+                                                        <i class="fa fa-calendar"></i> {{ $event->date ? \Carbon\Carbon::parse($event->date)->format('d/m/Y') : 'N/A' }}
                                                         <i class="fa fa-clock ml-2"></i> {{ $event->time }}
                                                     </small>
                                                 </div>

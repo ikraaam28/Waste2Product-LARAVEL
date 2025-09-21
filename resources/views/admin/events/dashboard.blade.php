@@ -161,7 +161,7 @@
                                     </div>
                                     <div class="flex-1 ml-3">
                                         <h6 class="mb-0">{{ $event->title }}</h6>
-                                        <small class="text-muted">{{ $event->date->format('d/m/Y') }} at {{ $event->time }}</small>
+                                        <small class="text-muted">{{ $event->date ? \Carbon\Carbon::parse($event->date)->format('d/m/Y') : 'N/A' }} at {{ $event->time }}</small>
                                         <br>
                                         <small class="text-muted">{{ $event->location }}</small>
                                     </div>
@@ -200,7 +200,7 @@
                                     </div>
                                     <div class="flex-1 ml-3">
                                         <h6 class="mb-0">{{ $event->title }}</h6>
-                                        <small class="text-muted">{{ $event->created_at->format('d/m/Y H:i') }}</small>
+                                        <small class="text-muted">{{ $event->created_at ? \Carbon\Carbon::parse($event->created_at)->format('d/m/Y H:i') : 'N/A' }}</small>
                                         <br>
                                         <small class="text-muted">{{ $event->category }}</small>
                                     </div>

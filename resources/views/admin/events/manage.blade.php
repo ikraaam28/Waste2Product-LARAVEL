@@ -63,7 +63,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex flex-column">
-                                                    <span class="font-weight-bold">{{ $event->date->format('M d, Y') }}</span>
+                                                    <span class="font-weight-bold">{{ $event->date ? \Carbon\Carbon::parse($event->date)->format('M d, Y') : 'N/A' }}</span>
                                                     <small class="text-muted">{{ $event->time }}</small>
                                                 </div>
                                             </td>

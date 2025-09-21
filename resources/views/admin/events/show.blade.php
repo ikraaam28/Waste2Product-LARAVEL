@@ -49,10 +49,10 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <strong>Date:</strong> {{ $event->date->format('d/m/Y') }}
+                                <strong>Date:</strong> {{ $event->date ? \Carbon\Carbon::parse($event->date)->format('d/m/Y') : 'N/A' }}
                             </div>
                             <div class="col-md-6">
-                                <strong>Heure:</strong> {{ $event->time->format('H:i') }}
+                                <strong>Heure:</strong> {{ $event->time ? \Carbon\Carbon::parse($event->time)->format('H:i') : 'N/A' }}
                             </div>
                         </div>
 
@@ -193,7 +193,7 @@
                                                             <i class="fa fa-check"></i> Scanned
                                                         </span>
                                                         <br>
-                                                        <small class="text-muted">{{ $participant->pivot->scanned_at->format('d/m/Y H:i') }}</small>
+                                                        <small class="text-muted">{{ $participant->pivot->scanned_at ? \Carbon\Carbon::parse($participant->pivot->scanned_at)->format('d/m/Y H:i') : 'N/A' }}</small>
                                                     @else
                                                         <span class="badge badge-warning">
                                                             <i class="fa fa-clock"></i> En attente

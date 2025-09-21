@@ -70,7 +70,7 @@
                                     <div class="form-group">
                                         <label for="date">Date *</label>
                                         <input type="date" class="form-control @error('date') is-invalid @enderror" 
-                                               id="date" name="date" value="{{ old('date', $event->date->format('Y-m-d')) }}" required>
+                                               id="date" name="date" value="{{ old('date', $event->date ? \Carbon\Carbon::parse($event->date)->format('Y-m-d') : '') }}" required>
                                         @error('date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -81,7 +81,7 @@
                                     <div class="form-group">
                                         <label for="time">Heure *</label>
                                         <input type="time" class="form-control @error('time') is-invalid @enderror" 
-                                               id="time" name="time" value="{{ old('time', $event->time->format('H:i')) }}" required>
+                                               id="time" name="time" value="{{ old('time', $event->time ? \Carbon\Carbon::parse($event->time)->format('H:i') : '') }}" required>
                                         @error('time')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror

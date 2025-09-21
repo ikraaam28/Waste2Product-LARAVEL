@@ -46,6 +46,7 @@ Route::get('/events', [EventController::class, 'publicIndex'])->name('events');
 Route::get('/events/{event}', [EventController::class, 'publicShow'])->name('events.show');
 Route::post('/events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
 Route::get('/events/{event}/qr/{participant}', [EventController::class, 'showQrCode'])->name('events.qr');
+Route::post('/events/{event}/feedback', [EventController::class, 'storeFeedback'])->name('events.feedback.store');
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');

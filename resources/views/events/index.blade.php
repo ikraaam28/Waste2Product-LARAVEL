@@ -245,9 +245,11 @@
         @if($events->hasPages())
             <div class="row mt-5">
                 <div class="col-12">
-                    <nav aria-label="Events pagination">
-                        {{ $events->appends(request()->query())->links() }}
-                    </nav>
+                    <div class="d-flex justify-content-center">
+                        <nav aria-label="Events pagination">
+                            {{ $events->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </nav>
+                    </div>
                 </div>
             </div>
         @endif
@@ -276,6 +278,47 @@
 
 .bg-gradient-primary {
     background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+/* Pagination Styles */
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    color: #28a745;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    margin: 0 2px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item:first-child .page-link,
+.pagination .page-item:last-child .page-link {
+    border-radius: 8px;
 }
 
 .card {
