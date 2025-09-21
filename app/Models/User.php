@@ -61,4 +61,18 @@ class User extends Authenticatable
         return trim($this->first_name . ' ' . $this->last_name);
     }
 
+    /**
+     * Publication et commentaire
+     */
+
+    public function publications()
+    {
+    return $this->hasMany(Publication::class);
+    }
+
+    public function commentaires()
+    {
+    return $this->hasMany(Commentaire::class);
+    }
+
 }
