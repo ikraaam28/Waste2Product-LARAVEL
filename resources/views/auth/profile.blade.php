@@ -28,7 +28,7 @@
                                      width="160" height="160" 
                                      style="object-fit: cover;">
                                 @else
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($user->full_name) }}&background=0D8ABC&color=fff&size=160" 
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name . ' ' . $user->last_name) }}&background=0D8ABC&color=fff&size=160" 
                                          alt="Default Avatar" 
                                          class="rounded-circle border-white border-4 shadow-lg">
                                 @endif
@@ -68,7 +68,7 @@
                     <!-- Name Section -->
                     <div class="bg-light py-4 px-4 border-bottom">
                         <div class="text-center">
-                            <h2 class="h3 mb-1 text-dark fw-bold">{{ $user->full_name }}</h2>
+                            <h2 class="h3 mb-1 text-dark fw-bold">{{ $user->first_name }} {{ $user->last_name }}</h2>
                             <p class="text-muted mb-0">Membre depuis {{ $user->created_at->format('d F Y') }}</p>
                         </div>
                     </div>
@@ -245,8 +245,6 @@
                         </div>
                     </div>
                     @endif
-                        </div>
-                    </div>
 
                     <!-- Stats Footer -->
                     <div class="bg-gradient-secondary text-white py-3 px-4">
@@ -271,6 +269,82 @@
     </div>
 </div>
 
+<!-- Bouton pour ouvrir le modal -->
+<div class="mt-4 text-center">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
+        Modifier mes informations
+    </button>
+</div>
+
+<!-- Modal Bootstrap -->
+<div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateProfileModalLabel">Modifier mes informations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('profile.update') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">Prénom</label>
+                        <input type="text" name="first_name" id="first_name" class="form-control" value="{{ old('first_name', $user->first_name) }}">
+                        @error('first_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Nom</label>
+                        <input type="text" name="last_name" id="last_name" class="form-control" value="{{ old('last_name', $user->last_name) }}">
+                        @error('last_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email) }}">
+                        @error('email')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
+                        @error('phone')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="city" class="form-label">Ville</label>
+                        <input type="text" name="city" id="city" class="form-control" value="{{ old('city', $user->city) }}">
+                        @error('city')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="newsletter_subscription" id="newsletter_subscription" class="form-check-input" {{ $user->newsletter_subscription ? 'checked' : '' }}>
+                        <label for="newsletter_subscription" class="form-check-label">S'abonner à la newsletter</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-success">Mettre à jour</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{{ route('profile.reset-password') }}" class="btn btn-warning me-2">
+    <i class="fas fa-key me-1"></i>Changer mon mot de passe
+</a>
 
 <style>
     :root {
@@ -380,6 +454,10 @@
         .input-group-sm .btn {
             border-radius: 50px !important;
         }
+    }
+
+    .modal-backdrop {
+        display: none !important;
     }
 </style>
 

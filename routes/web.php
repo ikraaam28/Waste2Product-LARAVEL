@@ -29,16 +29,18 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
     Route::get('/my-events', [EventController::class, 'myEvents'])->name('my-events');
+    Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/reset-password', [AuthController::class, 'redirectToResetPassword'])->name('profile.reset-password');
 });
 
 Route::post('/profile/picture', [AuthController::class, 'updateProfilePicture'])->name('profile.picture.update');
-
 
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/testimonial', [PageController::class, 'testimonial'])->name('testimonial');
 Route::get('/feature', [PageController::class, 'feature'])->name('feature');
+
 // Public Events routes
 Route::get('/events', [EventController::class, 'publicIndex'])->name('events');
 Route::get('/events/{event}', [EventController::class, 'publicShow'])->name('events.show');

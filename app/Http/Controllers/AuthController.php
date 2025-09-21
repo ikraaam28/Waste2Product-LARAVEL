@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;       
 use App\Mail\ResetPasswordEmail;
 
-
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
 
@@ -226,7 +225,6 @@ public function profile()
     return view('auth.profile', compact('user', 'participatedEvents'));
 }
 
-
 public function updateProfilePicture(Request $request)
 {
     $request->validate([
@@ -245,6 +243,54 @@ public function updateProfilePicture(Request $request)
     return redirect()->route('profile')->with('success', 'Photo de profil mise à jour !');
 }
 
+public function updateProfile(Request $request)
+{
+    $user = Auth::user();
 
+    $validator = Validator::make($request->all(), [
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        'phone' => 'nullable|string|max:20',
+        'city' => 'nullable|string|max:255',
+        'newsletter_subscription' => 'sometimes|boolean',
+    ]);
 
+    if ($validator->fails()) {
+        return redirect()->back()
+                         ->withErrors($validator)
+                         ->withInput();
+    }
+
+    $user->update([
+        'first_name' => $request->first_name,
+        'last_name' => $request->last_name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'city' => $request->city,
+        'newsletter_subscription' => $request->has('newsletter_subscription'),
+    ]);
+
+    return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès !');
+}
+
+public function redirectToResetPassword()
+{
+    $user = Auth::user();
+
+    // Générer un token aléatoire
+    $token = \Str::random(64);
+
+    // Sauvegarder ou mettre à jour le token dans la table password_resets
+    \DB::table('password_resets')->updateOrInsert(
+        ['email' => $user->email],
+        [
+            'token' => $token,
+            'created_at' => now(),
+        ]
+    );
+
+    // Rediriger vers la page reset avec le token
+    return redirect()->route('password.reset', ['token' => $token]);
+}
 }
