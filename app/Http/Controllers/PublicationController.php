@@ -49,12 +49,13 @@ public function myPublications()
      */
     public function store(Request $request)
 {
-    $validator = Validator::make($request->all(), [
-        'titre' => 'required|string|max:255',
-        'contenu' => 'required|string',
-        'categorie' => 'required|in:reemploi,reparation,transformation',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-    ]);
+$validator = Validator::make($request->all(), [
+    'titre' => 'required|string|max:255',
+    'contenu' => 'required|string',
+    'categorie' => 'required|in:reemployment,repair,transformation',
+    'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+]);
+
 
     if ($validator->fails()) {
         return redirect()->back()->withErrors($validator)->withInput();
@@ -115,7 +116,7 @@ public function myPublications()
     $validator = Validator::make($request->all(), [
         'titre' => 'required|string|max:255',
         'contenu' => 'required|string',
-        'categorie' => 'required|in:reemploi,reparation,transformation',
+    'categorie' => 'required|in:reemployment,repair,transformation',
         'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
     ]);
 
