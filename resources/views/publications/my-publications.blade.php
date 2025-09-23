@@ -18,34 +18,34 @@
 
         <!-- Form to create a new publication -->
         @if(auth()->check())
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5>Add a new publication</h5>
+        <div class="card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0">Add a New Publication</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="POST" action="{{ route('publications.store') }}" enctype="multipart/form-data">
                     @csrf
-                    <div class="form-group">
-                        <label>Title</label>
-                        <input type="text" name="titre" class="form-control" required>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-medium">Title</label>
+                        <input type="text" name="titre" class="form-control rounded-pill py-2" required>
                     </div>
-                    <div class="form-group">
-                        <label>Content</label>
-                        <textarea name="contenu" class="form-control" required></textarea>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-medium">Content</label>
+                        <textarea name="contenu" class="form-control rounded-3" rows="5" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select name="categorie" class="form-control" required>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-medium">Category</label>
+                        <select name="categorie" class="form-control rounded-pill py-2" required>
                             <option value="reemployment">Reemployment</option>
                             <option value="repair">Repair</option>
                             <option value="transformation">Transformation</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Image</label>
-                        <input type="file" name="image" class="form-control">
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-medium">Image</label>
+                        <input type="file" name="image" class="form-control rounded-pill">
                     </div>
-                    <button type="submit" class="btn btn-primary mt-2">Publish</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">Publish</button>
                 </form>
             </div>
         </div>
@@ -131,7 +131,7 @@
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
@@ -164,7 +164,21 @@
     .delete-btn:hover {
         background: #e0e0e0;
         transform: scale(1.1);
-        color: #d32f2f; /* Subtle red for deletion */
+        color: #d32f2f;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+    }
+    .form-label {
+        color: #333;
+        font-size: 0.9rem;
+    }
+    .btn-primary {
+        transition: background-color 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
     }
 </style>
 
