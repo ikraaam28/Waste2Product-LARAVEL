@@ -157,4 +157,35 @@ public function destroy($id)
     $publication->delete();
 
     return redirect()->route('publications.my')->with('success', 'Publication supprimée !');
-}}
+}
+
+/**
+ * Afficher la liste de toutes les publications pour l'admin
+ */
+/**
+ * Afficher la liste de toutes les publications pour l'admin
+ */
+public function adminIndex()
+{
+    $publications = Publication::with('user')
+        ->whereHas('user') // Only include publications with an existing user
+        ->latest()
+        ->paginate(10);
+    return view('admin.publications.index', compact('publications'));
+}
+/**
+ * Supprimer une publication pour l'admin
+ */
+public function adminDestroy($id)
+{
+    $publication = Publication::findOrFail($id);
+
+    if ($publication->image && Storage::disk('public')->exists($publication->image)) {
+        Storage::disk('public')->delete($publication->image);
+    }
+
+    $publication->delete();
+
+    return redirect()->route('admin.publications.index')->with('success', 'Publication supprimée !');
+}
+}
