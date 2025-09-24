@@ -8,6 +8,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\PartnerController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -27,21 +29,41 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    Route::get('/my-events', [EventController::class, 'myEvents'])->name('my-events');
     Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
-Route::get('/profile/reset-password', [AuthController::class, 'redirectToResetPassword'])->name('profile.reset-password');
-
+    Route::get('/profile/reset-password', [AuthController::class, 'redirectToResetPassword'])->name('profile.reset-password');
 });
 
 Route::post('/profile/picture', [AuthController::class, 'updateProfilePicture'])->name('profile.picture.update');
-
 
 // Routes des pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/testimonial', [PageController::class, 'testimonial'])->name('testimonial');
 Route::get('/feature', [PageController::class, 'feature'])->name('feature');
-// Public Events page placeholder
-Route::view('/events', 'pages.events')->name('events');
+
+// Public Events routes
+Route::get('/events', [EventController::class, 'publicIndex'])->name('events');
+Route::get('/events/{event}', [EventController::class, 'publicShow'])->name('events.show');
+Route::post('/events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
+Route::get('/events/{event}/qr/{participant}', [EventController::class, 'showQrCode'])->name('events.qr');
+Route::post('/events/{event}/feedback', [EventController::class, 'storeFeedback'])->name('events.feedback.store');
+
+
+
+// Frontend list of partners with filters
+Route::get('/partners', [PartnerController::class, 'front'])->name('partners.front');
+
+// Frontend single partner details
+Route::get('/partners/{partner}', [PartnerController::class, 'showFront'])->name('partners.show');
+
+
+
+
+
+
+
+
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -85,10 +107,48 @@ Route::prefix('admin')->group(function () {
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
 
     // Events
-    Route::view('/events', 'admin.events.index')->name('admin.events.index');
-    Route::view('/events/drop', 'admin.events.drop')->name('admin.events.drop');
-    Route::view('/events/feedback', 'admin.events.feedback')->name('admin.events.feedback');
+    Route::get('/events/dashboard', [EventController::class, 'dashboard'])->name('admin.events.dashboard');
+    Route::get('/events', [EventController::class, 'index'])->name('admin.events.index');
+    Route::get('/events/manage', [EventController::class, 'manage'])->name('admin.events.manage');
+    Route::get('/events/create', [EventController::class, 'create'])->name('admin.events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('admin.events.store');
+    Route::get('/events/qr-scanner', [EventController::class, 'qrScanner'])->name('admin.events.qr-scanner');
+    Route::post('/events/scan-qr', [EventController::class, 'scanQr'])->name('admin.events.scan-qr');
+    Route::get('/events/feedback', [EventController::class, 'feedback'])->name('admin.events.feedback');
+    Route::get('/events/badges', [EventController::class, 'badges'])->name('admin.events.badges');
+    Route::post('/events/badges', [EventController::class, 'createBadge'])->name('admin.events.create-badge');
+    Route::get('/events/api/events', [EventController::class, 'apiEvents'])->name('admin.events.api');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('admin.events.show');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('admin.events.edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('admin.events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('admin.events.destroy');
+    Route::patch('/events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('admin.events.toggle-status');
+
+
+
+// Partners Management
+Route::get('partners', [PartnerController::class, 'index'])->name('admin.partners.index');
+Route::get('partners/create', [PartnerController::class, 'create'])->name('admin.partners.create');
+Route::post('partners', [PartnerController::class, 'store'])->name('admin.partners.store');
+Route::get('partners/{partner}', [PartnerController::class, 'show'])->name('admin.partners.show');
+Route::get('partners/{partner}/edit', [PartnerController::class, 'edit'])->name('admin.partners.edit');
+Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
+Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
+
+
+
 });
+
+
+
+
+
+
+
+
+
+
+
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 
 // Legacy redirects: map old /admin/pages/* URLs to new Blade routes

@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;       
 use App\Mail\ResetPasswordEmail;
 
-
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
 
@@ -88,7 +87,7 @@ class AuthController extends Controller
             \Log::error('Erreur envoi email bienvenue: ' . $e->getMessage());
         }
 
-        return redirect()->route('signup')->with('success', 'Compte créé avec succès ! Bienvenue sur Waste2Product !');
+        return redirect()->route('login')->with('success', 'Compte créé avec succès ! Veuillez vous connecter pour continuer.');
     }
 
     /**
@@ -114,7 +113,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back(index)
+            return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -215,9 +214,16 @@ public function resetPassword(Request $request)
 public function profile()
 {
     $user = Auth::user(); // get the logged-in user
-    return view('auth.profile', compact('user'));
+    
+    // Get user's participated events
+    $participatedEvents = $user->participatedEvents()
+        ->whereNotNull('events.id') // Ensure event exists
+        ->orderBy('events.created_at', 'desc')
+        ->limit(6) // Limit to 6 recent events
+        ->get();
+    
+    return view('auth.profile', compact('user', 'participatedEvents'));
 }
-
 
 public function updateProfilePicture(Request $request)
 {
@@ -236,9 +242,6 @@ public function updateProfilePicture(Request $request)
 
     return redirect()->route('profile')->with('success', 'Photo de profil mise à jour !');
 }
-
-
-
 
 public function updateProfile(Request $request)
 {
@@ -271,11 +274,6 @@ public function updateProfile(Request $request)
     return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès !');
 }
 
-
-
-
-
-
 public function redirectToResetPassword()
 {
     $user = Auth::user();
@@ -295,13 +293,4 @@ public function redirectToResetPassword()
     // Rediriger vers la page reset avec le token
     return redirect()->route('password.reset', ['token' => $token]);
 }
-
-
-
-
-
-
-
-
-
 }

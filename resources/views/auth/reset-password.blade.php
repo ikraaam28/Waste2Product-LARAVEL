@@ -3,7 +3,7 @@
 @section('content')
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-lg p-4" style="width: 400px;">
-        <h3 class="card-title text-center mb-4">Réinitialiser le mot de passe</h3>
+        <h3 class="card-title text-center mb-4">Reset Password</h3>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -34,11 +34,11 @@
                 <input type="password" name="password_confirmation" class="form-control" required>
             </div>
 
-            <button type="submit" class="btn btn-success w-100">Réinitialiser</button>
+            <button type="submit" class="btn btn-success w-100">Reset</button>
         </form>
 
         <div class="mt-3 text-center">
-            <a href="{{ route('login') }}">Retour à la connexion</a>
+            <a href="{{ route('login') }}">Back to login</a>
         </div>
     </div>
 </div>

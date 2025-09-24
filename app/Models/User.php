@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -59,6 +60,26 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name . ' ' . $this->last_name);
+    }
+
+    /**
+     * Relation avec les badges
+     */
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+                    ->withPivot(['earned_at', 'event_id'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relation avec les événements participés
+     */
+    public function participatedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_participants')
+                    ->withPivot(['participant_id', 'scanned_at', 'badge_earned'])
+                    ->withTimestamps();
     }
 
 }

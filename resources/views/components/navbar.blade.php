@@ -15,6 +15,7 @@
                     <a href="{{ route('products') }}" class="nav-item nav-link {{ request()->routeIs('products') ? 'active' : '' }}">Products</a>
                     <a href="{{ route('store') }}" class="nav-item nav-link {{ request()->routeIs('store') ? 'active' : '' }}">Store</a>
                     <a href="{{ route('events') }}" class="nav-item nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
+                    <a href="{{ route('partners.front') }}" class="nav-item nav-link {{ request()->routeIs('partners.front') ? 'active' : '' }}">Partners</a>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                         <div class="dropdown-menu bg-light rounded-0 m-0">
@@ -33,14 +34,14 @@
                     @endguest
                     @auth
                         <!-- Profile Picture Button -->
-                        <a href="/profile" class="btn btn-sm p-0 me-3" style="border-radius: 50%; width: 35px; height: 35px; overflow: hidden; border: 2px solid #e9ecef;">
+                        <a href="{{ route('profile') }}" class="btn btn-sm p-0 me-3" style="border-radius: 50%; width: 35px; height: 35px; overflow: hidden; border: 2px solid #e9ecef;">
                             @if(auth()->user()->profile_picture)
                                 <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" 
                                      alt="Profile" 
                                      class="img-fluid rounded-circle" 
                                      style="width: 100%; height: 100%; object-fit: cover;">
                             @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->full_name) }}&background=2E7D32&color=fff&size=35" 
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->first_name . ' ' . auth()->user()->last_name) }}&background=2E7D32&color=fff&size=35" 
                                      alt="Avatar" 
                                      class="img-fluid rounded-circle" 
                                      style="width: 100%; height: 100%; object-fit: cover;">

@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const inputs = form.querySelectorAll('input, select');
     
-    // État de validation pour chaque champ
+    // Validation state for each field
     const fieldValidationState = {};
     
     // Fonction pour valider un champ
@@ -725,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
         
-        // Stocker l'état de validation
+        // Store validation state
         fieldValidationState[fieldName] = isValid;
         
         // Afficher l'erreur seulement si showError est true et qu'il y a une erreur
@@ -748,11 +748,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
-    // Fonction pour vérifier si tous les champs sont valides
+    // Function to check if all fields are valid
     function checkFormValidity() {
         let allValid = true;
         
-        // Vérifier tous les champs requis
+        // Check all required fields
         const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'city', 'password', 'password_confirmation'];
         requiredFields.forEach(fieldName => {
             const field = form.querySelector(`[name="${fieldName}"]`);
@@ -764,13 +764,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Vérifier les termes et conditions
+        // Check terms and conditions
         const termsCheckbox = form.querySelector('input[name="terms_accepted"]');
         if (termsCheckbox && !termsCheckbox.checked) {
             allValid = false;
         }
         
-        // Activer/désactiver le bouton
+        // Enable/disable button
         if (allValid) {
             submitBtn.disabled = false;
             submitBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Ajouter les événements de validation
+    // Add validation events
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
             validateField(this, true); // Afficher les erreurs au blur
@@ -790,20 +790,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         input.addEventListener('input', function() {
-            // Limiter le téléphone à 8 caractères exactement
+            // Limit phone to exactly 8 characters
             if (this.name === 'phone') {
-                // Supprimer tous les caractères non numériques
+                // Remove all non-numeric characters
                 this.value = this.value.replace(/[^0-9]/g, '');
-                // Limiter à 8 caractères maximum
+                // Limit to 8 characters maximum
                 if (this.value.length > 8) {
                     this.value = this.value.substring(0, 8);
                 }
             }
             
-            // Validation immédiate pour la vérification du bouton
+            // Immediate validation for button check
             checkFormValidity();
             
-            // Validation immédiate pour l'affichage des erreurs
+            // Immediate validation for error display
             validateField(this, true);
             
             // Re-valider la confirmation si on tape dans le mot de passe
@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Événement pour la checkbox des termes
+    // Event for terms checkbox
     const termsCheckbox = form.querySelector('input[name="terms_accepted"]');
     if (termsCheckbox) {
         termsCheckbox.addEventListener('change', function() {
@@ -827,7 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validation initiale sans afficher d'erreurs
     checkFormValidity();
     
-    // Vérifier que reCAPTCHA est chargé
+    // Check that reCAPTCHA is loaded
     function checkRecaptchaLoaded() {
         if (typeof grecaptcha !== 'undefined') {
             console.log('reCAPTCHA loaded successfully');
@@ -837,16 +837,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Démarrer la vérification
+    // Start verification
     checkRecaptchaLoaded();
     
     // Gestion du submit du formulaire
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Vérifier la validité du formulaire
+        // Check form validity
         if (form.checkValidity()) {
-            // Déclencher reCAPTCHA v2 invisible
+            // Trigger invisible reCAPTCHA v2
             if (typeof grecaptcha !== 'undefined') {
                 console.log('Executing reCAPTCHA...');
                 grecaptcha.execute();
@@ -869,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (recaptchaInput) {
             recaptchaInput.value = token;
         } else {
-            // Créer un input caché pour le token reCAPTCHA
+            // Create hidden input for reCAPTCHA token
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'g-recaptcha-response';
@@ -877,14 +877,14 @@ document.addEventListener('DOMContentLoaded', function() {
             form.appendChild(hiddenInput);
         }
         
-        // Désactiver le bouton pour éviter les double soumissions
+        // Disable button to prevent double submissions
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
         }
         
-        // Soumettre le formulaire après validation reCAPTCHA
+        // Submit form after reCAPTCHA validation
         form.submit();
     };
     
@@ -894,7 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('reCAPTCHA v2 error:', error);
         alert('reCAPTCHA verification failed. Please try again.');
         
-        // Réactiver le bouton
+        // Re-enable button
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.disabled = false;
@@ -913,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du popup d'erreur
     const errorPopup = document.querySelector('.error-popup');
     if (errorPopup) {
-        // Fermeture automatique après 8 secondes
+        // Auto-close after 8 seconds
         setTimeout(() => {
             if (errorPopup) {
                 errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du popup de succès
     const successPopup = document.querySelector('.success-popup');
     if (successPopup) {
-        // Fermeture automatique après 5 secondes (plus rapide que l'erreur)
+        // Auto-close after 5 seconds (faster than error)
         setTimeout(() => {
             if (successPopup) {
                 successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
