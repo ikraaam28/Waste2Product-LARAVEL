@@ -10,6 +10,9 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\WarehouseController;
+
+
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -61,7 +64,9 @@ Route::get('/partners/{partner}', [PartnerController::class, 'showFront'])->name
 
 
 
-
+// Routes frontend si nécessaire
+Route::get('warehouses', [WarehouseController::class, 'frontIndex'])->name('warehouses.front');
+Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])->name('warehouses.show');
 
 
 
@@ -135,6 +140,18 @@ Route::get('partners/{partner}/edit', [PartnerController::class, 'edit'])->name(
 Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
 Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
 
+
+
+    // Warehouses Management 
+    
+    Route::get('warehouses', [WarehouseController::class, 'index'])->name('admin.warehouses.index');
+    Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('admin.warehouses.create');
+    Route::post('warehouses', [WarehouseController::class, 'store'])->name('admin.warehouses.store');
+    Route::get('warehouses/{warehouse}', [WarehouseController::class, 'show'])->name('admin.warehouses.show');
+    Route::get('warehouses/{warehouse}/edit', [WarehouseController::class, 'edit'])->name('admin.warehouses.edit');
+    Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('admin.warehouses.update');
+    Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
+    Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
 
 
 });

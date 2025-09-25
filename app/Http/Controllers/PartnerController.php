@@ -10,11 +10,23 @@ class PartnerController extends Controller
     /**
      * Dashboard / liste des partenaires
      */
-    public function index()
-    {
-        $partners = Partner::all();
-        return view('admin.partners.index', compact('partners'));
-    }
+public function index()
+{
+    $partners = Partner::withCount('warehouses')->get();
+    $types = Partner::select('type')->whereNotNull('type')->distinct()->pluck('type');
+    
+    $partnersWithWarehouses = $partners->where('warehouses_count', '>', 0)->count();
+    $partnersWithEmail = $partners->whereNotNull('email')->count();
+    $partnersWithAddress = $partners->whereNotNull('address')->count();
+    
+    return view('admin.partners.index', compact(
+        'partners', 
+        'types', 
+        'partnersWithWarehouses',
+        'partnersWithEmail',
+        'partnersWithAddress'
+    ));
+}
 
 /**
  * Afficher les détails d'un partenaire

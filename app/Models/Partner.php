@@ -19,8 +19,8 @@ class Partner extends Model
     ];
 
     // Relations (si plus tard tu ajoutes entrepôts)
-    // public function warehouses()
-    // {
-    //     return $this->hasMany(Warehouse::class);
-    // }
+     public function warehouses()
+     {
+         return $this->hasMany(Warehouse::class);
+     }
 }

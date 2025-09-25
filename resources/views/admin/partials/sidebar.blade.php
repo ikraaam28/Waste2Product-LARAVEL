@@ -149,7 +149,19 @@
 </li>
 
 
-
+<li class="nav-item">
+    <a data-bs-toggle="collapse" href="#warehouses">
+        <i class="fas fa-warehouse"></i>
+        <p>Warehouses</p>
+        <span class="caret"></span>
+    </a>
+    <div class="collapse" id="warehouses">
+        <ul class="nav nav-collapse">
+            <li><a href="{{ route('admin.warehouses.index') }}"><span class="sub-item">All Warehouses</span></a></li>
+            <li><a href="{{ route('admin.warehouses.create') }}"><span class="sub-item">Add Warehouse</span></a></li>
+        </ul>
+    </div>
+</li>
 
 
         <li class="nav-item">
