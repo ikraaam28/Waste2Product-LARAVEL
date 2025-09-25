@@ -46,6 +46,8 @@ Route::view('/events', 'pages.events')->name('events');
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
+Route::get('/products/category/{slug}', [ProductController::class, 'category'])->name('products.category');
+Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 // Routes de la boutique
 Route::get('/store', [StoreController::class, 'index'])->name('store');
@@ -56,12 +58,60 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 // Admin
 Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
 
-// Admin User Management
+// Test route for debugging
+Route::get('/admin/categories/test', function() {
+    return 'Categories index test - this should work';
+});
+
+// Test route for simple category creation
+Route::get('/admin/categories/test-create', function() {
+    return view('admin.categories.test-create');
+})->name('admin.categories.test-create');
+
+// Test route for debugging images
+Route::get('/test-images', function() {
+    $product = App\Models\Product::first();
+    if (!$product) {
+        return 'Aucun produit trouvé';
+    }
+
+    $debug = [
+        'product_id' => $product->id,
+        'product_name' => $product->name,
+        'images_array' => $product->images,
+        'first_image_path' => $product->images[0] ?? 'Aucune image',
+        'storage_path' => storage_path('app/public/' . ($product->images[0] ?? '')),
+        'file_exists' => file_exists(storage_path('app/public/' . ($product->images[0] ?? ''))),
+        'public_path' => public_path('storage/' . ($product->images[0] ?? '')),
+        'public_file_exists' => file_exists(public_path('storage/' . ($product->images[0] ?? ''))),
+        'asset_url' => asset('storage/' . ($product->images[0] ?? '')),
+        'first_image_url' => $product->first_image_url,
+    ];
+
+    return '<pre>' . print_r($debug, true) . '</pre>';
+});
+
+// Admin Management Routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    // User Management Routes
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::patch('users/{user}/toggle-verification', [App\Http\Controllers\Admin\UserController::class, 'toggleVerification'])->name('users.toggle-verification');
     Route::patch('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+
+    // Category Management Routes
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
+    Route::patch('categories/{category}/toggle-status', [App\Http\Controllers\Admin\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+    Route::post('categories/bulk-action', [App\Http\Controllers\Admin\CategoryController::class, 'bulkAction'])->name('categories.bulk-action');
+    Route::get('categories-api', [App\Http\Controllers\Admin\CategoryController::class, 'getCategories'])->name('categories.api');
+
+    // Product Management Routes
+    Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+    Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Admin\ProductController::class, 'toggleStatus'])->name('products.toggle-status');
+    Route::patch('products/{product}/toggle-featured', [App\Http\Controllers\Admin\ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
+    Route::post('products/bulk-action', [App\Http\Controllers\Admin\ProductController::class, 'bulkAction'])->name('products.bulk-action');
+    Route::get('products-export', [App\Http\Controllers\Admin\ProductController::class, 'export'])->name('products.export');
+    Route::post('products/{product}/duplicate', [App\Http\Controllers\Admin\ProductController::class, 'duplicate'])->name('products.duplicate');
 });
 // Admin components
 Route::prefix('admin')->group(function () {

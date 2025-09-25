@@ -43,6 +43,21 @@
             </ul>
           </div>
         </li>
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#catalog">
+            <i class="fas fa-store"></i>
+            <p>Catalogue</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="catalog">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.products.index') }}"><span class="sub-item">Produits</span></a></li>
+              <li><a href="{{ route('admin.products.create') }}"><span class="sub-item">Ajouter Produit</span></a></li>
+              <li><a href="{{ route('admin.categories.index') }}"><span class="sub-item">Catégories</span></a></li>
+              <li><a href="{{ route('admin.categories.create') }}"><span class="sub-item">Ajouter Catégorie</span></a></li>
+            </ul>
+          </div>
+        </li>
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
