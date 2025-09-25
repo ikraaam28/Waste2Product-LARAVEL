@@ -21,15 +21,22 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
+        'role',
+        'is_active',
         'phone',
         'city',
+        'company_name',
+        'company_description',
+        'business_license',
+        'supplier_categories',
         'password',
         'newsletter_subscription',
         'terms_accepted',
         'email_verified_at',
         'remember_token',
-        'profile_picture', 
-
+        'profile_picture',
+        'google_id',
+        'avatar'
     ];
 
     /**
@@ -52,6 +59,8 @@ class User extends Authenticatable
         'password' => 'hashed',
         'newsletter_subscription' => 'boolean',
         'terms_accepted' => 'boolean',
+        'is_active' => 'boolean',
+        'supplier_categories' => 'array',
     ];
 
     /**
@@ -82,4 +91,98 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    /**
+     * Vérifier si l'utilisateur est un administrateur.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un utilisateur ordinaire.
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un fournisseur.
+     */
+    public function isSupplier(): bool
+    {
+        return $this->role === 'supplier';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est actif.
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * Obtenir le libellé du rôle.
+     */
+    public function getRoleLabelAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'Administrateur',
+            'user' => 'Utilisateur',
+            'supplier' => 'Fournisseur',
+            default => 'Inconnu'
+        };
+    }
+
+    /**
+     * Obtenir la couleur du badge pour le rôle.
+     */
+    public function getRoleBadgeColorAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'danger',
+            'user' => 'primary',
+            'supplier' => 'success',
+            default => 'secondary'
+        };
+    }
+
+    /**
+     * Obtenir l'icône du rôle.
+     */
+    public function getRoleIconAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'fas fa-crown',
+            'user' => 'fas fa-user',
+            'supplier' => 'fas fa-store',
+            default => 'fas fa-question'
+        };
+    }
+
+    /**
+     * Scope pour filtrer par rôle.
+     */
+    public function scopeByRole($query, $role)
+    {
+        return $query->where('role', $role);
+    }
+
+    /**
+     * Scope pour les utilisateurs actifs.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope pour les utilisateurs inactifs.
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
 }

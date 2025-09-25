@@ -13,6 +13,7 @@ use App\Mail\ResetPasswordEmail;
 
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -122,7 +123,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('')
+            return redirect()->intended('/')
                 ->with('success', 'Connexion réussie ! Bienvenue !');
         }
 
@@ -243,6 +244,9 @@ public function updateProfilePicture(Request $request)
     return redirect()->route('profile')->with('success', 'Photo de profil mise à jour !');
 }
 
+/**
+ * Update user profile
+ */
 public function updateProfile(Request $request)
 {
     $user = Auth::user();
@@ -272,6 +276,66 @@ public function updateProfile(Request $request)
     ]);
 
     return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès !');
+}
+
+/**
+ * Redirect to Google OAuth
+ */
+public function redirectToGoogle()
+{
+    return Socialite::driver('google')->redirect();
+}
+
+/**
+ * Handle Google OAuth callback
+ */
+public function handleGoogleCallback()
+{
+    try {
+        $googleUser = Socialite::driver('google')->user();
+
+        // Check if user already exists with this email
+        $existingUser = User::where('email', $googleUser->getEmail())->first();
+
+        if ($existingUser) {
+            // Update Google ID if not set
+            if (!$existingUser->google_id) {
+                $existingUser->update([
+                    'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                ]);
+            }
+
+            Auth::login($existingUser);
+            return redirect()->intended('/')->with('success', 'Connexion réussie avec Google !');
+        }
+
+        // Create new user
+        $user = User::create([
+            'first_name' => $googleUser->user['given_name'] ?? explode(' ', $googleUser->getName())[0],
+            'last_name' => $googleUser->user['family_name'] ?? (explode(' ', $googleUser->getName())[1] ?? ''),
+            'email' => $googleUser->getEmail(),
+            'google_id' => $googleUser->getId(),
+            'avatar' => $googleUser->getAvatar(),
+            'email_verified_at' => now(),
+            'terms_accepted' => true,
+            'password' => Hash::make(Str::random(24)), // Random password for Google users
+        ]);
+
+        // Send welcome email
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi email bienvenue Google: ' . $e->getMessage());
+        }
+
+        Auth::login($user);
+        return redirect()->intended('/')->with('success', 'Compte créé avec succès via Google ! Bienvenue sur Waste2Product !');
+
+    } catch (\Exception $e) {
+        \Log::error('Google OAuth Error: ' . $e->getMessage());
+        return redirect()->route('login')->with('error', 'Erreur lors de la connexion avec Google. Veuillez réessayer.');
+    }
 }
 
 public function redirectToResetPassword()

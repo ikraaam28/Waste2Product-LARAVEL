@@ -1,0 +1,25 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#f8f9fa"/>
+  <rect x="50" y="50" width="200" height="200" rx="10" fill="#e9ecef" stroke="#dee2e6" stroke-width="2"/>
+
+  <!-- Icône de produit écologique -->
+  <g transform="translate(150, 150)">
+    <!-- Feuille -->
+    <path d="M-30 -20 Q-30 -40 -10 -40 Q10 -40 30 -20 Q30 0 10 0 Q-10 0 -30 -20 Z" fill="#28a745" opacity="0.7"/>
+
+    <!-- Tige -->
+    <line x1="0" y1="0" x2="0" y2="30" stroke="#28a745" stroke-width="3" opacity="0.7"/>
+
+    <!-- Symbole de recyclage -->
+    <g transform="translate(0, 40)">
+      <path d="M-15 -10 L-5 -10 L-10 -20 Z" fill="#17a2b8" opacity="0.6"/>
+      <path d="M5 -10 L15 -10 L10 0 Z" fill="#17a2b8" opacity="0.6"/>
+      <path d="M-10 10 L10 10 L0 0 Z" fill="#17a2b8" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- Texte -->
+  <text x="150" y="250" text-anchor="middle" fill="#6c757d" font-family="Arial, sans-serif" font-size="14" font-weight="500">
+    Produit Écologique
+  </text>
+</svg>
