@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
@@ -60,8 +59,6 @@ Route::get('/partners/{partner}', [PartnerController::class, 'showFront'])->name
 Route::get('warehouses', [WarehouseController::class, 'frontIndex'])->name('warehouses.front');
 Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])->name('warehouses.show');
 
-// Routes des produits
-Route::get('/products', [ProductController::class, 'index'])->name('products');
 
 // Routes de la boutique
 Route::get('/store', [StoreController::class, 'index'])->name('store');

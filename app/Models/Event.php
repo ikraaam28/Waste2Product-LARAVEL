@@ -44,13 +44,6 @@ class Event extends Model
                     ->withTimestamps();
     }
 
-    /**
-     * Relation avec les produits liés
-     */
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class, 'event_products');
-    }
 
     /**
      * Relation avec les feedbacks

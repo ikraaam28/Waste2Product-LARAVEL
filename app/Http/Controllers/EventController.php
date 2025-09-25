@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\EventFeedback;
 use App\Models\Badge;
 use App\Models\User;
@@ -29,7 +27,7 @@ class EventController extends Controller
         
         $upcomingEvents = Event::active()
             ->upcoming()
-            ->with(['participants', 'products'])
+            ->with(['participants'])
             ->orderBy('date')
             ->limit(5)
             ->get();
@@ -54,7 +52,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::with(['participants', 'products', 'creator'])
+        $events = Event::with(['participants', 'creator'])
             ->orderBy('date')
             ->get();
             
@@ -68,7 +66,7 @@ class EventController extends Controller
      */
     public function manage()
     {
-        $events = Event::with(['participants', 'products', 'creator'])
+        $events = Event::with(['participants', 'creator'])
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -80,7 +78,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load(['participants', 'products.category', 'feedbacks', 'creator']);
+        $event->load(['participants', 'feedbacks', 'creator']);
         return view('admin.events.show', compact('event'));
     }
 
@@ -90,8 +88,7 @@ class EventController extends Controller
     public function create()
     {
         $categories = $this->getEventCategories();
-        $products = Product::with('category')->get();
-        return view('admin.events.create', compact('categories', 'products'));
+        return view('admin.events.create', compact('categories'));
     }
 
     /**
@@ -110,8 +107,6 @@ class EventController extends Controller
             'organizer_email' => 'required|email|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1|max:1000',
-            'products' => 'nullable|array',
-            'products.*' => 'exists:products,id'
         ]);
 
         $data = $request->all();
@@ -124,9 +119,6 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
-        if ($request->has('products')) {
-            $event->products()->attach($request->products);
-        }
 
         return redirect()->route('admin.events.manage')
             ->with('success', 'Événement créé avec succès!');
@@ -138,9 +130,7 @@ class EventController extends Controller
     public function edit(Event $event)
     {
         $categories = $this->getEventCategories();
-        $products = Product::with('category')->get();
-        $event->load('products');
-        return view('admin.events.edit', compact('event', 'categories', 'products'));
+        return view('admin.events.edit', compact('event', 'categories'));
     }
 
     /**
@@ -157,8 +147,6 @@ class EventController extends Controller
             'location' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1',
-            'products' => 'nullable|array',
-            'products.*' => 'exists:products,id'
         ]);
 
         $data = $request->all();
@@ -172,11 +160,6 @@ class EventController extends Controller
 
         $event->update($data);
 
-        if ($request->has('products')) {
-            $event->products()->sync($request->products);
-        } else {
-            $event->products()->detach();
-        }
 
         return redirect()->route('admin.events.manage')
             ->with('success', 'Événement mis à jour avec succès!');
@@ -446,7 +429,7 @@ class EventController extends Controller
      */
     public function apiEvents()
     {
-        $events = Event::with(['participants', 'products'])
+        $events = Event::with(['participants'])
             ->get()
             ->map(function ($event) {
                 $color = $this->getCategoryColor($event->category);
@@ -561,7 +544,7 @@ class EventController extends Controller
      */
     public function publicShow(Event $event)
     {
-        $event->load(['participants', 'products.category', 'creator']);
+        $event->load(['participants', 'creator']);
         
         // Vérifier si l'utilisateur est déjà inscrit
         $isParticipating = false;
