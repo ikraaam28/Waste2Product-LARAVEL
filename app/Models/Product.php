@@ -103,6 +103,14 @@ class Product extends Model
     }
 
     /**
+     * Relation avec les événements
+     */
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_products');
+    }
+
+    /**
      * Scope pour les produits actifs
      */
     public function scopeActive($query)

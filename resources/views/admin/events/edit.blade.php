@@ -155,7 +155,7 @@
                                 <label>Related Products by Category</label>
                                 <div class="row">
                                     @php
-                                        $productCategories = \App\Models\ProductCategory::all();
+                                        $productCategories = \App\Models\Category::all();
                                     @endphp
                                     @foreach($productCategories as $productCategory)
                                         <div class="col-md-4">
@@ -178,7 +178,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="card-body" id="category_{{ $productCategory->id }}">
-                                                    @foreach($products->where('category_id', $productCategory->id) as $product)
+                                                    @foreach($products->filter(function($product) use ($productCategory) { return $product->category_id == $productCategory->id; }) as $product)
                                                         <div class="form-check">
                                                             <input class="form-check-input product-checkbox" type="checkbox" 
                                                                    name="products[]" value="{{ $product->id }}" 

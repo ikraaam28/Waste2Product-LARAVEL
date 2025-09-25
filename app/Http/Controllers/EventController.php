@@ -88,7 +88,8 @@ class EventController extends Controller
     public function create()
     {
         $categories = $this->getEventCategories();
-        return view('admin.events.create', compact('categories'));
+        $products = \App\Models\Product::with('category')->get();
+        return view('admin.events.create', compact('categories', 'products'));
     }
 
     /**
@@ -130,7 +131,8 @@ class EventController extends Controller
     public function edit(Event $event)
     {
         $categories = $this->getEventCategories();
-        return view('admin.events.edit', compact('event', 'categories'));
+        $products = \App\Models\Product::with('category')->get();
+        return view('admin.events.edit', compact('event', 'categories', 'products'));
     }
 
     /**
