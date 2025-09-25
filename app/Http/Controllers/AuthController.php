@@ -115,7 +115,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back(index)
+            return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -124,7 +124,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('')
+            return redirect()->intended('/')
                 ->with('success', 'Connexion réussie ! Bienvenue !');
         }
 

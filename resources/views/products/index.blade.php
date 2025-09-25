@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('title', 'Nos Produits - Waste2Product')
 
 @section('content')
@@ -410,3 +411,4 @@ function addToWishlist(productId) {
 }
 </script>
 @endpush
+
