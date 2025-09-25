@@ -55,6 +55,14 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 // Admin
 Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
+
+// Admin User Management
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::patch('users/{user}/toggle-verification', [App\Http\Controllers\Admin\UserController::class, 'toggleVerification'])->name('users.toggle-verification');
+    Route::patch('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+});
 // Admin components
 Route::prefix('admin')->group(function () {
     Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');

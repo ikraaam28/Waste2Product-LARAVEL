@@ -28,6 +28,23 @@
         </li>
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
+          <h4 class="text-section">Gestion</h4>
+        </li>
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#users">
+            <i class="fas fa-users"></i>
+            <p>Utilisateurs</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="users">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.users.index') }}"><span class="sub-item">Liste des Utilisateurs</span></a></li>
+              <li><a href="{{ route('admin.users.create') }}"><span class="sub-item">Ajouter Utilisateur</span></a></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-section">
+          <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
         </li>
         <li class="nav-item">
