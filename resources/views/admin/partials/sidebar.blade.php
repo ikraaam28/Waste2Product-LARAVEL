@@ -131,6 +131,39 @@
             </ul>
           </div>
         </li>
+
+
+
+<li class="nav-item">
+    <a data-bs-toggle="collapse" href="#partners">
+        <i class="fas fa-handshake"></i>
+        <p>Partners</p>
+        <span class="caret"></span>
+    </a>
+    <div class="collapse" id="partners">
+        <ul class="nav nav-collapse">
+            <li><a href="{{ route('admin.partners.index') }}"><span class="sub-item">All partners</span></a></li>
+            <li><a href="{{ route('admin.partners.create') }}"><span class="sub-item">Add a partner</span></a></li>
+        </ul>
+    </div>
+</li>
+
+
+<li class="nav-item">
+    <a data-bs-toggle="collapse" href="#warehouses">
+        <i class="fas fa-warehouse"></i>
+        <p>Warehouses</p>
+        <span class="caret"></span>
+    </a>
+    <div class="collapse" id="warehouses">
+        <ul class="nav nav-collapse">
+            <li><a href="{{ route('admin.warehouses.index') }}"><span class="sub-item">All Warehouses</span></a></li>
+            <li><a href="{{ route('admin.warehouses.create') }}"><span class="sub-item">Add Warehouse</span></a></li>
+        </ul>
+    </div>
+</li>
+
+
         <li class="nav-item">
           <a href="{{ url('admin/widgets') }}">
             <i class="fas fa-desktop"></i>

@@ -9,6 +9,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\WarehouseController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -47,6 +49,16 @@ Route::get('/events/{event}', [EventController::class, 'publicShow'])->name('eve
 Route::post('/events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
 Route::get('/events/{event}/qr/{participant}', [EventController::class, 'showQrCode'])->name('events.qr');
 Route::post('/events/{event}/feedback', [EventController::class, 'storeFeedback'])->name('events.feedback.store');
+
+// Frontend list of partners with filters
+Route::get('/partners', [PartnerController::class, 'front'])->name('partners.front');
+
+// Frontend single partner details
+Route::get('/partners/{partner}', [PartnerController::class, 'showFront'])->name('partners.show');
+
+// Routes frontend si nécessaire
+Route::get('warehouses', [WarehouseController::class, 'frontIndex'])->name('warehouses.front');
+Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])->name('warehouses.show');
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -106,7 +118,37 @@ Route::prefix('admin')->group(function () {
     Route::put('/events/{event}', [EventController::class, 'update'])->name('admin.events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('admin.events.destroy');
     Route::patch('/events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('admin.events.toggle-status');
+
+    // Partners Management
+    Route::get('partners', [PartnerController::class, 'index'])->name('admin.partners.index');
+    Route::get('partners/create', [PartnerController::class, 'create'])->name('admin.partners.create');
+    Route::post('partners', [PartnerController::class, 'store'])->name('admin.partners.store');
+    Route::get('partners/{partner}', [PartnerController::class, 'show'])->name('admin.partners.show');
+    Route::get('partners/{partner}/edit', [PartnerController::class, 'edit'])->name('admin.partners.edit');
+    Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
+    Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
+
+    // Warehouses Management 
+    Route::get('warehouses', [WarehouseController::class, 'index'])->name('admin.warehouses.index');
+    Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('admin.warehouses.create');
+    Route::post('warehouses', [WarehouseController::class, 'store'])->name('admin.warehouses.store');
+    Route::get('warehouses/{warehouse}', [WarehouseController::class, 'show'])->name('admin.warehouses.show');
+    Route::get('warehouses/{warehouse}/edit', [WarehouseController::class, 'edit'])->name('admin.warehouses.edit');
+    Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('admin.warehouses.update');
+    Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
+    Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
 });
+
+
+
+
+
+
+
+
+
+
+
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 
 // Legacy redirects: map old /admin/pages/* URLs to new Blade routes
