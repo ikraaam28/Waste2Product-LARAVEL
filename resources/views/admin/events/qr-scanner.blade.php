@@ -6,9 +6,9 @@
         <div class="page-header">
             <h3 class="fw-bold mb-3">QR Code Scanner</h3>
             <ul class="breadcrumbs mb-3">
-                <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
+                <li class="nav-home"><a href="{{ route('admin.events.index') }}"><i class="icon-home"></i></a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">Events</a></li>
+                <li class="nav-item"><a href="{{ route('admin.events.index') }}">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item">QR Scanner</li>
             </ul>
@@ -92,8 +92,8 @@
                             <button class="btn btn-warning" onclick="stopScanner()">
                                 <i class="fa fa-stop"></i> Stop Scanner
                             </button>
-                            <a href="{{ route('admin.events.dashboard') }}" class="btn btn-info">
-                                <i class="fa fa-arrow-left"></i> Back to Dashboard
+                            <a href="{{ route('admin.events.index') }}" class="btn btn-info">
+                                <i class="fa fa-arrow-left"></i> Back to Events
                             </a>
                             <a href="{{ route('admin.events.feedback') }}" class="btn btn-warning">
                                 <i class="fa fa-chart-line"></i> Feedback & Impact
@@ -415,10 +415,7 @@ function exportCSV() {
     alert('CSV export functionality to be implemented');
 }
 
-// Start scanner automatically when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    startScanner();
-});
+// Scanner will start only when the user clicks the Start Scanner button.
 </script>
 @endpush
 @endsection
