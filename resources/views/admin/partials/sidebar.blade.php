@@ -60,11 +60,11 @@
             </ul>
           </div>
         </li>
-        {{--
-        <li class="nav-section">
+        
+        {{-- <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
-        </li>
+        </li> --}}
          <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tutorials">
             <i class="fas fa-book"></i>
@@ -90,7 +90,7 @@
             </ul>
           </div>
         </li>
-        <li class="nav-item">
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#base">
             <i class="fas fa-layer-group"></i>
             <p>Base</p>
@@ -110,8 +110,8 @@
               <li><a href="{{ url('admin/components/typography') }}"><span class="sub-item">Typography</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#sidebarLayouts">
             <i class="fas fa-th-list"></i>
             <p>Sidebar Layouts</p>
@@ -123,8 +123,8 @@
               <li><a href="#"><span class="sub-item">Icon Menu</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#forms">
             <i class="fas fa-pen-square"></i>
             <p>Forms</p>
@@ -135,8 +135,8 @@
               <li><a href="{{ url('admin/forms/forms') }}"><span class="sub-item">Basic Form</span></a></li>
             </ul>
           </div>
-        </li>
-          <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tuttos">
             <i class="fas fa-tutto"></i>
             <p>tutto</p>
@@ -149,8 +149,8 @@
 </ul>
 
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tables">
             <i class="fas fa-table"></i>
             <p>Tables</p>
@@ -162,8 +162,8 @@
               <li><a href="{{ url('admin/tables/datatables') }}"><span class="sub-item">Datatables</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#maps">
             <i class="fas fa-map-marker-alt"></i>
             <p>Maps</p>
@@ -175,8 +175,8 @@
               <li><a href="{{ url('admin/maps/jsvectormap') }}"><span class="sub-item">Jsvectormap</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#charts">
             <i class="far fa-chart-bar"></i>
             <p>Charts</p>
@@ -188,8 +188,8 @@
               <li><a href="{{ url('admin/charts/sparkline') }}"><span class="sub-item">Sparkline</span></a></li>
             </ul>
           </div>
-        </li>
-        --}}
+        </li> --}}
+        
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#events">
             <i class="fas fa-calendar-alt"></i>
