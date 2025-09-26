@@ -6,13 +6,93 @@
       <div class="page-header">
             <h3 class="fw-bold mb-3">All Events</h3>
         <ul class="breadcrumbs mb-3">
-          <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
+          <li class="nav-home"><a href="{{ route('admin.events.index') }}"><i class="icon-home"></i></a></li>
           <li class="separator"><i class="icon-arrow-right"></i></li>
-          <li class="nav-item"><a href="#">Events</a></li>
+          <li class="nav-item"><a href="{{ route('admin.events.index') }}">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item">All Events</li>
         </ul>
       </div>
+
+        <!-- Stats Cards (moved from Events Dashboard) -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card card-stats card-round">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="icon-big text-center">
+                                    <i class="flaticon-calendar text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="col-7 col-stats">
+                                <div class="numbers">
+                                    <p class="card-category">Total Events</p>
+                                    <h4 class="card-title">{{ isset($totalEvents) ? $totalEvents : (($events instanceof \Illuminate\Pagination\LengthAwarePaginator) ? $events->total() : (is_countable($events ?? []) ? count($events ?? []) : 0)) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats card-round">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="icon-big text-center">
+                                    <i class="flaticon-users text-success"></i>
+                                </div>
+                            </div>
+                            <div class="col-7 col-stats">
+                                <div class="numbers">
+                                    <p class="card-category">Total Participants</p>
+                                    <h4 class="card-title">{{ $totalParticipants ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats card-round">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="icon-big text-center">
+                                    <i class="flaticon-qr-code text-warning"></i>
+                                </div>
+                            </div>
+                            <div class="col-7 col-stats">
+                                <div class="numbers">
+                                    <p class="card-category">QR Scanned</p>
+                                    <h4 class="card-title">{{ $totalScanned ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats card-round">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="icon-big text-center">
+                                    <i class="flaticon-medal text-info"></i>
+                                </div>
+                            </div>
+                            <div class="col-7 col-stats">
+                                <div class="numbers">
+                                    <p class="card-category">Badges Distributed</p>
+                                    <h4 class="card-title">{{ $totalBadges ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Filters -->
         <div class="row mb-4">
