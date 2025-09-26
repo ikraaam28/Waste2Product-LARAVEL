@@ -620,7 +620,7 @@
                                             <hr class="my-4">
                                             <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</span>
                                         </div>
-                                        <p class="mb-0">Already have an account? <a href="#" class="text-primary fw-bold text-decoration-none">Sign In <i class="fa fa-arrow-right ms-1"></i></a></p>
+                                        <p class="mb-0">Already have an account? <a href="{{ route('login') }}" class="text-primary fw-bold text-decoration-none">Sign In <i class="fa fa-arrow-right ms-1"></i></a></p>
                                     </div>
                                 </div>
                             </form>

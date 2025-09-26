@@ -27,6 +27,8 @@ class User extends Authenticatable
         'terms_accepted',
         'email_verified_at',
         'remember_token',
+        'role',
+        
     ];
 
     /**
@@ -57,6 +59,13 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name . ' ' . $this->last_name);
+    }
+    /**
+ * Vérifier si l'utilisateur est un administrateur.
+ */
+public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
 }

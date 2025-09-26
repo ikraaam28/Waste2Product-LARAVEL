@@ -73,6 +73,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'newsletter_subscription' => $request->has('newsletter_subscription'),
             'terms_accepted' => true,
+            'role' => 'user',
         ]);
 
         // Envoyer l'email de bienvenue
@@ -112,14 +113,26 @@ public function authenticate(Request $request)
 
     $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        return redirect()->intended('')
-            ->with('success', 'Login successful! Welcome!');
+  if (Auth::attempt($credentials)) {
+    $request->session()->regenerate();
+\Log::info('Utilisateur connecté : ', [
+            'email' => Auth::user()->email,
+            'role' => Auth::user()->role,
+            'isAdmin' => Auth::user()->isAdmin(),
+        ]);
+
+        if (Auth::user()->isAdmin()) {
+            \Log::info('Redirection vers admin.dashboard');
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Welcome back, Admin!');
+        }
+
+        \Log::info('Redirection vers home');
+        return redirect()->route('home')->with('success', 'Login successful! Welcome!');
     }
 
     return redirect()->back()
-        ->withErrors(['email' => 'The provided credentials are incorrect.'])
+        ->withErrors(['email' => 'Les identifiants fournis sont incorrects.'])
         ->withInput();
 }
 

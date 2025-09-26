@@ -8,9 +8,7 @@
             <h1 class="display-6">Discover Our Recycling Ideas</h1>
         </div>
         @auth
-            <div class="text-center mb-5">
-                <a href="{{ route('tutos.create') }}" class="btn btn-primary rounded-pill py-3 px-5 wow fadeInUp" data-wow-delay="0.3s">Create New Tutorial</a>
-            </div>
+         
         @endauth
         @if ($tutos->isEmpty())
             <p class="text-center">No tutorials available at the moment.</p>
@@ -20,10 +18,24 @@
                     <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="store-item position-relative text-center">
                             @php
-                                $firstMedia = $tuto->media && is_array($tuto->media) && count($tuto->media) > 0 ? $tuto->media[0] : null;
+                                $mediaUrl = null;
+                                $isVideo = false;
+                                $mimeType = '';
+                                if ($tuto->media && is_array($tuto->media) && isset($tuto->media[0])) {
+                                    $firstMedia = $tuto->media[0];
+                                    $mediaUrl = asset('storage/' . $firstMedia['path']);
+                                    $mimeType = $firstMedia['mime_type'];
+                                    if (strpos($firstMedia['mime_type'], 'video') === 0) {
+                                        $isVideo = true;
+                                    }
+                                }
                             @endphp
-                            @if ($firstMedia && Illuminate\Support\Facades\Storage::disk('public')->exists($firstMedia))
-                                <img class="img-fluid" src="{{ Illuminate\Support\Facades\Storage::url($firstMedia) }}" alt="{{ $tuto->title }}">
+                            @if ($mediaUrl)
+                                @if ($isVideo)
+                                    <video class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" loop muted autoplay><source src="{{ $mediaUrl }}" type="{{ $mimeType }}">Your browser does not support the video tag.</video>
+                                @else
+                                    <img class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" src="{{ $mediaUrl }}" alt="{{ $tuto->title }}">
+                                @endif
                             @else
                                 <img class="img-fluid" src="{{ asset('assets/img/placeholder.jpg') }}" alt="Placeholder">
                             @endif

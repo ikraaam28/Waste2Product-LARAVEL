@@ -1,4 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'View Tutorial')
 
 @section('content')
 <style>
@@ -18,8 +20,9 @@
         box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
     }
 
-    .tuto-card .card-img-top {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    .tuto-card .card-header {
+        background: linear-gradient(135deg, #1572E8 0%, #0d47a1 100%);
+        color: white;
     }
 
     .tuto-card .card-title a {
@@ -100,35 +103,17 @@
         font-size: 14px;
     }
 
-    .reaction-btn {
+    .reaction-info {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         border: none;
-        transition: all 0.3s ease;
         border-radius: 25px;
+        padding: 8px 16px;
+        color: white;
+        font-weight: medium;
     }
 
-    .reaction-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
-    }
-
-    .reaction-btn.dislike {
+    .reaction-info.dislike {
         background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    }
-
-    .reaction-btn.dislike:hover {
-        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
-    }
-
-    .form-control:focus {
-        border-color: #1572E8;
-        box-shadow: 0 0 0 0.2rem rgba(21, 114, 232, 0.25);
-        background: rgba(255, 255, 255, 0.8);
-    }
-
-    .reply-section {
-        background: rgba(255, 255, 255, 0.3);
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .step-item {
@@ -142,17 +127,35 @@
         background: rgba(255, 255, 255, 0.6);
         transform: translateX(5px);
     }
+
+    .admin-info {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
 </style>
 
-<div class="container-fluid product py-5 my-5">
-    <div class="container py-5">
-        
-        <!-- Tutorial Card -->
-        <div class="row justify-content-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
-            <div class="col-lg-11">
-                <div class="card h-100 tuto-card">
+<div class="container">
+    <div class="page-inner">
+        <div class="page-header">
+            <h3 class="fw-bold mb-3">View Tutorial</h3>
+            <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                    <a href="{{ url('admin') }}"><i class="icon-home"></i></a>
+                </li>
+                <li class="separator"><i class="icon-arrow-right"></i></li>
+                <li class="nav-item"><a href="{{ route('admin.tutos.index') }}">Tutorials</a></li>
+                <li class="separator"><i class="icon-arrow-right"></i></li>
+                <li class="nav-item">View</li>
+            </ul>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card tuto-card">
                     <!-- Header -->
-                    <div class="card-header bg-primary text-white text-center py-4">
+                    <div class="card-header text-center py-4">
                         <h1 class="display-5 fw-bold mb-2">{{ $tuto->title }}</h1>
                         <p class="fs-5 fw-medium fst-italic">Tutorial</p>
                     </div>
@@ -160,8 +163,7 @@
                     <!-- Content -->
                     <div class="card-body p-5">
                         <div class="row g-5">
-                            
-                            <!-- Media Section - Centralized -->
+                            <!-- Media Section -->
                             <div class="col-lg-6">
                                 <div class="tuto-card p-4">
                                     @php
@@ -195,49 +197,30 @@
                                     @endif
                                     <!-- Reactions -->
                                     <div class="d-flex gap-3 mt-3 justify-content-center">
-                                        @auth
-                                            <form action="{{ route('tutos.react', $tuto) }}" method="POST">
-                                                @csrf
-                                                <div class="d-flex gap-3">
-                                                    <button name="type" value="like" class="btn reaction-btn text-white py-2 px-4 d-flex align-items-center gap-2" aria-label="Like tutorial">
-                                                        <i class="fas fa-thumbs-up"></i>
-                                                        <span class="fw-medium">{{ $tuto->likes_count }}</span>
-                                                    </button>
-                                                    <button name="type" value="dislike" class="btn reaction-btn dislike text-white py-2 px-4 d-flex align-items-center gap-2" aria-label="Dislike tutorial">
-                                                        <i class="fas fa-thumbs-down"></i>
-                                                        <span class="fw-medium">{{ $tuto->dislikes_count }}</span>
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        @else
-                                            <div class="d-flex gap-3">
-                                                <div class="btn reaction-btn text-white py-2 px-4 d-flex align-items-center gap-2">
-                                                    <i class="fas fa-thumbs-up"></i>
-                                                    <span class="fw-medium">{{ $tuto->likes_count }}</span>
-                                                </div>
-                                                <div class="btn reaction-btn dislike text-white py-2 px-4 d-flex align-items-center gap-2">
-                                                    <i class="fas fa-thumbs-down"></i>
-                                                    <span class="fw-medium">{{ $tuto->dislikes_count }}</span>
-                                                </div>
-                                            </div>
-                                        @endauth
+                                        <div class="reaction-info text-white py-2 px-4 d-flex align-items-center gap-2">
+                                            <i class="fas fa-thumbs-up"></i>
+                                            <span class="fw-medium">{{ $tuto->likes_count }}</span>
+                                        </div>
+                                        <div class="reaction-info dislike text-white py-2 px-4 d-flex align-items-center gap-2">
+                                            <i class="fas fa-thumbs-down"></i>
+                                            <span class="fw-medium">{{ $tuto->dislikes_count }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Details Section -->
                             <div class="col-lg-6">
-                                
                                 <!-- Meta Info and Description -->
                                 <div class="tuto-card p-4 mb-4">
                                     @php
                                         $categories = [
-                                            'plastique' => 'Plastic',
-                                            'bois' => 'Wood',
-                                            'papier' => 'Paper',
+                                            'plastic' => 'Plastic',
+                                            'wood' => 'Wood',
+                                            'paper' => 'Paper',
                                             'metal' => 'Metal',
-                                            'verre' => 'Glass',
-                                            'autre' => 'Other',
+                                            'glass' => 'Glass',
+                                            'other' => 'Other',
                                         ];
                                         $englishCategory = $categories[$tuto->category] ?? ucfirst($tuto->category);
                                     @endphp
@@ -260,7 +243,8 @@
                                     </h3>
                                     <p class="text-dark fs-6 lh-lg">{{ $tuto->description }}</p>
                                 </div>
-   <!-- Steps -->
+
+                                <!-- Steps -->
                                 <div class="tuto-card p-4 mb-4">
                                     <h3 class="h4 fw-bold text-dark mb-4">Steps</h3>
                                     <div class="list-group list-group-flush">
@@ -272,36 +256,40 @@
                                         @endforeach
                                     </div>
                                 </div>
+
+                                <!-- Admin Info -->
+                                <div class="admin-info p-4">
+                                    <h3 class="h4 fw-bold text-dark mb-4">Admin Information</h3>
+                                    <div class="mb-3">
+                                        <strong>Publication Status:</strong>
+                                        <span class="{{ $tuto->is_published ? 'text-success' : 'text-warning' }}">
+                                            {{ $tuto->is_published ? 'Published' : 'Unpublished' }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong>Admin Notes:</strong>
+                                        <p class="text-dark mb-0">{{ $tuto->admin_notes ?? 'No notes provided.' }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Footer with Back Button -->
+                    <div class="card-footer text-center">
+                        <a href="{{ route('admin.tutos.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="fas fa-arrow-left"></i> Back to Tutorials
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Questions & Answers Section -->
-        <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
+        <div class="section-title text-center mx-auto mt-5" style="max-width: 500px;">
             <p class="fs-5 fw-medium fst-italic text-primary">Questions & Answers</p>
-            <h1 class="display-6">Ask Questions About This Tutorial</h1>
+            <h1 class="display-6">Questions About This Tutorial</h1>
         </div>
-
-        <!-- Question Form -->
-        @auth
-            <div class="row justify-content-center wow fadeInUp mb-5" data-wow-delay="0.3s">
-                <div class="col-lg-8">
-                    <div class="tuto-card p-4">
-                        <form action="{{ route('tutos.question', $tuto) }}" method="POST">
-                            @csrf
-                            <textarea name="question_text" required placeholder="Ask your question..." class="form-control border-0 bg-white bg-opacity-75 p-3 mb-3" rows="4" style="resize: none; border-radius: 10px;"></textarea>
-                            <button type="submit" class="btn btn-primary rounded-pill py-2 px-4 d-flex align-items-center gap-2">
-                                <i class="fas fa-paper-plane"></i>
-                                Ask a Question
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        @endauth
 
         <!-- Questions List -->
         @if ($tuto->questions->whereNull('parent_id')->isEmpty())
@@ -310,11 +298,10 @@
                 <p class="text-muted fs-5">No questions for this tutorial.</p>
             </div>
         @else
-            <div class="row g-4">
+            <div class="row g-4 mt-3">
                 @foreach ($tuto->questions->whereNull('parent_id') as $question)
-                    <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="col-12">
                         <div class="question-card">
-                            
                             <!-- Question -->
                             <div class="p-4">
                                 <div class="d-flex align-items-start gap-3">
@@ -330,13 +317,6 @@
                                             </span>
                                         </div>
                                         <p class="text-dark lh-lg mb-3">{{ $question->question_text }}</p>
-                                        
-                                        @auth
-                                            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" onclick="toggleReplyForm({{ $question->id }})" style="border-radius: 20px;">
-                                                <i class="fas fa-reply"></i>
-                                                Reply
-                                            </button>
-                                        @endauth
                                     </div>
                                 </div>
                             </div>
@@ -360,26 +340,6 @@
                                     @endforeach
                                 </div>
                             @endif
-
-                            <!-- Reply Form -->
-                            @auth
-                                <div id="reply-form-{{ $question->id }}" class="reply-section px-4 py-3" style="display: none;">
-                                    <form action="{{ route('tutos.question', $tuto) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="parent_id" value="{{ $question->id }}">
-                                        <textarea name="question_text" required placeholder="Your reply..." class="form-control border-0 bg-white bg-opacity-75 p-3 mb-3 small" rows="3" style="resize: none; border-radius: 10px;"></textarea>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-sm btn-primary px-3 d-flex align-items-center gap-2 rounded-pill">
-                                                <i class="fas fa-paper-plane"></i>
-                                                Reply
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="toggleReplyForm({{ $question->id }})">
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            @endauth
                         </div>
                     </div>
                 @endforeach
@@ -387,16 +347,4 @@
         @endif
     </div>
 </div>
-
-<script>
-function toggleReplyForm(questionId) {
-    const form = document.getElementById('reply-form-' + questionId);
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
-    } else {
-        form.style.display = 'none';
-    }
-}
-</script>
-
 @endsection

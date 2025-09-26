@@ -2,28 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tuto extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'title',
         'description',
         'category',
         'steps',
         'media',
+        'user_id',
+        'is_published',
+        'admin_notes',
         'views',
         'likes_count',
         'dislikes_count',
-        'user_id',
     ];
 
     protected $casts = [
         'steps' => 'array',
         'media' => 'array',
+        'is_published' => 'boolean',
     ];
 
     public function user()
@@ -34,5 +34,10 @@ class Tuto extends Model
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(Reaction::class);
     }
 }
