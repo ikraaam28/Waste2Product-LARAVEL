@@ -16,6 +16,7 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\CommentaireController;
+use App\Http\Controllers\TutoController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -91,9 +92,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('publications', PublicationController::class)->except(['index']);
 });
 // Admin
-Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
-// Admin components
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::view('/', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');
     Route::view('/components/buttons', 'admin.components.buttons')->name('admin.components.buttons');
     Route::view('/components/gridsystem', 'admin.components.gridsystem')->name('admin.components.gridsystem');
@@ -128,6 +128,7 @@ Route::prefix('admin')->group(function () {
 
 
     // Events
+
     Route::get('/events/dashboard', [EventController::class, 'dashboard'])->name('admin.events.dashboard');
     Route::get('/events', [EventController::class, 'index'])->name('admin.events.index');
     Route::get('/events/manage', [EventController::class, 'manage'])->name('admin.events.manage');
@@ -201,6 +202,16 @@ Route::prefix('admin')->group(function () {
     Route::patch('categories/{category}/toggle-status', [AdminCategoryController::class, 'toggleStatus'])->name('admin.categories.toggle-status');
     Route::post('categories/bulk-action', [AdminCategoryController::class, 'bulkAction'])->name('admin.categories.bulk-action');
     Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
+
+    //tuto
+Route::get('/tutos', [TutoController::class, 'index'])->name('admin.tutos.index');
+Route::get('/tutos/create', [TutoController::class, 'create'])->name('admin.tutos.create');
+Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('admin.tutos.show');
+Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store');
+ Route::get('/tutos/{tuto}/edit', [TutoController::class, 'edit'])->name('admin.tutos.edit');
+    Route::put('/tutos/{tuto}', [TutoController::class, 'update'])->name('admin.tutos.update');
+    Route::delete('/tutos/{tuto}', [TutoController::class, 'destroy'])->name('admin.tutos.destroy');
+
 });
 
 
@@ -216,38 +227,46 @@ Route::prefix('admin')->group(function () {
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 
 // Legacy redirects: map old /admin/pages/* URLs to new Blade routes
-Route::redirect('/admin/pages', '/admin');
-Route::redirect('/admin/pages/', '/admin');
-Route::get('/admin/pages/{slug}', function (string $slug) {
-    $slug = trim($slug, '/');
-    if ($slug === '' || $slug === 'index' || $slug === 'index.html') {
-        return redirect()->to(url('admin'));
-    }
-
-    // drop trailing .html if present
-    if (substr($slug, -5) === '.html') {
-        $slug = substr($slug, 0, -5);
-    }
-
-    // Normalize any leading ./ or ../ segments
-    $slug = preg_replace('#^(?:\./)+#', '', $slug);
-    $slug = preg_replace('#^(?:\.+/)+#', '', $slug);
-
-    // Direct mappings for known sections
-    $sections = ['components', 'charts', 'tables', 'maps'];
-    foreach ($sections as $section) {
-        if (strpos($slug, $section . '/') === 0) {
-            $rest = substr($slug, strlen($section) + 1);
-            return redirect()->to(url("admin/{$section}/{$rest}"));
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::redirect('/admin/pages', '/admin');
+    Route::redirect('/admin/pages/', '/admin');
+    Route::get('/admin/pages/{slug}', function (string $slug) {
+        $slug = trim($slug, '/');
+        if ($slug === '' || $slug === 'index' || $slug === 'index.html') {
+            return redirect()->to(url('admin'));
         }
-    }
 
-    if ($slug === 'forms/forms') {
-        return redirect()->to(url('admin/forms/forms'));
-    }
-    if ($slug === 'widgets') {
-        return redirect()->to(url('admin/widgets'));
-    }
+        // drop trailing .html if present
+        if (substr($slug, -5) === '.html') {
+            $slug = substr($slug, 0, -5);
+        }
 
-    abort(404);
+
+        // Normalize any leading ./ or ../ segments
+        $slug = preg_replace('#^(?:\./)+#', '', $slug);
+        $slug = preg_replace('#^(?:\.+/)+#', '', $slug);
+
+        // Direct mappings for known sections
+        $sections = ['components', 'charts', 'tables', 'maps'];
+        foreach ($sections as $section) {
+            if (strpos($slug, $section . '/') === 0) {
+                $rest = substr($slug, strlen($section) + 1);
+                return redirect()->to(url("admin/{$section}/{$rest}"));
+            }
+        }
+
+        if ($slug === 'forms/forms') {
+            return redirect()->to(url('admin/forms/forms'));
+        }
+        if ($slug === 'widgets') {
+            return redirect()->to(url('admin/widgets'));
+        }
+
+        abort(404);
+    });
 });
+Route::get('/tutos', [TutoController::class, 'index'])->name('tutos.index');
+Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('tutos.show');
+Route::post('/tutos/{tuto}/react', [TutoController::class, 'react'])->name('tutos.react')->middleware('auth');
+Route::post('/tutos/{tuto}/question', [TutoController::class, 'askQuestion'])->name('tutos.question')->middleware('auth');
+

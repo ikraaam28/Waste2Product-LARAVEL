@@ -371,14 +371,14 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="display-6">Sign in to your account</h1>
+                    <h1 class="display-6">Log in to Your Account</h1>
                     <p class="lead text-muted">Access your Waste2Product account and continue transforming waste into value</p>
                 </div>
                 
                 <div class="row g-5">
                     <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                         <div class="bg-light rounded p-5 h-100">
-                            <h3 class="text-primary mb-4">Why sign in?</h3>
+                            <h3 class="text-primary mb-4">Why Log In?</h3>
                             <div class="row g-3 mb-4">
                                 <div class="col-12">
                                     <div class="d-flex align-items-center">
@@ -409,7 +409,7 @@
                                         <div class="flex-shrink-0 btn-lg-square bg-primary text-white rounded-circle me-3">
                                             <i class="fa fa-heart"></i>
                                         </div>
-                                        <span>Get personalized eco-advice</span>
+                                        <span>Receive personalized eco-tips</span>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -431,7 +431,7 @@
                             <div class="position-absolute bottom-0 start-0" style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05)); border-radius: 0 80px 0 0;"></div>
                             
                             <div class="text-center mb-4">
-                                <h4 class="text-primary mb-2">Sign In</h4>
+                                <h4 class="text-primary mb-2">Log In</h4>
                                 <p class="text-muted">Access your Waste2Product account</p>
                                 
                                 @if(session('success'))
@@ -441,7 +441,7 @@
                                                 <div class="success-icon">
                                                     <i class="fa fa-check-circle"></i>
                                                 </div>
-                                                @if(session('success') === 'You have been successfully logged out.')
+                                                @if(session('success') === 'You have been logged out successfully.')
                                                     <h6 class="success-title">Logout</h6>
                                                 @else
                                                     <h6 class="success-title">Success!</h6>
@@ -490,9 +490,9 @@
                                 <div class="row g-4">
                                     <div class="col-12">
                                         <div class="form-floating">
-                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Email address" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
+                                            <input type="email" class="form-control rounded-pill border-2 @error('email') is-invalid @enderror" id="email" name="email" placeholder="Email Address" value="{{ old('email') }}" style="border-color: #e9ecef; transition: all 0.3s ease;" required>
                                             <label for="email" class="text-muted">
-                                                <i class="fa fa-envelope me-2"></i>Email address
+                                                <i class="fa fa-envelope me-2"></i>Email Address
                                             </label>
                                             @error('email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -514,7 +514,7 @@
                                         <div class="form-check p-3 bg-light rounded-3">
                                             <input class="form-check-input" type="checkbox" id="remember" name="remember" style="transform: scale(1.2);">
                                             <label class="form-check-label ms-2" for="remember">
-                                                Remember me
+                                                Remember Me
                                             </label>
                                         </div>
                                     </div>
@@ -540,7 +540,7 @@
                                     <div class="col-12">
                                         <button class="btn btn-primary rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" type="submit" id="submitBtn" disabled style="background: linear-gradient(135deg, #6c757d, #495057); border: none; font-weight: 600; letter-spacing: 0.5px;">
                                             <span class="position-relative z-1">
-                                                <i class="fa fa-sign-in-alt me-2"></i>Sign In
+                                                <i class="fa fa-sign-in-alt me-2"></i>Log In
                                             </span>
                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
                                         </button>
@@ -556,7 +556,6 @@
                                             <hr class="my-4">
                                             <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</span>
                                         </div>
-
                                         <!-- Google Sign-In Button -->
                                         <div class="mb-4">
                                             <a href="{{ route('auth.google') }}" class="btn btn-outline-danger rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" style="border: 2px solid #db4437; color: #db4437; font-weight: 600; letter-spacing: 0.5px; transition: all 0.3s ease;">
@@ -567,7 +566,7 @@
                                             </a>
                                         </div>
 
-                                        <p class="mb-0">Don't have an account yet? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">Sign up <i class="fa fa-arrow-right ms-1"></i></a></p>
+                                        <p class="mb-0">Don't have an account yet? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">Sign Up <i class="fa fa-arrow-right ms-1"></i></a></p>
                                     </div>
                                 </div>
                             </form>
@@ -589,25 +588,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validation state for each field
     const fieldValidationState = {};
 
-    // Fonction pour valider un champ
+    // Function to validate a field
     function validateField(field, showError = false) {
         const value = field.value.trim();
         const fieldName = field.name;
         let isValid = true;
         let errorMessage = '';
 
-        // Supprimer les anciens messages d'erreur
+        // Remove existing error messages
         const existingError = field.parentNode.querySelector('.field-error');
         if (existingError) {
             existingError.remove();
         }
 
-        // Validation selon le type de champ
+        // Validation based on field type
         switch(fieldName) {
             case 'email':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Email address is required';
+                    errorMessage = 'The email address is required';
                 } else {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(value)) {
@@ -619,15 +618,15 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'password':
                 if (value.length === 0) {
                     isValid = false;
-                    errorMessage = 'Password is required';
+                    errorMessage = 'The password is required';
                 }
                 break;
         }
 
-        // Stocker l'état de validation
+        // Store validation state
         fieldValidationState[fieldName] = isValid;
 
-        // Afficher l'erreur seulement si showError est true et qu'il y a une erreur
+        // Show error only if showError is true and there is an error
         if (!isValid && showError) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'field-error text-danger small mt-1';
@@ -647,11 +646,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
 
-    // Fonction pour vérifier si tous les champs sont valides
+    // Function to check if all fields are valid
     function checkFormValidity() {
         let allValid = true;
 
-        // Vérifier tous les champs requis
+        // Check all required fields
         const requiredFields = ['email', 'password'];
         requiredFields.forEach(fieldName => {
             const field = form.querySelector(`[name="${fieldName}"]`);
@@ -663,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Activer/désactiver le bouton
+        // Enable/disable the button
         if (allValid) {
             submitBtn.disabled = false;
             submitBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
@@ -675,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Ajouter les événements de validation
+    // Add validation event listeners
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
             validateField(this, true);
@@ -688,10 +687,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Validation initiale sans afficher d'erreurs
+    // Initial validation without showing errors
     checkFormValidity();
 
-    // Vérifier que reCAPTCHA est chargé
+    // Check if reCAPTCHA is loaded
     function checkRecaptchaLoaded() {
         if (typeof grecaptcha !== 'undefined') {
             console.log('reCAPTCHA loaded successfully');
@@ -701,16 +700,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Démarrer la vérification
+    // Start checking
     checkRecaptchaLoaded();
 
-    // Gestion du submit du formulaire
+    // Handle form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Vérifier la validité du formulaire
+        // Check form validity
         if (form.checkValidity()) {
-            // Déclencher reCAPTCHA v2 invisible
+            // Trigger invisible reCAPTCHA v2
             if (typeof grecaptcha !== 'undefined') {
                 console.log('Executing reCAPTCHA...');
                 grecaptcha.execute();
@@ -719,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('reCAPTCHA not loaded. Please refresh the page.');
             }
         } else {
-            // Afficher les erreurs
+            // Show errors
             form.classList.add('was-validated');
         }
     });
@@ -728,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.onRecaptchaSuccess = function(token) {
         console.log('reCAPTCHA v2 success:', token);
 
-        // Ajouter le token reCAPTCHA au formulaire
+        // Add reCAPTCHA token to the form
         const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
         if (recaptchaInput) {
             recaptchaInput.value = token;
@@ -740,25 +739,25 @@ document.addEventListener('DOMContentLoaded', function() {
             form.appendChild(hiddenInput);
         }
 
-        // Désactiver le bouton pour éviter les double soumissions
+        // Disable button to prevent double submission
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Signing in...';
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Logging in...';
 
-        // Soumettre le formulaire après validation reCAPTCHA
+        // Submit the form after reCAPTCHA validation
         form.submit();
     };
 
-    // reCAPTCHA v2 invisible - Callback en cas d'erreur
+    // reCAPTCHA v2 invisible - Error callback
     window.onRecaptchaError = function(error) {
         console.error('reCAPTCHA v2 error:', error);
         alert('reCAPTCHA verification failed. Please try again.');
 
-        // Réactiver le bouton
+        // Re-enable the button
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Sign In';
+        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Log In';
     };
 
-    // reCAPTCHA v2 invisible - Callback d'expiration
+    // reCAPTCHA v2 invisible - Expiration callback
     window.onRecaptchaExpired = function() {
         console.log('reCAPTCHA v2 expired');
         if (typeof grecaptcha !== 'undefined') {
@@ -766,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Gestion du popup d'erreur
+    // Handle error popup
     const errorPopup = document.querySelector('.error-popup');
     if (errorPopup) {
         setTimeout(() => {
@@ -789,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Gestion du popup de succès
+    // Handle success popup
     const successPopup = document.querySelector('.success-popup');
     if (successPopup) {
         setTimeout(() => {

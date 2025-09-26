@@ -65,6 +65,19 @@
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
         </li>
+         <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#tutorials">
+            <i class="fas fa-book"></i>
+            <p>Tutorials</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="tutorials">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.tutos.index') }}"><span class="sub-item">List Tutorials</span></a></li>
+              <li><a href="{{ route('admin.tutos.create') }}"><span class="sub-item">Create Tutorial</span></a></li>
+            </ul>
+          </div>
+        </li>
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#publications">
             <i class="fas fa-book"></i> <!-- Use an appropriate Font Awesome icon -->
@@ -121,6 +134,20 @@
             <ul class="nav nav-collapse">
               <li><a href="{{ url('admin/forms/forms') }}"><span class="sub-item">Basic Form</span></a></li>
             </ul>
+          </div>
+        </li>
+          <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#tuttos">
+            <i class="fas fa-tutto"></i>
+            <p>tutto</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="tuttos">
+           <ul class="nav nav-collapse">
+    <li><a href="{{ route('admin.tutos.index') }}"><span class="sub-item">List Tutorials</span></a></li>
+    <li><a href="{{ route('admin.tutos.create') }}"><span class="sub-item">Create Tutorial</span></a></li>
+</ul>
+
           </div>
         </li>
         <li class="nav-item">
@@ -226,5 +253,3 @@
     </div>
   </div>
 </div>
-
-

@@ -70,6 +70,13 @@ class User extends Authenticatable
     {
         return trim($this->first_name . ' ' . $this->last_name);
     }
+    /**
+ * Vérifier si l'utilisateur est un administrateur.
+ */
+public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
     /**
      * Relation avec les badges
@@ -89,14 +96,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Event::class, 'event_participants')
                     ->withPivot(['participant_id', 'scanned_at', 'badge_earned'])
                     ->withTimestamps();
-    }
-
-    /**
-     * Vérifier si l'utilisateur est un administrateur.
-     */
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
     }
 
     /**

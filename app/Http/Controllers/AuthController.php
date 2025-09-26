@@ -78,6 +78,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'newsletter_subscription' => $request->has('newsletter_subscription'),
             'terms_accepted' => true,
+            'role' => 'user',
         ]);
 
         // Envoyer l'email de bienvenue
@@ -91,58 +92,64 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Compte créé avec succès ! Veuillez vous connecter pour continuer.');
     }
 
-    /**
-     * Afficher le formulaire de login
-     */
-    public function login()
-    {
-        return view('auth.login');
-    }
+  
+ public function login()
+{
+    return view('auth.login');
+}
 
-    /**
-     * Gérer la soumission du formulaire de login
-     */
-    public function authenticate(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ], [
-            'email.required' => 'L\'adresse email est requise.',
-            'email.email' => 'Veuillez entrer une adresse email valide.',
-            'password.required' => 'Le mot de passe est requis.',
-        ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+public function authenticate(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ], [
+        'email.required' => 'The email address is required.',
+        'email.email' => 'Please enter a valid email address.',
+        'password.required' => 'The password is required.',
+    ]);
 
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/')
-                ->with('success', 'Connexion réussie ! Bienvenue !');
-        }
-
+    if ($validator->fails()) {
         return redirect()->back()
-            ->withErrors(['email' => 'Les identifiants fournis sont incorrects.'])
+            ->withErrors($validator)
             ->withInput();
     }
 
-    /**
-     * Déconnexion de l'utilisateur
-     */
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('login')
-            ->with('success', 'Vous avez été déconnecté avec succès.');
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        \Log::info('Utilisateur connecté : ', [
+            'email' => Auth::user()->email,
+            'role' => Auth::user()->role,
+            'isAdmin' => Auth::user()->isAdmin(),
+        ]);
+
+        if (Auth::user()->isAdmin()) {
+            \Log::info('Redirection vers admin.dashboard');
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Welcome back, Admin!');
+        }
+
+        \Log::info('Redirection vers home');
+        return redirect()->route('home')->with('success', 'Login successful! Welcome!');
     }
+
+    return redirect()->back()
+        ->withErrors(['email' => 'Les identifiants fournis sont incorrects.'])
+        ->withInput();
+}
+
+
+public function logout(Request $request)
+{
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('login')
+        ->with('success', 'You have been logged out successfully.');
+}
  
 
 // Affiche formulaire "mot de passe oublié"
