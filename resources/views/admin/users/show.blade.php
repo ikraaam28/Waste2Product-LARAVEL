@@ -4,7 +4,7 @@
 <div class="container">
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Détails de l'Utilisateur</h3>
+            <h3 class="fw-bold mb-3">User Details</h3>
             <ul class="breadcrumbs mb-3">
                 <li class="nav-home">
                     <a href="{{ route('admin.dashboard') }}">
@@ -15,7 +15,7 @@
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.users.index') }}">Utilisateurs</a>
+                    <a href="{{ route('admin.users.index') }}">Users</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>
@@ -29,7 +29,7 @@
         <!-- Success/Error Messages -->
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Succès!</strong> {{ session('success') }}
+                <strong>Success!</strong> {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -66,31 +66,31 @@
                                 <br>
                                 @if($user->is_active)
                                     <span class="badge badge-success mb-2">
-                                        <i class="fas fa-check-circle"></i> Compte Actif
+                                        <i class="fas fa-check-circle"></i> Active Account
                                     </span>
                                 @else
                                     <span class="badge badge-danger mb-2">
-                                        <i class="fas fa-times-circle"></i> Compte Inactif
+                                        <i class="fas fa-times-circle"></i> Inactive Account
                                     </span>
                                 @endif
                                 <br>
                                 @if($user->google_id)
                                     <span class="badge badge-success mb-2">
-                                        <i class="fab fa-google"></i> Compte Google
+                                        <i class="fab fa-google"></i> Google Account
                                     </span>
                                 @else
                                     <span class="badge badge-primary mb-2">
-                                        <i class="fas fa-envelope"></i> Compte Email
+                                        <i class="fas fa-envelope"></i> Email Account
                                     </span>
                                 @endif
                                 <br>
                                 @if($user->email_verified_at)
                                     <span class="badge badge-success">
-                                        <i class="fas fa-check-circle"></i> Email Vérifié
+                                        <i class="fas fa-check-circle"></i> Email Verified
                                     </span>
                                 @else
                                     <span class="badge badge-warning">
-                                        <i class="fas fa-exclamation-circle"></i> Email Non Vérifié
+                                        <i class="fas fa-exclamation-circle"></i> Email Not Verified
                                     </span>
                                 @endif
                             </div>
@@ -103,7 +103,7 @@
                                     @method('PATCH')
                                     <button type="submit" class="btn btn-warning btn-sm btn-link"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $user->email_verified_at ? 'Marquer comme non vérifié' : 'Marquer comme vérifié' }}">
+                                            title="{{ $user->email_verified_at ? 'Mark as unverified' : 'Mark as verified' }}">
                                         <span class="btn-label just-icon">
                                             <i class="fas {{ $user->email_verified_at ? 'fa-times-circle' : 'fa-check-circle' }}"></i>
                                         </span>
@@ -114,7 +114,7 @@
                                     @method('PATCH')
                                     <button type="submit" class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-sm btn-link"
                                             data-bs-toggle="tooltip"
-                                            title="{{ $user->is_active ? 'Désactiver le compte' : 'Activer le compte' }}">
+                                            title="{{ $user->is_active ? 'Deactivate account' : 'Activate account' }}">
                                         <span class="btn-label just-icon">
                                             <i class="fas {{ $user->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                         </span>
@@ -122,7 +122,7 @@
                                 </form>
                                 <form action="{{ route('admin.users.destroy', $user) }}" method="POST" 
                                       style="display: inline-block;" 
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                      onsubmit="return confirm('Are you sure you want to delete this user?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-sm btn-link">
@@ -136,7 +136,7 @@
                         <div class="row user-stats text-center">
                             <div class="col">
                                 <div class="number">{{ $user->created_at->diffForHumans() }}</div>
-                                <div class="title">Membre depuis</div>
+                                <div class="title">Member since</div>
                             </div>
                             <div class="col">
                                 <div class="number">
@@ -158,7 +158,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Informations Détaillées</h4>
+                            <h4 class="card-title">Detailed Information</h4>
                             <div class="ms-auto">
                                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-round">
                                     <i class="fa fa-arrow-left"></i>
@@ -175,13 +175,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Prénom</strong></label>
+                                    <label class="form-label"><strong>First Name</strong></label>
                                     <p class="form-control-static">{{ $user->first_name }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Nom</strong></label>
+                                    <label class="form-label"><strong>Last Name</strong></label>
                                     <p class="form-control-static">{{ $user->last_name }}</p>
                                 </div>
                             </div>
@@ -190,20 +190,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Adresse Email</strong></label>
+                                    <label class="form-label"><strong>Email Address</strong></label>
                                     <p class="form-control-static">
                                         {{ $user->email }}
                                         @if($user->email_verified_at)
-                                            <span class="badge badge-success ms-2">Vérifié</span>
+                                            <span class="badge badge-success ms-2">Verified</span>
                                         @else
-                                            <span class="badge badge-warning ms-2">Non vérifié</span>
+                                            <span class="badge badge-warning ms-2">Not verified</span>
                                         @endif
                                     </p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Téléphone</strong></label>
+                                    <label class="form-label"><strong>Phone</strong></label>
                                     <p class="form-control-static">{{ $user->phone ?? 'Non renseigné' }}</p>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Rôle</strong></label>
+                                    <label class="form-label"><strong>Role</strong></label>
                                     <p class="form-control-static">
                                         <span class="badge badge-{{ $user->role_badge_color }}">
                                             <i class="{{ $user->role_icon }}"></i> {{ $user->role_label }}
@@ -222,15 +222,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Statut du Compte</strong></label>
+                                    <label class="form-label"><strong>Account Status</strong></label>
                                     <p class="form-control-static">
                                         @if($user->is_active)
                                             <span class="badge badge-success">
-                                                <i class="fas fa-check-circle"></i> Actif
+                                                <i class="fas fa-check-circle"></i> Active
                                             </span>
                                         @else
                                             <span class="badge badge-danger">
-                                                <i class="fas fa-times-circle"></i> Inactif
+                                                <i class="fas fa-times-circle"></i> Inactive
                                             </span>
                                         @endif
                                     </p>
@@ -241,21 +241,21 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Ville</strong></label>
+                                    <label class="form-label"><strong>City</strong></label>
                                     <p class="form-control-static">{{ $user->city ?? 'Non renseignée' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Type de Compte</strong></label>
+                                    <label class="form-label"><strong>Account Type</strong></label>
                                     <p class="form-control-static">
                                         @if($user->google_id)
                                             <span class="badge badge-success">
-                                                <i class="fab fa-google"></i> Compte Google
+                                                <i class="fab fa-google"></i> Google Account
                                             </span>
                                         @else
                                             <span class="badge badge-primary">
-                                                <i class="fas fa-envelope"></i> Compte Email
+                                                <i class="fas fa-envelope"></i> Email Account
                                             </span>
                                         @endif
                                     </p>
@@ -266,20 +266,20 @@
                         @if($user->isSupplier())
                         <div class="row">
                             <div class="col-md-12">
-                                <h5 class="mt-4 mb-3">Informations Fournisseur</h5>
+                                <h5 class="mt-4 mb-3">Supplier Information</h5>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Nom de l'Entreprise</strong></label>
+                                    <label class="form-label"><strong>Company Name</strong></label>
                                     <p class="form-control-static">{{ $user->company_name ?? 'Non renseigné' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Numéro de Licence</strong></label>
+                                    <label class="form-label"><strong>License Number</strong></label>
                                     <p class="form-control-static">{{ $user->business_license ?? 'Non renseigné' }}</p>
                                 </div>
                             </div>
@@ -289,7 +289,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Description de l'Entreprise</strong></label>
+                                    <label class="form-label"><strong>Company Description</strong></label>
                                     <p class="form-control-static">{{ $user->company_description }}</p>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Catégories de Produits</strong></label>
+                                    <label class="form-label"><strong>Product Categories</strong></label>
                                     <p class="form-control-static">
                                         @foreach($user->supplier_categories as $category)
                                             <span class="badge badge-info me-1">{{ ucfirst($category) }}</span>
@@ -319,11 +319,11 @@
                                     <p class="form-control-static">
                                         @if($user->newsletter_subscription)
                                             <span class="badge badge-success">
-                                                <i class="fas fa-check"></i> Abonné
+                                                <i class="fas fa-check"></i> Subscribed
                                             </span>
                                         @else
                                             <span class="badge badge-secondary">
-                                                <i class="fas fa-times"></i> Non abonné
+                                                <i class="fas fa-times"></i> Not subscribed
                                             </span>
                                         @endif
                                     </p>
@@ -331,15 +331,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Conditions Acceptées</strong></label>
+                                    <label class="form-label"><strong>Terms Accepted</strong></label>
                                     <p class="form-control-static">
                                         @if($user->terms_accepted)
                                             <span class="badge badge-success">
-                                                <i class="fas fa-check"></i> Acceptées
+                                                <i class="fas fa-check"></i> Accepted
                                             </span>
                                         @else
                                             <span class="badge badge-danger">
-                                                <i class="fas fa-times"></i> Non acceptées
+                                                <i class="fas fa-times"></i> Not accepted
                                             </span>
                                         @endif
                                     </p>
@@ -350,18 +350,18 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Date de Création</strong></label>
+                                    <label class="form-label"><strong>Created At</strong></label>
                                     <p class="form-control-static">
-                                        {{ $user->created_at->format('d/m/Y à H:i') }}
+                                        {{ $user->created_at->format('Y-m-d H:i') }}
                                         <small class="text-muted">({{ $user->created_at->diffForHumans() }})</small>
                                     </p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Dernière Modification</strong></label>
+                                    <label class="form-label"><strong>Last Updated</strong></label>
                                     <p class="form-control-static">
-                                        {{ $user->updated_at->format('d/m/Y à H:i') }}
+                                        {{ $user->updated_at->format('Y-m-d H:i') }}
                                         <small class="text-muted">({{ $user->updated_at->diffForHumans() }})</small>
                                     </p>
                                 </div>
@@ -372,9 +372,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label"><strong>Email Vérifié le</strong></label>
+                                    <label class="form-label"><strong>Email Verified at</strong></label>
                                     <p class="form-control-static">
-                                        {{ $user->email_verified_at->format('d/m/Y à H:i') }}
+                                        {{ $user->email_verified_at->format('Y-m-d H:i') }}
                                         <small class="text-muted">({{ $user->email_verified_at->diffForHumans() }})</small>
                                     </p>
                                 </div>

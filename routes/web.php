@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
@@ -26,10 +30,6 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-
-// Google OAuth routes
-Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
@@ -64,9 +64,7 @@ Route::get('warehouses', [WarehouseController::class, 'frontIndex'])->name('ware
 Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])->name('warehouses.show');
 
 // Routes des produits
-Route::get('/products', [App\Http\Controllers\Admin\ProductController::class, 'index'])->name('products');
-Route::get('/products/category/{slug}', [App\Http\Controllers\Admin\ProductController::class, 'category'])->name('products.category');
-Route::get('/products/{slug}', [App\Http\Controllers\Admin\ProductController::class, 'show'])->name('products.show');
+Route::get('/products', [ProductController::class, 'index'])->name('products');
 
 // Routes de la boutique
 Route::get('/store', [StoreController::class, 'index'])->name('store');
@@ -76,62 +74,6 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 // Admin
 Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
-
-// Test route for debugging
-Route::get('/admin/categories/test', function() {
-    return 'Categories index test - this should work';
-});
-
-// Test route for simple category creation
-Route::get('/admin/categories/test-create', function() {
-    return view('admin.categories.test-create');
-})->name('admin.categories.test-create');
-
-// Test route for debugging images
-Route::get('/test-images', function() {
-    $product = App\Models\Product::first();
-    if (!$product) {
-        return 'Aucun produit trouvé';
-    }
-
-    $debug = [
-        'product_id' => $product->id,
-        'product_name' => $product->name,
-        'images_array' => $product->images,
-        'first_image_path' => $product->images[0] ?? 'Aucune image',
-        'storage_path' => storage_path('app/public/' . ($product->images[0] ?? '')),
-        'file_exists' => file_exists(storage_path('app/public/' . ($product->images[0] ?? ''))),
-        'public_path' => public_path('storage/' . ($product->images[0] ?? '')),
-        'public_file_exists' => file_exists(public_path('storage/' . ($product->images[0] ?? ''))),
-        'asset_url' => asset('storage/' . ($product->images[0] ?? '')),
-        'first_image_url' => $product->first_image_url,
-    ];
-
-    return '<pre>' . print_r($debug, true) . '</pre>';
-});
-
-// Admin Management Routes
-Route::prefix('admin')->name('admin.')->group(function () {
-    // User Management Routes
-    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-    Route::patch('users/{user}/toggle-verification', [App\Http\Controllers\Admin\UserController::class, 'toggleVerification'])->name('users.toggle-verification');
-    Route::patch('users/{user}/toggle-status', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
-
-    // Category Management Routes
-    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
-    Route::patch('categories/{category}/toggle-status', [App\Http\Controllers\Admin\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
-    Route::post('categories/bulk-action', [App\Http\Controllers\Admin\CategoryController::class, 'bulkAction'])->name('categories.bulk-action');
-    Route::get('categories-api', [App\Http\Controllers\Admin\CategoryController::class, 'getCategories'])->name('categories.api');
-
-    // Product Management Routes
-    Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
-    Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Admin\ProductController::class, 'toggleStatus'])->name('products.toggle-status');
-    Route::patch('products/{product}/toggle-featured', [App\Http\Controllers\Admin\ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
-    Route::post('products/bulk-action', [App\Http\Controllers\Admin\ProductController::class, 'bulkAction'])->name('products.bulk-action');
-    Route::get('products-export', [App\Http\Controllers\Admin\ProductController::class, 'export'])->name('products.export');
-    Route::post('products/{product}/duplicate', [App\Http\Controllers\Admin\ProductController::class, 'duplicate'])->name('products.duplicate');
-});
 // Admin components
 Route::prefix('admin')->group(function () {
     Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');
@@ -198,6 +140,44 @@ Route::prefix('admin')->group(function () {
     Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('admin.warehouses.update');
     Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
     Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
+
+    // Users Management
+    Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
+    Route::post('users', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::get('users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
+    Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+    Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::patch('users/{user}/toggle-verification', [AdminUserController::class, 'toggleVerification'])->name('admin.users.toggle-verification');
+    Route::patch('users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+    Route::get('users/export/csv', [AdminUserController::class, 'export'])->name('admin.users.export');
+
+    // Products Management
+    Route::get('products', [AdminProductController::class, 'index'])->name('admin.products.index');
+    Route::get('products/create', [AdminProductController::class, 'create'])->name('admin.products.create');
+    Route::post('products', [AdminProductController::class, 'store'])->name('admin.products.store');
+    Route::get('products/{product}', [AdminProductController::class, 'show'])->name('admin.products.show');
+    Route::get('products/{product}/edit', [AdminProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
+    Route::patch('products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('admin.products.toggle-status');
+    Route::patch('products/{product}/toggle-featured', [AdminProductController::class, 'toggleFeatured'])->name('admin.products.toggle-featured');
+    Route::post('products/bulk-action', [AdminProductController::class, 'bulkAction'])->name('admin.products.bulk-action');
+    Route::get('products/export/csv', [AdminProductController::class, 'export'])->name('admin.products.export');
+    Route::post('products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('admin.products.duplicate');
+
+    // Categories Management
+    Route::get('categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
+    Route::get('categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+    Route::post('categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+    Route::get('categories/{category}', [AdminCategoryController::class, 'show'])->name('admin.categories.show');
+    Route::get('categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+    Route::put('categories/{category}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
+    Route::patch('categories/{category}/toggle-status', [AdminCategoryController::class, 'toggleStatus'])->name('admin.categories.toggle-status');
+    Route::post('categories/bulk-action', [AdminCategoryController::class, 'bulkAction'])->name('admin.categories.bulk-action');
+    Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
 });
 
 

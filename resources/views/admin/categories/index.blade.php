@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestion des Catégories')
+@section('title', 'Category Management')
 
 @section('content')
 <div class="page-inner">
     <div class="page-header">
-        <h3 class="fw-bold mb-3">Gestion des Catégories</h3>
+        <h3 class="fw-bold mb-3">Category Management</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="{{ route('admin.dashboard') }}">
@@ -16,13 +16,13 @@
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="#">Catalogue</a>
+                <a href="#">Catalog</a>
             </li>
             <li class="separator">
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="#">Catégories</a>
+                <a href="#">Categories</a>
             </li>
         </ul>
     </div>
@@ -32,43 +32,43 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Liste des Catégories</h4>
+                        <h4 class="card-title">Category List</h4>
                         <a href="{{ route('admin.categories.create') }}" class="btn btn-primary btn-round ms-auto">
                             <i class="fa fa-plus"></i>
-                            Ajouter Catégorie
+                            Add Category
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Filtres et Recherche -->
+                    <!-- Filters and Search -->
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <form method="GET" action="{{ route('admin.categories.index') }}" class="row g-3">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label class="form-label">Rechercher</label>
+                                        <label class="form-label">Search</label>
                                         <input type="text" class="form-control" name="search" 
                                                value="{{ request('search') }}" 
-                                               placeholder="Nom, description...">
+                                               placeholder="Name, description...">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label class="form-label">Statut</label>
+                                        <label class="form-label">Status</label>
                                         <select class="form-select" name="status">
-                                            <option value="">Tous les statuts</option>
-                                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Actif</option>
-                                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactif</option>
+                                            <option value="">All statuses</option>
+                                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label class="form-label">Trier par</label>
+                                        <label class="form-label">Sort by</label>
                                         <select class="form-select" name="sort">
-                                            <option value="sort_order" {{ request('sort') == 'sort_order' ? 'selected' : '' }}>Ordre</option>
-                                            <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Nom</option>
-                                            <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Date de création</option>
+                                            <option value="sort_order" {{ request('sort') == 'sort_order' ? 'selected' : '' }}>Order</option>
+                                            <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Name</option>
+                                            <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Created date</option>
                                         </select>
                                     </div>
                                 </div>
@@ -77,7 +77,7 @@
                                         <label class="form-label">&nbsp;</label>
                                         <div class="d-grid">
                                             <button type="submit" class="btn btn-primary">
-                                                <i class="fa fa-search"></i> Filtrer
+                                                <i class="fa fa-search"></i> Filter
                                             </button>
                                         </div>
                                     </div>
@@ -86,7 +86,7 @@
                         </div>
                     </div>
 
-                    <!-- Statistiques -->
+                    <!-- Statistics -->
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <div class="card card-stats card-round">
@@ -99,7 +99,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Total Catégories</p>
+                                                <p class="card-category">Total Categories</p>
                                                 <h4 class="card-title">{{ $categories->total() }}</h4>
                                             </div>
                                         </div>
@@ -118,7 +118,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Actives</p>
+                                                <p class="card-category">Active</p>
                                                 <h4 class="card-title">{{ $categories->where('is_active', true)->count() }}</h4>
                                             </div>
                                         </div>
@@ -137,7 +137,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Inactives</p>
+                                                <p class="card-category">Inactive</p>
                                                 <h4 class="card-title">{{ $categories->where('is_active', false)->count() }}</h4>
                                             </div>
                                         </div>
@@ -156,7 +156,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Avec Produits</p>
+                                                <p class="card-category">With Products</p>
                                                 <h4 class="card-title">{{ $categories->filter(function($cat) { return ($cat->products_count ?? 0) > 0; })->count() }}</h4>
                                             </div>
                                         </div>
@@ -166,27 +166,27 @@
                         </div>
                     </div>
 
-                    <!-- Actions en lot -->
+                    <!-- Bulk actions -->
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <form id="bulk-action-form" method="POST" action="{{ route('admin.categories.bulk-action') }}">
                                 @csrf
                                 <div class="d-flex align-items-center">
                                     <select class="form-select me-2" name="action" style="width: auto;">
-                                        <option value="">Actions en lot</option>
-                                        <option value="activate">Activer</option>
-                                        <option value="deactivate">Désactiver</option>
-                                        <option value="delete">Supprimer</option>
+                                        <option value="">Bulk actions</option>
+                                        <option value="activate">Activate</option>
+                                        <option value="deactivate">Deactivate</option>
+                                        <option value="delete">Delete</option>
                                     </select>
                                     <button type="submit" class="btn btn-secondary btn-sm" disabled id="bulk-action-btn">
-                                        Appliquer
+                                        Apply
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Tableau des catégories -->
+                    <!-- Categories table -->
                     <div class="table-responsive">
                         <table class="table table-striped mt-3">
                             <thead>
@@ -195,11 +195,11 @@
                                         <input type="checkbox" id="select-all">
                                     </th>
                                     <th width="60">Image</th>
-                                    <th>Nom</th>
+                                    <th>Name</th>
                                     <th>Description</th>
-                                    <th width="100">Produits</th>
-                                    <th width="80">Ordre</th>
-                                    <th width="100">Statut</th>
+                                    <th width="100">Products</th>
+                                    <th width="80">Order</th>
+                                    <th width="100">Status</th>
                                     <th width="150">Actions</th>
                                 </tr>
                             </thead>
@@ -240,21 +240,21 @@
                                     </td>
                                     <td>
                                         @if($category->is_active)
-                                            <span class="badge badge-success">Actif</span>
+                                            <span class="badge badge-success">Active</span>
                                         @else
-                                            <span class="badge badge-danger">Inactif</span>
+                                            <span class="badge badge-danger">Inactive</span>
                                         @endif
                                     </td>
                                     <td>
                                         <div class="form-button-action">
                                             <a href="{{ route('admin.categories.show', $category) }}" 
                                                class="btn btn-link btn-primary btn-lg" 
-                                               data-bs-toggle="tooltip" title="Voir">
+                                               data-bs-toggle="tooltip" title="View">
                                                 <i class="fa fa-eye"></i>
                                             </a>
                                             <a href="{{ route('admin.categories.edit', $category) }}" 
                                                class="btn btn-link btn-primary btn-lg" 
-                                               data-bs-toggle="tooltip" title="Modifier">
+                                               data-bs-toggle="tooltip" title="Edit">
                                                 <i class="fa fa-edit"></i>
                                             </a>
                                             <form method="POST" action="{{ route('admin.categories.toggle-status', $category) }}" 
@@ -264,19 +264,19 @@
                                                 <button type="submit" 
                                                         class="btn btn-link btn-{{ $category->is_active ? 'warning' : 'success' }} btn-lg" 
                                                         data-bs-toggle="tooltip" 
-                                                        title="{{ $category->is_active ? 'Désactiver' : 'Activer' }}">
+                                                        title="{{ $category->is_active ? 'Deactivate' : 'Activate' }}">
                                                     <i class="fa fa-{{ $category->is_active ? 'times' : 'check' }}"></i>
                                                 </button>
                                             </form>
                                             @if(!$category->hasProducts())
                                             <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" 
                                                   style="display: inline;" 
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                                                  onsubmit="return confirm('Are you sure you want to delete this category?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-link btn-danger btn-lg" 
-                                                        data-bs-toggle="tooltip" title="Supprimer">
+                                                        data-bs-toggle="tooltip" title="Delete">
                                                     <i class="fa fa-times"></i>
                                                 </button>
                                             </form>
@@ -289,10 +289,10 @@
                                     <td colspan="8" class="text-center py-4">
                                         <div class="empty-state">
                                             <i class="fas fa-tags fa-3x text-muted mb-3"></i>
-                                            <h5 class="text-muted">Aucune catégorie trouvée</h5>
-                                            <p class="text-muted">Commencez par créer votre première catégorie.</p>
+                                            <h5 class="text-muted">No categories found</h5>
+                                            <p class="text-muted">Start by creating your first category.</p>
                                             <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
-                                                <i class="fa fa-plus"></i> Créer une catégorie
+                                                <i class="fa fa-plus"></i> Create Category
                                             </a>
                                         </div>
                                     </td>

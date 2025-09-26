@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestion des Produits')
+@section('title', 'Product Management')
 
 @section('content')
 <div class="page-inner">
     <div class="page-header">
-        <h3 class="fw-bold mb-3">Gestion des Produits</h3>
+        <h3 class="fw-bold mb-3">Product Management</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="{{ route('admin.dashboard') }}">
@@ -16,13 +16,13 @@
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="#">Catalogue</a>
+                <a href="#">Catalog</a>
             </li>
             <li class="separator">
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="#">Produits</a>
+                <a href="#">Products</a>
             </li>
         </ul>
     </div>
@@ -32,37 +32,37 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Liste des Produits</h4>
+                        <h4 class="card-title">Product List</h4>
                         <div class="ms-auto">
                             <a href="{{ route('admin.products.export') }}" class="btn btn-success btn-round me-2">
                                 <i class="fa fa-download"></i>
-                                Exporter CSV
+                                Export CSV
                             </a>
                             <a href="{{ route('admin.products.create') }}" class="btn btn-primary btn-round">
                                 <i class="fa fa-plus"></i>
-                                Ajouter Produit
+                                Add Product
                             </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Filtres et Recherche -->
+                    <!-- Filters and Search -->
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <form method="GET" action="{{ route('admin.products.index') }}" class="row g-3">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label class="form-label">Rechercher</label>
+                                        <label class="form-label">Search</label>
                                         <input type="text" class="form-control" name="search" 
                                                value="{{ request('search') }}" 
-                                               placeholder="Nom, SKU, description...">
+                                               placeholder="Name, SKU, description...">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <label class="form-label">Catégorie</label>
+                                        <label class="form-label">Category</label>
                                         <select class="form-select" name="category_id">
-                                            <option value="">Toutes les catégories</option>
+                                            <option value="">All categories</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category->id }}" 
                                                         {{ request('category_id') == $category->id ? 'selected' : '' }}>
@@ -74,14 +74,14 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <label class="form-label">Statut</label>
+                                        <label class="form-label">Status</label>
                                         <select class="form-select" name="status">
-                                            <option value="">Tous les statuts</option>
-                                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Actif</option>
-                                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactif</option>
-                                            <option value="featured" {{ request('status') == 'featured' ? 'selected' : '' }}>En vedette</option>
-                                            <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Publié</option>
-                                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Brouillon</option>
+                                            <option value="">All statuses</option>
+                                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                            <option value="featured" {{ request('status') == 'featured' ? 'selected' : '' }}>Featured</option>
+                                            <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
+                                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                                         </select>
                                     </div>
                                 </div>
@@ -89,22 +89,22 @@
                                     <div class="form-group">
                                         <label class="form-label">Stock</label>
                                         <select class="form-select" name="stock_status">
-                                            <option value="">Tous les stocks</option>
-                                            <option value="in_stock" {{ request('stock_status') == 'in_stock' ? 'selected' : '' }}>En stock</option>
-                                            <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>Rupture</option>
-                                            <option value="on_backorder" {{ request('stock_status') == 'on_backorder' ? 'selected' : '' }}>En commande</option>
+                                            <option value="">All stock</option>
+                                            <option value="in_stock" {{ request('stock_status') == 'in_stock' ? 'selected' : '' }}>In stock</option>
+                                            <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>Out of stock</option>
+                                            <option value="on_backorder" {{ request('stock_status') == 'on_backorder' ? 'selected' : '' }}>On backorder</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <label class="form-label">Trier par</label>
+                                        <label class="form-label">Sort by</label>
                                         <select class="form-select" name="sort">
-                                            <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Date création</option>
-                                            <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Nom</option>
-                                            <option value="price" {{ request('sort') == 'price' ? 'selected' : '' }}>Prix</option>
+                                            <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Created date</option>
+                                            <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Name</option>
+                                            <option value="price" {{ request('sort') == 'price' ? 'selected' : '' }}>Price</option>
                                             <option value="stock_quantity" {{ request('sort') == 'stock_quantity' ? 'selected' : '' }}>Stock</option>
-                                            <option value="views_count" {{ request('sort') == 'views_count' ? 'selected' : '' }}>Vues</option>
+                                            <option value="views_count" {{ request('sort') == 'views_count' ? 'selected' : '' }}>Views</option>
                                         </select>
                                     </div>
                                 </div>
@@ -122,7 +122,7 @@
                         </div>
                     </div>
 
-                    <!-- Statistiques -->
+                    <!-- Statistics -->
                     <div class="row mb-4">
                         <div class="col-md-2">
                             <div class="card card-stats card-round">
@@ -154,7 +154,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Actifs</p>
+                                                <p class="card-category">Active</p>
                                                 <h4 class="card-title">{{ $products->where('is_active', true)->count() }}</h4>
                                             </div>
                                         </div>
@@ -173,7 +173,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Vedette</p>
+                                                <p class="card-category">Featured</p>
                                                 <h4 class="card-title">{{ $products->where('is_featured', true)->count() }}</h4>
                                             </div>
                                         </div>
@@ -192,7 +192,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Rupture</p>
+                                                <p class="card-category">Out of stock</p>
                                                 <h4 class="card-title">{{ $products->where('stock_status', 'out_of_stock')->count() }}</h4>
                                             </div>
                                         </div>
@@ -211,7 +211,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Vues</p>
+                                                <p class="card-category">Views</p>
                                                 <h4 class="card-title">{{ $products->sum('views_count') }}</h4>
                                             </div>
                                         </div>
@@ -230,7 +230,7 @@
                                         </div>
                                         <div class="col col-stats ms-3 ms-sm-0">
                                             <div class="numbers">
-                                                <p class="card-category">Valeur</p>
+                                                <p class="card-category">Value</p>
                                                 <h4 class="card-title">{{ number_format($products->sum('price'), 0) }}€</h4>
                                             </div>
                                         </div>
@@ -240,29 +240,29 @@
                         </div>
                     </div>
 
-                    <!-- Actions en lot -->
+                    <!-- Bulk actions -->
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <form id="bulk-action-form" method="POST" action="{{ route('admin.products.bulk-action') }}">
                                 @csrf
                                 <div class="d-flex align-items-center">
                                     <select class="form-select me-2" name="action" style="width: auto;">
-                                        <option value="">Actions en lot</option>
-                                        <option value="activate">Activer</option>
-                                        <option value="deactivate">Désactiver</option>
-                                        <option value="feature">Mettre en vedette</option>
-                                        <option value="unfeature">Retirer de la vedette</option>
-                                        <option value="delete">Supprimer</option>
+                                        <option value="">Bulk actions</option>
+                                        <option value="activate">Activate</option>
+                                        <option value="deactivate">Deactivate</option>
+                                        <option value="feature">Feature</option>
+                                        <option value="unfeature">Unfeature</option>
+                                        <option value="delete">Delete</option>
                                     </select>
                                     <button type="submit" class="btn btn-secondary btn-sm" disabled id="bulk-action-btn">
-                                        Appliquer
+                                        Apply
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Tableau des produits -->
+                    <!-- Products table -->
                     <div class="table-responsive">
                         <table class="table table-striped mt-3">
                             <thead>
@@ -271,12 +271,12 @@
                                         <input type="checkbox" id="select-all">
                                     </th>
                                     <th width="60">Image</th>
-                                    <th>Produit</th>
-                                    <th width="120">Catégorie</th>
-                                    <th width="100">Prix</th>
+                                    <th>Product</th>
+                                    <th width="120">Category</th>
+                                    <th width="100">Price</th>
                                     <th width="80">Stock</th>
-                                    <th width="100">Statut</th>
-                                    <th width="80">Vues</th>
+                                    <th width="100">Status</th>
+                                    <th width="80">Views</th>
                                     <th width="180">Actions</th>
                                 </tr>
                             </thead>
@@ -329,14 +329,14 @@
                                     </td>
                                     <td>
                                         @if($product->is_active)
-                                            <span class="badge badge-success">Actif</span>
+                                            <span class="badge badge-success">Active</span>
                                         @else
-                                            <span class="badge badge-danger">Inactif</span>
+                                            <span class="badge badge-danger">Inactive</span>
                                         @endif
                                         @if($product->published_at)
-                                            <br><small class="text-success">Publié</small>
+                                            <br><small class="text-success">Published</small>
                                         @else
-                                            <br><small class="text-warning">Brouillon</small>
+                                            <br><small class="text-warning">Draft</small>
                                         @endif
                                     </td>
                                     <td>
@@ -346,12 +346,12 @@
                                         <div class="form-button-action">
                                             <a href="{{ route('admin.products.show', $product) }}" 
                                                class="btn btn-link btn-primary btn-lg" 
-                                               data-bs-toggle="tooltip" title="Voir">
+                                               data-bs-toggle="tooltip" title="View">
                                                 <i class="fa fa-eye"></i>
                                             </a>
                                             <a href="{{ route('admin.products.edit', $product) }}" 
                                                class="btn btn-link btn-primary btn-lg" 
-                                               data-bs-toggle="tooltip" title="Modifier">
+                                               data-bs-toggle="tooltip" title="Edit">
                                                 <i class="fa fa-edit"></i>
                                             </a>
                                             <form method="POST" action="{{ route('admin.products.toggle-status', $product) }}" 
@@ -361,7 +361,7 @@
                                                 <button type="submit" 
                                                         class="btn btn-link btn-{{ $product->is_active ? 'warning' : 'success' }} btn-lg" 
                                                         data-bs-toggle="tooltip" 
-                                                        title="{{ $product->is_active ? 'Désactiver' : 'Activer' }}">
+                                                        title="{{ $product->is_active ? 'Deactivate' : 'Activate' }}">
                                                     <i class="fa fa-{{ $product->is_active ? 'times' : 'check' }}"></i>
                                                 </button>
                                             </form>
@@ -372,7 +372,7 @@
                                                 <button type="submit" 
                                                         class="btn btn-link btn-{{ $product->is_featured ? 'secondary' : 'warning' }} btn-lg" 
                                                         data-bs-toggle="tooltip" 
-                                                        title="{{ $product->is_featured ? 'Retirer vedette' : 'Mettre en vedette' }}">
+                                                        title="{{ $product->is_featured ? 'Unfeature' : 'Feature' }}">
                                                     <i class="fa fa-star"></i>
                                                 </button>
                                             </form>
@@ -381,18 +381,18 @@
                                                 @csrf
                                                 <button type="submit" 
                                                         class="btn btn-link btn-info btn-lg" 
-                                                        data-bs-toggle="tooltip" title="Dupliquer">
+                                                        data-bs-toggle="tooltip" title="Duplicate">
                                                     <i class="fa fa-copy"></i>
                                                 </button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.products.destroy', $product) }}" 
                                                   style="display: inline;" 
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
+                                                  onsubmit="return confirm('Are you sure you want to delete this product?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-link btn-danger btn-lg" 
-                                                        data-bs-toggle="tooltip" title="Supprimer">
+                                                        data-bs-toggle="tooltip" title="Delete">
                                                     <i class="fa fa-times"></i>
                                                 </button>
                                             </form>
@@ -404,10 +404,10 @@
                                     <td colspan="9" class="text-center py-4">
                                         <div class="empty-state">
                                             <i class="fas fa-box fa-3x text-muted mb-3"></i>
-                                            <h5 class="text-muted">Aucun produit trouvé</h5>
-                                            <p class="text-muted">Commencez par créer votre premier produit.</p>
+                                            <h5 class="text-muted">No products found</h5>
+                                            <p class="text-muted">Start by creating your first product.</p>
                                             <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-                                                <i class="fa fa-plus"></i> Créer un produit
+                                                <i class="fa fa-plus"></i> Create Product
                                             </a>
                                         </div>
                                     </td>

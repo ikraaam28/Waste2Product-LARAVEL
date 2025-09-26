@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Créer un Produit')
+@section('title', 'Create Product')
 
 @section('content')
 <div class="page-inner">
     <div class="page-header">
-        <h3 class="fw-bold mb-3">Créer un Produit</h3>
+        <h3 class="fw-bold mb-3">Create Product</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="{{ route('admin.dashboard') }}">
@@ -16,13 +16,13 @@
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.products.index') }}">Produits</a>
+                <a href="{{ route('admin.products.index') }}">Products</a>
             </li>
             <li class="separator">
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="#">Créer</a>
+                <a href="#">Create</a>
             </li>
         </ul>
     </div>
@@ -33,14 +33,14 @@
         <div class="row">
             <!-- Informations principales -->
             <div class="col-md-8">
-                <!-- Informations de base -->
+                <!-- Basic information -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title">Informations de base</h5>
+                        <h5 class="card-title">Basic Information</h5>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="name" class="form-label">Nom du produit <span class="text-danger">*</span></label>
+                            <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror" 
                                    id="name" name="name" value="{{ old('name') }}" required>
                             @error('name')
@@ -52,24 +52,24 @@
                             <label for="slug" class="form-label">Slug (URL)</label>
                             <input type="text" class="form-control @error('slug') is-invalid @enderror" 
                                    id="slug" name="slug" value="{{ old('slug') }}">
-                            <small class="form-text text-muted">Laissez vide pour générer automatiquement</small>
+                            <small class="form-text text-muted">Leave blank to auto-generate</small>
                             @error('slug')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="short_description" class="form-label">Description courte</label>
+                            <label for="short_description" class="form-label">Short Description</label>
                             <textarea class="form-control @error('short_description') is-invalid @enderror" 
                                       id="short_description" name="short_description" rows="3">{{ old('short_description') }}</textarea>
-                            <small class="form-text text-muted">Description affichée dans les listes de produits</small>
+                            <small class="form-text text-muted">Shown in product lists</small>
                             @error('short_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="description" class="form-label">Description complète <span class="text-danger">*</span></label>
+                            <label for="description" class="form-label">Full Description <span class="text-danger">*</span></label>
                             <textarea class="form-control @error('description') is-invalid @enderror" 
                                       id="description" name="description" rows="6" required>{{ old('description') }}</textarea>
                             @error('description')
@@ -79,16 +79,16 @@
                     </div>
                 </div>
 
-                <!-- Prix et Stock -->
+                <!-- Price and Stock -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title">Prix et Stock</h5>
+                        <h5 class="card-title">Price and Stock</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="price" class="form-label">Prix <span class="text-danger">*</span></label>
+                                    <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="number" class="form-control @error('price') is-invalid @enderror" 
                                                id="price" name="price" value="{{ old('price') }}" 
@@ -102,14 +102,14 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="compare_price" class="form-label">Prix comparatif</label>
+                                    <label for="compare_price" class="form-label">Compare-at Price</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control @error('compare_price') is-invalid @enderror" 
                                                id="compare_price" name="compare_price" value="{{ old('compare_price') }}" 
                                                step="0.01" min="0">
                                         <span class="input-group-text">€</span>
                                     </div>
-                                    <small class="form-text text-muted">Prix barré pour les promotions</small>
+                                    <small class="form-text text-muted">Strikethrough price for promotions</small>
                                     @error('compare_price')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -120,10 +120,10 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="sku" class="form-label">Code produit (SKU)</label>
+                                    <label for="sku" class="form-label">SKU</label>
                                     <input type="text" class="form-control @error('sku') is-invalid @enderror" 
                                            id="sku" name="sku" value="{{ old('sku') }}">
-                                    <small class="form-text text-muted">Laissez vide pour générer automatiquement</small>
+                                    <small class="form-text text-muted">Leave blank to auto-generate</small>
                                     @error('sku')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -131,7 +131,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="stock_quantity" class="form-label">Quantité en stock <span class="text-danger">*</span></label>
+                                    <label for="stock_quantity" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('stock_quantity') is-invalid @enderror" 
                                            id="stock_quantity" name="stock_quantity" value="{{ old('stock_quantity', 0) }}" 
                                            min="0" required>
@@ -146,33 +146,33 @@
                             <input class="form-check-input" type="checkbox" id="manage_stock" name="manage_stock" 
                                    {{ old('manage_stock', true) ? 'checked' : '' }}>
                             <label class="form-check-label" for="manage_stock">
-                                Gérer le stock automatiquement
+                                Manage stock automatically
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Informations écologiques -->
+                <!-- Environmental Information -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title">Informations écologiques</h5>
+                        <h5 class="card-title">Environmental Information</h5>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="materials" class="form-label">Matériaux utilisés</label>
+                            <label for="materials" class="form-label">Materials Used</label>
                             <textarea class="form-control @error('materials') is-invalid @enderror" 
                                       id="materials" name="materials" rows="3">{{ old('materials') }}</textarea>
-                            <small class="form-text text-muted">Ex: Plastique recyclé, Métal récupéré, etc.</small>
+                            <small class="form-text text-muted">Ex: Recycled plastic, Reclaimed metal, etc.</small>
                             @error('materials')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="recycling_process" class="form-label">Processus de recyclage</label>
+                            <label for="recycling_process" class="form-label">Recycling Process</label>
                             <textarea class="form-control @error('recycling_process') is-invalid @enderror" 
                                       id="recycling_process" name="recycling_process" rows="4">{{ old('recycling_process') }}</textarea>
-                            <small class="form-text text-muted">Décrivez comment ce produit a été créé à partir de déchets</small>
+                            <small class="form-text text-muted">Describe how this product was made from waste</small>
                             @error('recycling_process')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -181,12 +181,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="environmental_impact_score" class="form-label">Score impact environnemental</label>
+                                    <label for="environmental_impact_score" class="form-label">Environmental Impact Score</label>
                                     <input type="range" class="form-range" id="environmental_impact_score" 
                                            name="environmental_impact_score" min="1" max="100" 
                                            value="{{ old('environmental_impact_score', 50) }}">
                                     <div class="d-flex justify-content-between">
-                                        <small class="text-muted">1 (Faible)</small>
+                                        <small class="text-muted">1 (Low)</small>
                                         <span id="score-value" class="badge badge-primary">50</span>
                                         <small class="text-muted">100 (Excellent)</small>
                                     </div>
@@ -197,7 +197,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="weight" class="form-label">Poids</label>
+                                    <label for="weight" class="form-label">Weight</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control @error('weight') is-invalid @enderror" 
                                                id="weight" name="weight" value="{{ old('weight') }}" 
@@ -212,27 +212,27 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="dimensions" class="form-label">Dimensions</label>
+                                    <label for="dimensions" class="form-label">Dimensions</label>
                             <input type="text" class="form-control @error('dimensions') is-invalid @enderror" 
                                    id="dimensions" name="dimensions" value="{{ old('dimensions') }}" 
-                                   placeholder="L x l x H (en cm)">
+                                   placeholder="L x W x H (cm)">
                             @error('dimensions')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Certifications écologiques</label>
+                            <label class="form-label">Eco Certifications</label>
                             <div class="row">
                                 @php
                                     $certifications = ['eco_label', 'recyclable', 'biodegradable', 'energy_star', 'fair_trade', 'organic'];
                                     $certificationLabels = [
-                                        'eco_label' => 'Écolabel',
+                                        'eco_label' => 'Eco Label',
                                         'recyclable' => 'Recyclable',
-                                        'biodegradable' => 'Biodégradable',
+                                        'biodegradable' => 'Biodegradable',
                                         'energy_star' => 'Energy Star',
-                                        'fair_trade' => 'Commerce équitable',
-                                        'organic' => 'Biologique'
+                                        'fair_trade' => 'Fair Trade',
+                                        'organic' => 'Organic'
                                     ];
                                 @endphp
                                 @foreach($certifications as $cert)
@@ -254,8 +254,8 @@
                             <label for="tags" class="form-label">Tags</label>
                             <input type="text" class="form-control @error('tags') is-invalid @enderror" 
                                    id="tags" name="tags" value="{{ old('tags') }}" 
-                                   placeholder="recyclage, écologique, durable (séparés par des virgules)">
-                            <small class="form-text text-muted">Mots-clés pour améliorer la recherche</small>
+                                   placeholder="recycling, eco-friendly, sustainable (comma-separated)">
+                            <small class="form-text text-muted">Keywords to improve search</small>
                             @error('tags')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -266,17 +266,17 @@
 
             <!-- Sidebar -->
             <div class="col-md-4">
-                <!-- Publication -->
+                <!-- Publishing -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title">Publication</h5>
+                        <h5 class="card-title">Publishing</h5>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="category_id" class="form-label">Catégorie <span class="text-danger">*</span></label>
+                            <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <select class="form-select @error('category_id') is-invalid @enderror" 
                                     id="category_id" name="category_id" required>
-                                <option value="">Sélectionner une catégorie</option>
+                                <option value="">Select a category</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}" 
                                             {{ old('category_id', request('category_id')) == $category->id ? 'selected' : '' }}>
@@ -290,10 +290,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="published_at" class="form-label">Date de publication</label>
+                            <label for="published_at" class="form-label">Publish Date</label>
                             <input type="datetime-local" class="form-control @error('published_at') is-invalid @enderror" 
                                    id="published_at" name="published_at" value="{{ old('published_at') }}">
-                            <small class="form-text text-muted">Laissez vide pour publier immédiatement si actif</small>
+                            <small class="form-text text-muted">Leave empty to publish immediately if active</small>
                             @error('published_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -303,7 +303,7 @@
                             <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
                                    {{ old('is_active', true) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_active">
-                                Produit actif
+                                Active product
                             </label>
                         </div>
 
@@ -311,7 +311,7 @@
                             <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
                                    {{ old('is_featured') ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_featured">
-                                Produit en vedette
+                                Featured product
                             </label>
                         </div>
                     </div>
@@ -320,24 +320,24 @@
                 <!-- Images -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title">Images du produit</h5>
+                        <h5 class="card-title">Product Images</h5>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="images" class="form-label">Images principales</label>
+                            <label for="images" class="form-label">Main Images</label>
                             <input type="file" class="form-control @error('images.*') is-invalid @enderror" 
                                    id="images" name="images[]" accept="image/*" multiple>
-                            <small class="form-text text-muted">JPG, PNG, GIF, WEBP (max: 2MB chacune)</small>
+                            <small class="form-text text-muted">JPG, PNG, GIF, WEBP (max: 2MB each)</small>
                             @error('images.*')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="gallery" class="form-label">Galerie d'images</label>
+                            <label for="gallery" class="form-label">Gallery Images</label>
                             <input type="file" class="form-control @error('gallery.*') is-invalid @enderror" 
                                    id="gallery" name="gallery[]" accept="image/*" multiple>
-                            <small class="form-text text-muted">Images supplémentaires pour la galerie</small>
+                            <small class="form-text text-muted">Additional images for the gallery</small>
                             @error('gallery.*')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -354,10 +354,10 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-save"></i> Créer le produit
+                                <i class="fa fa-save"></i> Create Product
                             </button>
-                            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
-                                <i class="fa fa-times"></i> Annuler
+                                <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
+                                <i class="fa fa-times"></i> Cancel
                             </a>
                         </div>
                     </div>
@@ -410,11 +410,11 @@ $(document).ready(function() {
 
     // Images preview
     $('#images').on('change', function() {
-        previewImages(this, '#images-preview', 'Images principales');
+        previewImages(this, '#images-preview', 'Main Images');
     });
 
     $('#gallery').on('change', function() {
-        previewImages(this, '#gallery-preview', 'Galerie');
+        previewImages(this, '#gallery-preview', 'Gallery');
     });
 
     function previewImages(input, container, title) {
@@ -469,12 +469,12 @@ $(document).ready(function() {
         if (comparePrice && comparePrice <= price) {
             isValid = false;
             $('#compare_price').addClass('is-invalid');
-            alert('Le prix comparatif doit être supérieur au prix de vente.');
+            alert('Compare-at price must be greater than price.');
         }
 
         if (!isValid) {
             e.preventDefault();
-            alert('Veuillez remplir tous les champs obligatoires correctement.');
+            alert('Please fill in all required fields correctly.');
         }
     });
 

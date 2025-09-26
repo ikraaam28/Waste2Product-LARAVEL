@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Détails de la Catégorie')
+@section('title', 'Category Details')
 
 @section('content')
 <div class="page-inner">
     <div class="page-header">
-        <h3 class="fw-bold mb-3">Détails de la Catégorie</h3>
+        <h3 class="fw-bold mb-3">Category Details</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="{{ route('admin.dashboard') }}">
@@ -16,7 +16,7 @@
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.categories.index') }}">Catégories</a>
+                <a href="{{ route('admin.categories.index') }}">Categories</a>
             </li>
             <li class="separator">
                 <i class="icon-arrow-right"></i>
@@ -52,11 +52,11 @@
                         <div class="job">{{ $category->slug }}</div>
                         <div class="desc">
                             @if($category->is_active)
-                                <span class="badge badge-success">Actif</span>
+                                <span class="badge badge-success">Active</span>
                             @else
-                                <span class="badge badge-danger">Inactif</span>
+                                <span class="badge badge-danger">Inactive</span>
                             @endif
-                            <span class="badge badge-info ms-1">Ordre: {{ $category->sort_order }}</span>
+                            <span class="badge badge-info ms-1">Order: {{ $category->sort_order }}</span>
                         </div>
                     </div>
                     
@@ -93,8 +93,8 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-primary">
-                            <i class="fa fa-edit"></i> Modifier
+                            <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-primary">
+                                <i class="fa fa-edit"></i> Edit
                         </a>
                         
                         <form method="POST" action="{{ route('admin.categories.toggle-status', $category) }}" style="display: inline;">
@@ -102,23 +102,23 @@
                             @method('PATCH')
                             <button type="submit" class="btn btn-{{ $category->is_active ? 'warning' : 'success' }} w-100">
                                 <i class="fa fa-{{ $category->is_active ? 'times' : 'check' }}"></i>
-                                {{ $category->is_active ? 'Désactiver' : 'Activer' }}
+                                {{ $category->is_active ? 'Deactivate' : 'Activate' }}
                             </button>
                         </form>
 
                         @if(!$category->hasProducts())
                         <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" 
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                              onsubmit="return confirm('Are you sure you want to delete this category?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger w-100">
-                                <i class="fa fa-trash"></i> Supprimer
+                                <i class="fa fa-trash"></i> Delete
                             </button>
                         </form>
                         @endif
 
                         <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">
-                            <i class="fa fa-arrow-left"></i> Retour à la liste
+                            <i class="fa fa-arrow-left"></i> Back to list
                         </a>
                     </div>
                 </div>
@@ -130,11 +130,11 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Produits de cette catégorie</h4>
+                        <h4 class="card-title">Products in this category</h4>
                         <a href="{{ route('admin.products.create', ['category_id' => $category->id]) }}" 
                            class="btn btn-primary btn-round ms-auto">
                             <i class="fa fa-plus"></i>
-                            Ajouter un produit
+                            Add Product
                         </a>
                     </div>
                 </div>
@@ -145,10 +145,10 @@
                                 <thead>
                                     <tr>
                                         <th width="60">Image</th>
-                                        <th>Nom</th>
-                                        <th width="100">Prix</th>
+                                        <th>Name</th>
+                                        <th width="100">Price</th>
                                         <th width="80">Stock</th>
-                                        <th width="100">Statut</th>
+                                        <th width="100">Status</th>
                                         <th width="120">Actions</th>
                                     </tr>
                                 </thead>
@@ -187,24 +187,24 @@
                                         </td>
                                         <td>
                                             @if($product->is_active)
-                                                <span class="badge badge-success">Actif</span>
+                                                <span class="badge badge-success">Active</span>
                                             @else
-                                                <span class="badge badge-danger">Inactif</span>
+                                                <span class="badge badge-danger">Inactive</span>
                                             @endif
                                             @if($product->is_featured)
-                                                <br><span class="badge badge-warning mt-1">Vedette</span>
+                                                <br><span class="badge badge-warning mt-1">Featured</span>
                                             @endif
                                         </td>
                                         <td>
                                             <div class="form-button-action">
                                                 <a href="{{ route('admin.products.show', $product) }}" 
                                                    class="btn btn-link btn-primary btn-lg" 
-                                                   data-bs-toggle="tooltip" title="Voir">
+                                                   data-bs-toggle="tooltip" title="View">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
                                                 <a href="{{ route('admin.products.edit', $product) }}" 
                                                    class="btn btn-link btn-primary btn-lg" 
-                                                   data-bs-toggle="tooltip" title="Modifier">
+                                                   data-bs-toggle="tooltip" title="Edit">
                                                     <i class="fa fa-edit"></i>
                                                 </a>
                                             </div>
@@ -219,18 +219,18 @@
                         <div class="text-center mt-3">
                             <a href="{{ route('admin.products.index', ['category_id' => $category->id]) }}" 
                                class="btn btn-outline-primary">
-                                Voir tous les produits ({{ $category->products->count() }})
+                                View all products ({{ $category->products->count() }})
                             </a>
                         </div>
                         @endif
                     @else
                         <div class="empty-state text-center py-5">
                             <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Aucun produit dans cette catégorie</h5>
-                            <p class="text-muted">Commencez par ajouter votre premier produit à cette catégorie.</p>
+                            <h5 class="text-muted">No products in this category</h5>
+                            <p class="text-muted">Start by adding your first product to this category.</p>
                             <a href="{{ route('admin.products.create', ['category_id' => $category->id]) }}" 
                                class="btn btn-primary">
-                                <i class="fa fa-plus"></i> Ajouter un produit
+                                <i class="fa fa-plus"></i> Add Product
                             </a>
                         </div>
                     @endif
@@ -240,13 +240,13 @@
             <!-- Informations détaillées -->
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Informations détaillées</h4>
+                    <h4 class="card-title">Detailed Information</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label"><strong>Nom</strong></label>
+                                <label class="form-label"><strong>Name</strong></label>
                                 <p class="form-control-static">{{ $category->name }}</p>
                             </div>
                         </div>
@@ -261,7 +261,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label"><strong>Couleur</strong></label>
+                                <label class="form-label"><strong>Color</strong></label>
                                 <p class="form-control-static">
                                     <span class="badge" style="background-color: {{ $category->color }}; color: white;">
                                         {{ $category->color }}
@@ -271,7 +271,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label"><strong>Icône</strong></label>
+                                <label class="form-label"><strong>Icon</strong></label>
                                 <p class="form-control-static">
                                     <i class="{{ $category->icon_class }}"></i> {{ $category->icon }}
                                 </p>
@@ -282,14 +282,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label"><strong>Date de création</strong></label>
-                                <p class="form-control-static">{{ $category->created_at->format('d/m/Y à H:i') }}</p>
+                                <label class="form-label"><strong>Created At</strong></label>
+                                <p class="form-control-static">{{ $category->created_at->format('Y-m-d H:i') }}</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label"><strong>Dernière modification</strong></label>
-                                <p class="form-control-static">{{ $category->updated_at->format('d/m/Y à H:i') }}</p>
+                                <label class="form-label"><strong>Last Updated</strong></label>
+                                <p class="form-control-static">{{ $category->updated_at->format('Y-m-d H:i') }}</p>
                             </div>
                         </div>
                     </div>

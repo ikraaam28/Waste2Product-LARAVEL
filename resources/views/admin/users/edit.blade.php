@@ -4,7 +4,7 @@
 <div class="container">
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Modifier l'Utilisateur</h3>
+            <h3 class="fw-bold mb-3">Edit User</h3>
             <ul class="breadcrumbs mb-3">
                 <li class="nav-home">
                     <a href="{{ route('admin.dashboard') }}">
@@ -15,7 +15,7 @@
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.users.index') }}">Utilisateurs</a>
+                    <a href="{{ route('admin.users.index') }}">Users</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>
@@ -35,11 +35,11 @@
                             <div class="ms-auto">
                                 <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-round">
                                     <i class="fa fa-eye"></i>
-                                    Voir Détails
+                                    View Details
                                 </a>
                                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-round">
                                     <i class="fa fa-arrow-left"></i>
-                                    Retour à la liste
+                                    Back to list
                                 </a>
                             </div>
                         </div>
@@ -54,7 +54,7 @@
                             <div class="row mb-4">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label>Photo de Profil Actuelle</label>
+                                        <label>Current Profile Picture</label>
                                         <div>
                                             @if($user->profile_picture)
                                                 <img src="{{ asset('storage/' . $user->profile_picture) }}" 
@@ -73,7 +73,7 @@
                                 <!-- Personal Information -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="first_name">Prénom <span class="text-danger">*</span></label>
+                                        <label for="first_name">First Name <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('first_name') is-invalid @enderror" 
                                                id="first_name" name="first_name" value="{{ old('first_name', $user->first_name) }}" required>
                                         @error('first_name')
@@ -84,7 +84,7 @@
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="last_name">Nom <span class="text-danger">*</span></label>
+                                        <label for="last_name">Last Name <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('last_name') is-invalid @enderror" 
                                                id="last_name" name="last_name" value="{{ old('last_name', $user->last_name) }}" required>
                                         @error('last_name')
@@ -97,7 +97,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="email">Adresse Email <span class="text-danger">*</span></label>
+                                        <label for="email">Email Address <span class="text-danger">*</span></label>
                                         <input type="email" class="form-control @error('email') is-invalid @enderror" 
                                                id="email" name="email" value="{{ old('email', $user->email) }}" required>
                                         @error('email')
@@ -108,7 +108,7 @@
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="phone">Téléphone</label>
+                                        <label for="phone">Phone</label>
                                         <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
                                                id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
                                         @error('phone')
@@ -121,7 +121,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="city">Ville</label>
+                                        <label for="city">City</label>
                                         <input type="text" class="form-control @error('city') is-invalid @enderror" 
                                                id="city" name="city" value="{{ old('city', $user->city) }}">
                                         @error('city')
@@ -132,14 +132,14 @@
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="profile_picture">Nouvelle Photo de Profil</label>
+                                        <label for="profile_picture">New Profile Picture</label>
                                         <input type="file" class="form-control @error('profile_picture') is-invalid @enderror" 
                                                id="profile_picture" name="profile_picture" accept="image/*">
                                         @error('profile_picture')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                         <small class="form-text text-muted">
-                                            Formats acceptés: JPG, JPEG, PNG, GIF. Taille max: 2MB. Laissez vide pour conserver l'image actuelle.
+                                            Accepted formats: JPG, JPEG, PNG, GIF. Max size: 2MB. Leave empty to keep the current image.
                                         </small>
                                     </div>
                                 </div>
@@ -148,15 +148,15 @@
                             <!-- Password Section -->
                             <div class="row">
                                 <div class="col-md-12">
-                                    <h5 class="mt-4 mb-3">Changer le Mot de Passe</h5>
-                                    <p class="text-muted">Laissez vide pour conserver le mot de passe actuel</p>
+                                    <h5 class="mt-4 mb-3">Change Password</h5>
+                                    <p class="text-muted">Leave empty to keep the current password</p>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="password">Nouveau Mot de Passe</label>
+                                        <label for="password">New Password</label>
                                         <div class="input-group">
                                             <input type="password" class="form-control @error('password') is-invalid @enderror" 
                                                    id="password" name="password">
@@ -170,14 +170,14 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                         <small class="form-text text-muted">
-                                            Minimum 8 caractères (si renseigné)
+                                            Minimum 8 characters (if provided)
                                         </small>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="password_confirmation">Confirmer le Nouveau Mot de Passe</label>
+                                        <label for="password_confirmation">Confirm New Password</label>
                                         <div class="input-group">
                                             <input type="password" class="form-control" 
                                                    id="password_confirmation" name="password_confirmation">
@@ -194,7 +194,7 @@
                             <!-- Account Information -->
                             <div class="row">
                                 <div class="col-md-12">
-                                    <h5 class="mt-4 mb-3">Informations du Compte</h5>
+                                    <h5 class="mt-4 mb-3">Account Information</h5>
                                 </div>
                             </div>
 
@@ -206,22 +206,22 @@
                                                    id="newsletter_subscription" name="newsletter_subscription" 
                                                    {{ old('newsletter_subscription', $user->newsletter_subscription) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="newsletter_subscription">
-                                                Abonner à la newsletter
+                                                Subscribe to newsletter
                                             </label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label"><strong>Type de Compte</strong></label>
+                                        <label class="form-label"><strong>Account Type</strong></label>
                                         <p class="form-control-static">
                                             @if($user->google_id)
                                                 <span class="badge badge-success">
-                                                    <i class="fab fa-google"></i> Compte Google
+                                                    <i class="fab fa-google"></i> Google Account
                                                 </span>
                                             @else
                                                 <span class="badge badge-primary">
-                                                    <i class="fas fa-envelope"></i> Compte Email
+                                                    <i class="fas fa-envelope"></i> Email Account
                                                 </span>
                                             @endif
                                         </p>
@@ -233,15 +233,15 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label"><strong>Statut Email</strong></label>
+                                        <label class="form-label"><strong>Email Status</strong></label>
                                         <p class="form-control-static">
                                             @if($user->email_verified_at)
                                                 <span class="badge badge-success">
-                                                    <i class="fas fa-check-circle"></i> Vérifié le {{ $user->email_verified_at->format('d/m/Y') }}
+                                                    <i class="fas fa-check-circle"></i> Verified on {{ $user->email_verified_at->format('Y-m-d') }}
                                                 </span>
                                             @else
                                                 <span class="badge badge-warning">
-                                                    <i class="fas fa-exclamation-circle"></i> Non vérifié
+                                                    <i class="fas fa-exclamation-circle"></i> Not verified
                                                 </span>
                                             @endif
                                         </p>
@@ -249,7 +249,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label"><strong>Membre depuis</strong></label>
+                                        <label class="form-label"><strong>Member since</strong></label>
                                         <p class="form-control-static">
                                             {{ $user->created_at->format('d/m/Y') }} ({{ $user->created_at->diffForHumans() }})
                                         </p>
@@ -261,9 +261,9 @@
                             <div class="row" id="imagePreview" style="display: none;">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label>Aperçu de la nouvelle photo</label>
+                                        <label>New photo preview</label>
                                         <div>
-                                            <img id="preview" src="" alt="Aperçu" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                            <img id="preview" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
                                         </div>
                                     </div>
                                 </div>
@@ -272,13 +272,13 @@
                             <!-- Submit Buttons -->
                             <div class="card-action">
                                 <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-save"></i> Sauvegarder les Modifications
+                                    <i class="fa fa-save"></i> Save Changes
                                 </button>
                                 <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info">
-                                    <i class="fa fa-eye"></i> Voir Détails
+                                    <i class="fa fa-eye"></i> View Details
                                 </a>
                                 <a href="{{ route('admin.users.index') }}" class="btn btn-danger">
-                                    <i class="fa fa-times"></i> Annuler
+                                    <i class="fa fa-times"></i> Cancel
                                 </a>
                             </div>
                         </form>

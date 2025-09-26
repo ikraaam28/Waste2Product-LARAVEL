@@ -14,6 +14,7 @@
   <div class="sidebar-wrapper scrollbar scrollbar-inner">
     <div class="sidebar-content">
       <ul class="nav nav-secondary">
+        {{--
         <li class="nav-item active">
           <a data-bs-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
             <i class="fas fa-home"></i>
@@ -26,6 +27,7 @@
             </ul>
           </div>
         </li>
+        --}}
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Gestion</h4>
@@ -33,31 +35,32 @@
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#users">
             <i class="fas fa-users"></i>
-            <p>Utilisateurs</p>
+            <p>Users</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="users">
             <ul class="nav nav-collapse">
-              <li><a href="{{ route('admin.users.index') }}"><span class="sub-item">Liste des Utilisateurs</span></a></li>
-              <li><a href="{{ route('admin.users.create') }}"><span class="sub-item">Ajouter Utilisateur</span></a></li>
+              <li><a href="{{ route('admin.users.index') }}"><span class="sub-item">User List</span></a></li>
+              <li><a href="{{ route('admin.users.create') }}"><span class="sub-item">Add User</span></a></li>
             </ul>
           </div>
         </li>
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#catalog">
             <i class="fas fa-store"></i>
-            <p>Catalogue</p>
+            <p>Catalog</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="catalog">
             <ul class="nav nav-collapse">
-              <li><a href="{{ route('admin.products.index') }}"><span class="sub-item">Produits</span></a></li>
-              <li><a href="{{ route('admin.products.create') }}"><span class="sub-item">Ajouter Produit</span></a></li>
-              <li><a href="{{ route('admin.categories.index') }}"><span class="sub-item">Catégories</span></a></li>
-              <li><a href="{{ route('admin.categories.create') }}"><span class="sub-item">Ajouter Catégorie</span></a></li>
+              <li><a href="{{ route('admin.products.index') }}"><span class="sub-item">Products</span></a></li>
+              <li><a href="{{ route('admin.products.create') }}"><span class="sub-item">Add Product</span></a></li>
+              <li><a href="{{ route('admin.categories.index') }}"><span class="sub-item">Categories</span></a></li>
+              <li><a href="{{ route('admin.categories.create') }}"><span class="sub-item">Add Category</span></a></li>
             </ul>
           </div>
         </li>
+        {{--
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
           <h4 class="text-section">Components</h4>
@@ -146,6 +149,7 @@
             </ul>
           </div>
         </li>
+        --}}
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#events">
             <i class="fas fa-calendar-alt"></i>
@@ -196,6 +200,7 @@
 </li>
 
 
+        {{--
         <li class="nav-item">
           <a href="{{ url('admin/widgets') }}">
             <i class="fas fa-desktop"></i>
@@ -203,6 +208,7 @@
             <span class="badge badge-success">4</span>
           </a>
         </li>
+        --}}
       </ul>
     </div>
   </div>

@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Modifier la Catégorie')
+@section('title', 'Edit Category')
 
 @section('content')
 <div class="page-inner">
     <div class="page-header">
-        <h3 class="fw-bold mb-3">Modifier la Catégorie</h3>
+        <h3 class="fw-bold mb-3">Edit Category</h3>
         <ul class="breadcrumbs mb-3">
             <li class="nav-home">
                 <a href="{{ route('admin.dashboard') }}">
@@ -16,7 +16,7 @@
                 <i class="icon-arrow-right"></i>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.categories.index') }}">Catégories</a>
+                <a href="{{ route('admin.categories.index') }}">Categories</a>
             </li>
             <li class="separator">
                 <i class="icon-arrow-right"></i>
@@ -32,15 +32,15 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Modifier "{{ $category->name }}"</h4>
+                        <h4 class="card-title">Edit "{{ $category->name }}"</h4>
                         <div class="ms-auto">
                             <a href="{{ route('admin.categories.show', $category) }}" class="btn btn-info btn-round me-2">
                                 <i class="fa fa-eye"></i>
-                                Voir
+                                View
                             </a>
                             <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary btn-round">
                                 <i class="fa fa-arrow-left"></i>
-                                Retour à la liste
+                                Back to list
                             </a>
                         </div>
                     </div>
@@ -51,15 +51,15 @@
                         @method('PUT')
                         
                         <div class="row">
-                            <!-- Informations de base -->
+                            <!-- Basic information -->
                             <div class="col-md-8">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5 class="card-title">Informations de base</h5>
+                                        <h5 class="card-title">Basic Information</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label for="name" class="form-label">Nom de la catégorie <span class="text-danger">*</span></label>
+                                            <label for="name" class="form-label">Category Name <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('name') is-invalid @enderror" 
                                                    id="name" name="name" value="{{ old('name', $category->name) }}" required>
                                             @error('name')
@@ -71,7 +71,7 @@
                                             <label for="slug" class="form-label">Slug (URL)</label>
                                             <input type="text" class="form-control @error('slug') is-invalid @enderror" 
                                                    id="slug" name="slug" value="{{ old('slug', $category->slug) }}">
-                                            <small class="form-text text-muted">Laissez vide pour générer automatiquement</small>
+                                            <small class="form-text text-muted">Leave blank to auto-generate</small>
                                             @error('slug')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -89,17 +89,17 @@
                                 </div>
                             </div>
 
-                            <!-- Paramètres et média -->
+                            <!-- Settings and media -->
                             <div class="col-md-4">
                                 <!-- Image -->
                                 <div class="card mb-3">
                                     <div class="card-header">
-                                        <h5 class="card-title">Image de la catégorie</h5>
+                                        <h5 class="card-title">Category Image</h5>
                                     </div>
                                     <div class="card-body">
                                         @if($category->image)
                                         <div class="mb-3">
-                                            <label class="form-label">Image actuelle</label>
+                                            <label class="form-label">Current image</label>
                                             <div>
                                                 <img src="{{ $category->image_url }}" alt="{{ $category->name }}" 
                                                      class="img-fluid rounded" style="max-height: 150px;">
@@ -109,7 +109,7 @@
 
                                         <div class="form-group">
                                             <label for="image" class="form-label">
-                                                {{ $category->image ? 'Changer l\'image' : 'Ajouter une image' }}
+                                                {{ $category->image ? 'Change image' : 'Add image' }}
                                             </label>
                                             <input type="file" class="form-control @error('image') is-invalid @enderror" 
                                                    id="image" name="image" accept="image/*">
@@ -119,9 +119,9 @@
                                             @enderror
                                         </div>
                                         
-                                        <!-- Prévisualisation -->
+                                        <!-- Preview -->
                                         <div id="image-preview" class="mt-3" style="display: none;">
-                                            <img id="preview-img" src="" alt="Prévisualisation" 
+                                            <img id="preview-img" src="" alt="Preview" 
                                                  class="img-fluid rounded" style="max-height: 200px;">
                                         </div>
                                     </div>
@@ -130,11 +130,11 @@
                                 <!-- Apparence -->
                                 <div class="card mb-3">
                                     <div class="card-header">
-                                        <h5 class="card-title">Apparence</h5>
+                                        <h5 class="card-title">Appearance</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label for="icon" class="form-label">Icône (Font Awesome)</label>
+                                            <label for="icon" class="form-label">Icon (Font Awesome)</label>
                                             <input type="text" class="form-control @error('icon') is-invalid @enderror" 
                                                    id="icon" name="icon" value="{{ old('icon', $category->icon) }}" 
                                                    placeholder="fas fa-tag">
@@ -145,7 +145,7 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="color" class="form-label">Couleur</label>
+                                            <label for="color" class="form-label">Color</label>
                                             <input type="color" class="form-control form-control-color @error('color') is-invalid @enderror" 
                                                    id="color" name="color" value="{{ old('color', $category->color) }}">
                                             @error('color')
@@ -153,9 +153,9 @@
                                             @enderror
                                         </div>
 
-                                        <!-- Prévisualisation de l'apparence -->
+                                        <!-- Appearance preview -->
                                         <div class="mt-3">
-                                            <label class="form-label">Prévisualisation</label>
+                                            <label class="form-label">Preview</label>
                                             <div class="d-flex align-items-center">
                                                 <div id="icon-preview" class="avatar avatar-sm me-2" style="background-color: {{ $category->color ?: '#007bff' }};">
                                                     <i class="{{ $category->icon_class ?: 'fas fa-tag' }} text-white"></i>
@@ -166,17 +166,17 @@
                                     </div>
                                 </div>
 
-                                <!-- Paramètres -->
+                                <!-- Settings -->
                                 <div class="card mb-3">
                                     <div class="card-header">
-                                        <h5 class="card-title">Paramètres</h5>
+                                        <h5 class="card-title">Settings</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label for="sort_order" class="form-label">Ordre d'affichage</label>
+                                            <label for="sort_order" class="form-label">Display order</label>
                                             <input type="number" class="form-control @error('sort_order') is-invalid @enderror" 
                                                    id="sort_order" name="sort_order" value="{{ old('sort_order', $category->sort_order) }}" min="0">
-                                            <small class="form-text text-muted">Plus le nombre est petit, plus la catégorie apparaît en premier</small>
+                                            <small class="form-text text-muted">Lower numbers appear first</small>
                                             @error('sort_order')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -186,54 +186,54 @@
                                             <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
                                                    {{ old('is_active', $category->is_active) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="is_active">
-                                                Catégorie active
+                                                Active category
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Statistiques -->
+                                <!-- Statistics -->
                                 <div class="card mb-3">
                                     <div class="card-header">
-                                        <h5 class="card-title">Statistiques</h5>
+                                        <h5 class="card-title">Statistics</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-6">
                                                 <div class="text-center">
                                                     <h4 class="text-primary">{{ $category->active_products_count }}</h4>
-                                                    <small class="text-muted">Produits actifs</small>
+                                                    <small class="text-muted">Active products</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="text-center">
                                                     <h4 class="text-info">{{ $category->products_count }}</h4>
-                                                    <small class="text-muted">Total produits</small>
+                                                    <small class="text-muted">Total products</small>
                                                 </div>
                                             </div>
                                         </div>
                                         <hr>
                                         <small class="text-muted">
                                             <i class="fa fa-calendar"></i>
-                                            Créée le {{ $category->created_at->format('d/m/Y à H:i') }}
+                                            Created on {{ $category->created_at->format('Y-m-d H:i') }}
                                         </small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Boutons d'action -->
+                        <!-- Action buttons -->
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between">
                                             <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">
-                                                <i class="fa fa-times"></i> Annuler
+                                                <i class="fa fa-times"></i> Cancel
                                             </a>
                                             <div>
                                                 <button type="submit" class="btn btn-primary">
-                                                    <i class="fa fa-save"></i> Mettre à jour
+                                                    <i class="fa fa-save"></i> Update
                                                 </button>
                                             </div>
                                         </div>
@@ -307,7 +307,7 @@ $(document).ready(function() {
         
         if (!isValid) {
             e.preventDefault();
-            alert('Veuillez remplir tous les champs obligatoires.');
+            alert('Please fill in all required fields.');
         }
     });
 });
