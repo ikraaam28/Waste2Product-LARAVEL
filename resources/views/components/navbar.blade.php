@@ -15,7 +15,9 @@
                     <a href="{{ route('products') }}" class="nav-item nav-link {{ request()->routeIs('products') ? 'active' : '' }}">Products</a>
                     <a href="{{ route('store') }}" class="nav-item nav-link {{ request()->routeIs('store') ? 'active' : '' }}">Store</a>
                     <a href="{{ route('events') }}" class="nav-item nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
+                    <a href="{{ route('publications.my') }}" class="nav-item nav-link {{ request()->routeIs('publications.my') ? 'active' : '' }}">Publications</a>
                     <a href="{{ route('partners.front') }}" class="nav-item nav-link {{ request()->routeIs('partners.front') ? 'active' : '' }}">Partners</a>
+                    {{--
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                         <div class="dropdown-menu bg-light rounded-0 m-0">
@@ -25,6 +27,7 @@
                             <a href="#" class="dropdown-item">404 Page</a>
                         </div>
                     </div>
+                    --}}
                     <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                 </div>
                 <div class="border-start ps-4 d-none d-lg-block">
