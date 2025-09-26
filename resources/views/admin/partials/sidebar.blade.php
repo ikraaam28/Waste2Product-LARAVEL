@@ -66,11 +66,24 @@
           <h4 class="text-section">Components</h4>
         </li>
         <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#publications">
+            <i class="fas fa-book"></i> <!-- Use an appropriate Font Awesome icon -->
+            <p>Manage Publications</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="publications">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.publications.index') }}"><span class="sub-item">Publications List</span></a></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item">
           <a data-bs-toggle="collapse" href="#base">
             <i class="fas fa-layer-group"></i>
             <p>Base</p>
             <span class="caret"></span>
           </a>
+
           <div class="collapse" id="base">
             <ul class="nav nav-collapse">
               <li><a href="{{ url('admin/components/avatars') }}"><span class="sub-item">Avatars</span></a></li>

@@ -185,4 +185,18 @@ class User extends Authenticatable
     {
         return $query->where('is_active', false);
     }
+
+    /**
+     * Publication et commentaire
+     */
+
+    public function publications()
+    {
+    return $this->hasMany(Publication::class);
+    }
+
+    public function commentaires()
+    {
+    return $this->hasMany(Commentaire::class);
+    }
 }

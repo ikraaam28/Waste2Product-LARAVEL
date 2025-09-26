@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\PublicationController;
+use App\Http\Controllers\CommentaireController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -72,6 +74,16 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 // Routes du blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
+
+// Routes pour publications
+Route::middleware('auth')->group(function () {
+    // Redéfinir la route pour /publications vers myPublications
+    Route::get('/publications', [PublicationController::class, 'myPublications'])->name('publications.my');
+    Route::post('publications/{publication}/commentaires', [CommentaireController::class, 'store'])->name('commentaires.store');
+
+    // Garder resource pour les autres méthodes (store, show, etc.) si nécessaire
+    Route::resource('publications', PublicationController::class)->except(['index']);
+});
 // Admin
 Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
 // Admin components
@@ -85,6 +97,8 @@ Route::prefix('admin')->group(function () {
     Route::view('/components/font-awesome-icons', 'admin.components.font-awesome-icons')->name('admin.components.fontawesome');
     Route::view('/components/simple-line-icons', 'admin.components.simple-line-icons')->name('admin.components.simpleline');
     Route::view('/components/typography', 'admin.components.typography')->name('admin.components.typography');
+    Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
+    Route::delete('/publications/{id}', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
 
     // Forms
     Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');
@@ -103,6 +117,9 @@ Route::prefix('admin')->group(function () {
 
     // Widgets
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
+
+
+
 
     // Events
     Route::get('/events/dashboard', [EventController::class, 'dashboard'])->name('admin.events.dashboard');
