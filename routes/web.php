@@ -71,6 +71,8 @@ Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])-
 
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
+Route::get('/products/category/{slug}', [ProductController::class, 'category'])->name('products.category');
+Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 // Routes de la boutique
 Route::get('/store', [StoreController::class, 'index'])->name('store');
