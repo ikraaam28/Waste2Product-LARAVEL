@@ -103,8 +103,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::view('/components/font-awesome-icons', 'admin.components.font-awesome-icons')->name('admin.components.fontawesome');
     Route::view('/components/simple-line-icons', 'admin.components.simple-line-icons')->name('admin.components.simpleline');
     Route::view('/components/typography', 'admin.components.typography')->name('admin.components.typography');
-    Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
-    Route::delete('/publications/{id}', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
+Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
+Route::delete('/publications/{id}/delete', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
+    Route::get('/publications/export/csv', [PublicationController::class, 'exportCsv'])->name('admin.publications.export');
 
     // Forms
     Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');

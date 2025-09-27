@@ -81,7 +81,7 @@
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#publications">
             <i class="fas fa-book"></i> <!-- Use an appropriate Font Awesome icon -->
-            <p>Manage Publications</p>
+            <p>Publications</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="publications">
