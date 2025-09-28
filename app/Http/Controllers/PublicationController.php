@@ -8,6 +8,7 @@ use App\Models\Commentaire;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB; 
 
 class PublicationController extends Controller
 {
@@ -160,32 +161,127 @@ public function destroy($id)
 }
 
 /**
- * Afficher la liste de toutes les publications pour l'admin
- */
-/**
- * Afficher la liste de toutes les publications pour l'admin
- */
-public function adminIndex()
+     * Afficher la liste de toutes les publications pour l'admin avec filtres et statistiques
+     */
+    public function adminIndex(Request $request)
+    {
+        // Check if the user is an admin
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+
+        // Initialize query
+        $query = Publication::with('user')->whereHas('user');
+
+        // Apply filters
+        if ($request->filled('category')) {
+            $query->where('categorie', $request->category);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('titre', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Paginate results
+        $publications = $query->latest()->paginate(10)->appends($request->query());
+
+        // Statistics
+        $stats = [
+            'total_publications' => Publication::count(),
+            'category_distribution' => Publication::groupBy('categorie')
+                ->select('categorie', DB::raw('count(*) as count'))
+                ->pluck('count', 'categorie')
+                ->toArray(),
+            'recent_publications' => Publication::where('created_at', '>=', now()->subDays(30))->count(),
+            'monthly_trends' => Publication::select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                DB::raw('count(*) as count')
+            )
+                ->groupBy('month')
+                ->orderBy('month')
+                ->pluck('count', 'month')
+                ->toArray(),
+        ];
+
+        return view('admin.publications.index', compact('publications', 'stats'));
+    }
+
+
+
+
+
+    /**
+     * Export publications to CSV
+     */
+    public function exportCsv()
+    {
+        // Check if the user is an admin
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+
+        $publications = Publication::with('user')->get();
+
+        $filename = 'publications-' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($publications) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['ID', 'Title', 'Author', 'Category', 'Content', 'Status', 'Created At']);
+
+            foreach ($publications as $publication) {
+                fputcsv($file, [
+                    $publication->id,
+                    $publication->titre,
+                    $publication->user ? $publication->user->first_name . ' ' . $publication->user->last_name : 'Deleted User',
+                    $publication->categorie,
+                    $publication->contenu,
+                    $publication->status ?? 'published',
+                    $publication->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Delete a single publication
+     */
+   public function adminDestroy($id)
 {
-    $publications = Publication::with('user')
-        ->whereHas('user') // Only include publications with an existing user
-        ->latest()
-        ->paginate(10);
-    return view('admin.publications.index', compact('publications'));
-}
-/**
- * Supprimer une publication pour l'admin
- */
-public function adminDestroy($id)
-{
+    if (!Auth::user()->isAdmin()) {
+        abort(403, 'Unauthorized. Admin access required.');
+    }
+
+    \Log::info("Attempting to delete publication with ID: {$id}");
     $publication = Publication::findOrFail($id);
+    \Log::info("Publication found: " . json_encode($publication));
 
     if ($publication->image && Storage::disk('public')->exists($publication->image)) {
         Storage::disk('public')->delete($publication->image);
     }
-
     $publication->delete();
 
-    return redirect()->route('admin.publications.index')->with('success', 'Publication supprimée !');
-}
-}
+    return redirect()->route('admin.publications.index')->with('success', 'Publication deleted!');
+}}
