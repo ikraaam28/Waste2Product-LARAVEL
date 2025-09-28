@@ -90,7 +90,7 @@ class Event extends Model
      */
     public function scopeUpcoming($query)
     {
-        return $query->where('date', '>=', now());
+        return $query->where('date', '>', now()->startOfDay());
     }
 
     /**

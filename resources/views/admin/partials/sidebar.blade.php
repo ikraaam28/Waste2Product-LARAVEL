@@ -2,7 +2,7 @@
   <div class="sidebar-logo">
     <div class="logo-header" data-background-color="dark">
       <a href="{{ url('admin') }}" class="logo">
-        <img src="{{ asset('vendor/kaiadmin/img/kaiadmin/logo_light.svg') }}" alt="navbar brand" class="navbar-brand" height="20" />
+        <img src="{{ asset('assets/img/recycleverse1.png') }}" alt="RecycleVerse" class="navbar-brand" height="60" />
       </a>
       <div class="nav-toggle">
         <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
@@ -202,8 +202,8 @@
               <li><a href="{{ route('admin.events.index') }}"><span class="sub-item">All Events</span></a></li>
               <li><a href="{{ route('admin.events.manage') }}"><span class="sub-item">Event List</span></a></li>
               <li><a href="{{ route('admin.events.qr-scanner') }}"><span class="sub-item">QR Scanner</span></a></li>
-              <li><a href="{{ route('admin.events.feedback') }}"><span class="sub-item">Feedback & Impact</span></a></li>
-              <li><a href="{{ route('admin.events.badges') }}"><span class="sub-item">Badges</span></a></li>
+              {{-- <li><a href="{{ route('admin.events.feedback') }}"><span class="sub-item">Feedback & Impact</span></a></li> --}}
+              {{-- <li><a href="{{ route('admin.events.badges') }}"><span class="sub-item">Badges</span></a></li> --}}
             </ul>
           </div>
         </li>
@@ -249,6 +249,17 @@
           </a>
         </li>
         --}}
+        
+        <!-- Logout Button -->
+        <li class="nav-item" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px;">
+          <form action="{{ route('logout') }}" method="POST" style="display: inline; width: 100%;">
+            @csrf
+            <button type="submit" class="btn btn-link nav-link text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 10px 20px; color: #dc3545 !important; font-weight: 500;">
+              <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
+              <span>Logout</span>
+            </button>
+          </form>
+        </li>
       </ul>
     </div>
   </div>

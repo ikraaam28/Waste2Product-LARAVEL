@@ -72,7 +72,6 @@ class User extends Authenticatable
     }
 
     /**
-<<<<<<< HEAD
      * Relation avec les badges
      */
     public function badges(): BelongsToMany
@@ -186,19 +185,17 @@ class User extends Authenticatable
     {
         return $query->where('is_active', false);
     }
-=======
+
+    /**
      * Publication et commentaire
      */
-
     public function publications()
     {
-    return $this->hasMany(Publication::class);
+        return $this->hasMany(Publication::class);
     }
 
     public function commentaires()
     {
-    return $this->hasMany(Commentaire::class);
+        return $this->hasMany(Commentaire::class);
     }
-
->>>>>>> origin/Asma
 }

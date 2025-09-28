@@ -108,6 +108,8 @@ class EventController extends Controller
             'organizer_email' => 'required|email|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1|max:1000',
+            'products' => 'nullable|array',
+            'products.*' => 'exists:products,id',
         ]);
 
         $data = $request->all();
@@ -120,6 +122,10 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
+        // Attach products
+        if ($request->has('products')) {
+            $event->products()->attach($request->products);
+        }
 
         return redirect()->route('admin.events.manage')
             ->with('success', 'Événement créé avec succès!');
@@ -149,6 +155,8 @@ class EventController extends Controller
             'location' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1',
+            'products' => 'nullable|array',
+            'products.*' => 'exists:products,id',
         ]);
 
         $data = $request->all();
@@ -162,6 +170,12 @@ class EventController extends Controller
 
         $event->update($data);
 
+        // Sync products
+        if ($request->has('products')) {
+            $event->products()->sync($request->products);
+        } else {
+            $event->products()->detach();
+        }
 
         return redirect()->route('admin.events.manage')
             ->with('success', 'Événement mis à jour avec succès!');
