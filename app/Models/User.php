@@ -70,15 +70,9 @@ class User extends Authenticatable
     {
         return trim($this->first_name . ' ' . $this->last_name);
     }
-    /**
- * Vérifier si l'utilisateur est un administrateur.
- */
-public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
 
     /**
+<<<<<<< HEAD
      * Relation avec les badges
      */
     public function badges(): BelongsToMany
@@ -96,6 +90,14 @@ public function isAdmin(): bool
         return $this->belongsToMany(Event::class, 'event_participants')
                     ->withPivot(['participant_id', 'scanned_at', 'badge_earned'])
                     ->withTimestamps();
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un administrateur.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**
@@ -184,8 +186,7 @@ public function isAdmin(): bool
     {
         return $query->where('is_active', false);
     }
-
-    /**
+=======
      * Publication et commentaire
      */
 
@@ -198,4 +199,6 @@ public function isAdmin(): bool
     {
     return $this->hasMany(Commentaire::class);
     }
+
+>>>>>>> origin/Asma
 }
