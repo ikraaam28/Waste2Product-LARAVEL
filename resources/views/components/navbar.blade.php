@@ -31,6 +31,7 @@
                 <div class="border-start ps-4 d-none d-lg-block">
                     <button type="button" class="btn btn-sm p-0 me-3"><i class="fa fa-search"></i></button>
                     @guest
+                        <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2">Login</a>
                         <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
                     @endguest
                     @auth
