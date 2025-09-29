@@ -96,10 +96,10 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:products,slug',
-            'description' => 'required|string',
+            'description' => 'required|string|min:10',
             'short_description' => 'nullable|string|max:500',
-            'price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0|gt:price',
+            'price' => 'required|numeric|min:0.01',
+            'compare_price' => 'nullable|numeric|min:0.01|gt:price',
             'sku' => 'nullable|string|max:100|unique:products,sku',
             'stock_quantity' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
@@ -111,65 +111,112 @@ class ProductController extends Controller
             'recycling_process' => 'nullable|string|max:1000',
             'environmental_impact_score' => 'nullable|integer|min:1|max:100',
             'certifications' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'published_at' => 'nullable|date',
+            'tags' => 'nullable|string',
+            'published_at' => 'nullable|date|after_or_equal:today',
+        ], [
+            // Custom error messages
+            'name.required' => 'Product name is required.',
+            'name.max' => 'Product name cannot exceed 255 characters.',
+            'description.required' => 'Product description is required.',
+            'description.min' => 'Product description must be at least 10 characters long.',
+            'price.required' => 'Product price is required.',
+            'price.min' => 'Product price must be greater than 0.',
+            'price.numeric' => 'Product price must be a valid number.',
+            'compare_price.gt' => 'Compare-at price must be greater than the regular price.',
+            'compare_price.numeric' => 'Compare-at price must be a valid number.',
+            'stock_quantity.required' => 'Stock quantity is required.',
+            'stock_quantity.integer' => 'Stock quantity must be a whole number.',
+            'stock_quantity.min' => 'Stock quantity cannot be negative.',
+            'category_id.required' => 'Please select a product category.',
+            'category_id.exists' => 'Selected category does not exist.',
+            'slug.unique' => 'This URL slug is already taken. Please choose a different one.',
+            'sku.unique' => 'This SKU is already taken. Please choose a different one.',
+            'images.*.image' => 'All uploaded files must be valid images.',
+            'images.*.mimes' => 'Images must be in JPG, JPEG, PNG, GIF, or WEBP format.',
+            'images.*.max' => 'Each image must not exceed 2MB in size.',
+            'gallery.*.image' => 'All gallery files must be valid images.',
+            'gallery.*.mimes' => 'Gallery images must be in JPG, JPEG, PNG, GIF, or WEBP format.',
+            'gallery.*.max' => 'Each gallery image must not exceed 2MB in size.',
+            'weight.numeric' => 'Weight must be a valid number.',
+            'weight.min' => 'Weight cannot be negative.',
+            'environmental_impact_score.min' => 'Environmental impact score must be at least 1.',
+            'environmental_impact_score.max' => 'Environmental impact score cannot exceed 100.',
+            'published_at.date' => 'Publish date must be a valid date.',
+            'published_at.after_or_equal' => 'Publish date cannot be in the past.',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Please fix the validation errors below.');
         }
 
-        $productData = [
-            'name' => $request->name,
-            'slug' => $request->slug ?: Str::slug($request->name),
-            'description' => $request->description,
-            'short_description' => $request->short_description,
-            'price' => $request->price,
-            'compare_price' => $request->compare_price,
-            'sku' => $request->sku ?: 'PRD-' . strtoupper(Str::random(8)),
-            'stock_quantity' => $request->stock_quantity,
-            'manage_stock' => $request->has('manage_stock'),
-            'stock_status' => $request->stock_quantity > 0 ? 'in_stock' : 'out_of_stock',
-            'is_featured' => $request->has('is_featured'),
-            'is_active' => $request->has('is_active'),
-            'weight' => $request->weight,
-            'dimensions' => $request->dimensions,
-            'materials' => $request->materials,
-            'recycling_process' => $request->recycling_process,
-            'environmental_impact_score' => $request->environmental_impact_score,
-            'certifications' => $request->certifications,
-            'tags' => $request->tags,
-            'published_at' => $request->published_at ? $request->published_at : ($request->has('is_active') ? now() : null),
-            'category_id' => $request->category_id,
-            'created_by' => $this->getDefaultAdminId(),
-        ];
-
-        // Handle main images upload
-        if ($request->hasFile('images')) {
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $images[] = $path;
+        try {
+            // Process tags if provided as string
+            $tags = [];
+            if ($request->tags) {
+                $tags = array_map('trim', explode(',', $request->tags));
+                $tags = array_filter($tags); // Remove empty values
             }
-            $productData['images'] = $images;
-        }
 
-        // Handle gallery images upload
-        if ($request->hasFile('gallery')) {
-            $gallery = [];
-            foreach ($request->file('gallery') as $image) {
-                $path = $image->store('products/gallery', 'public');
-                $gallery[] = $path;
+            $productData = [
+                'name' => $request->name,
+                'slug' => $request->slug ?: Str::slug($request->name),
+                'description' => $request->description,
+                'short_description' => $request->short_description,
+                'price' => $request->price,
+                'compare_price' => $request->compare_price,
+                'sku' => $request->sku ?: 'PRD-' . strtoupper(Str::random(8)),
+                'stock_quantity' => $request->stock_quantity,
+                'manage_stock' => $request->has('manage_stock'),
+                'stock_status' => $request->stock_quantity > 0 ? 'in_stock' : 'out_of_stock',
+                'is_featured' => $request->has('is_featured'),
+                'is_active' => $request->has('is_active'),
+                'weight' => $request->weight,
+                'dimensions' => $request->dimensions,
+                'materials' => $request->materials,
+                'recycling_process' => $request->recycling_process,
+                'environmental_impact_score' => $request->environmental_impact_score,
+                'certifications' => $request->certifications,
+                'tags' => $tags,
+                'published_at' => $request->published_at ? $request->published_at : ($request->has('is_active') ? now() : null),
+                'category_id' => $request->category_id,
+                'created_by' => $this->getDefaultAdminId(),
+            ];
+
+            // Handle main images upload
+            if ($request->hasFile('images')) {
+                $images = [];
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    $images[] = $path;
+                }
+                $productData['images'] = $images;
             }
-            $productData['gallery'] = $gallery;
+
+            // Handle gallery images upload
+            if ($request->hasFile('gallery')) {
+                $gallery = [];
+                foreach ($request->file('gallery') as $image) {
+                    $path = $image->store('products/gallery', 'public');
+                    $gallery[] = $path;
+                }
+                $productData['gallery'] = $gallery;
+            }
+
+            Product::create($productData);
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product created successfully!');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating product: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'An error occurred while creating the product. Please try again.');
         }
-
-        Product::create($productData);
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Produit créé avec succès !');
     }
 
     /**
