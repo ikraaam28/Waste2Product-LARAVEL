@@ -11,7 +11,7 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav ms-auto">
                     <a href="{{ route('home') }}" class="nav-item nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
-                    {{-- <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a> --}}
+                    <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
                     <a href="{{ route('products') }}" class="nav-item nav-link {{ request()->routeIs('products') ? 'active' : '' }}">Products</a>
                     <a href="{{ route('events') }}" class="nav-item nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
                     <a href="{{ route('tutos.index') }}" class="nav-item nav-link {{ request()->routeIs('tutos.*') ? 'active' : '' }}">Tutorials</a>
@@ -28,36 +28,10 @@
                     </div> --}}
                     <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                 </div>
-                <!-- Mobile Auth Buttons -->
-                <div class="d-lg-none mt-3 pt-3 border-top">
-                    @guest
-                        <div class="d-flex gap-2 justify-content-center">
-                            <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm rounded-pill px-3" style="background-color: transparent; border: 2px solid #28a745; color: #28a745;">
-                                <i class="fa fa-sign-in-alt me-1"></i>Sign In
-                            </a>
-                            <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
-                        </div>
-                    @endguest
-                    @auth
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <a href="{{ route('profile') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                <i class="fa fa-user me-1"></i>Profile
-                            </a>
-                            <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
-                                    <i class="fa fa-power-off me-1"></i>Logout
-                                </button>
-                            </form>
-                        </div>
-                    @endauth
-                </div>
                 <div class="border-start ps-4 d-none d-lg-block">
                     <button type="button" class="btn btn-sm p-0 me-3"><i class="fa fa-search"></i></button>
                     @guest
-                        <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2" style="background-color: transparent; border: 2px solid #28a745; color: #28a745;">
-                            <i class="fa fa-sign-in-alt me-1"></i>Sign In
-                        </a>
+                        <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2">Login</a>
                         <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
                     @endguest
                     @auth
