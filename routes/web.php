@@ -156,7 +156,7 @@ Route::delete('/publications/{id}/delete', [PublicationController::class, 'admin
     Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
     Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
 
-    // Warehouses Management 
+    // Warehouses Management
     Route::get('warehouses', [WarehouseController::class, 'index'])->name('admin.warehouses.index');
     Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('admin.warehouses.create');
     Route::post('warehouses', [WarehouseController::class, 'store'])->name('admin.warehouses.store');
@@ -205,9 +205,9 @@ Route::delete('/publications/{id}/delete', [PublicationController::class, 'admin
     Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
 
     //tuto
-Route::get('/tutos', [TutoController::class, 'index'])->name('admin.tutos.index');
+Route::get('/tutos', [TutoController::class, 'adminIndex'])->name('admin.tutos.index');
 Route::get('/tutos/create', [TutoController::class, 'create'])->name('admin.tutos.create');
-Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('admin.tutos.show');
+Route::get('/tutos/{tuto}', [TutoController::class, 'adminShow'])->name('admin.tutos.show');
 Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store');
  Route::get('/tutos/{tuto}/edit', [TutoController::class, 'edit'])->name('admin.tutos.edit');
     Route::put('/tutos/{tuto}', [TutoController::class, 'update'])->name('admin.tutos.update');
