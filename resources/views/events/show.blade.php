@@ -205,7 +205,7 @@
                                 </div>
                             @endif
 
-                            @if($existingFeedback)
+                            @if($existingFeedback && !session('feedback_success'))
                                 <div class="alert alert-info alert-dismissible fade show" role="alert">
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>You have already submitted feedback for this event.</strong> You can update your feedback below.

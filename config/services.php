@@ -40,4 +40,10 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
+
+    'huggingface' => [
+        'token' => env('HUGGINGFACE_TOKEN'),
+        'model' => env('HUGGINGFACE_MODEL', 'google/vit-base-patch16-224'),
+        'caption_model' => env('HUGGINGFACE_CAPTION_MODEL', 'Salesforce/blip-image-captioning-large'),
+    ],
 ];

@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventFeedback;
 use App\Models\Badge;
 use App\Models\User;
+use App\Jobs\ProcessImageToProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -309,9 +310,23 @@ class EventController extends Controller
         // Handle photo uploads
         $photoPaths = [];
         if ($request->hasFile('photos')) {
+            \Log::info('storeFeedback: photos detected', [
+                'count' => count($request->file('photos')),
+                'event_id' => $event->id,
+                'user_id' => auth()->id(),
+            ]);
             foreach ($request->file('photos') as $photo) {
                 $path = $photo->store('feedback-photos', 'public');
                 $photoPaths[] = $path;
+
+                // Dispatch AI classification job per photo (after event ended)
+                try {
+                    $absolute = storage_path('app/public/' . $path);
+                    \Log::info('storeFeedback: dispatching ProcessImageToProduct', ['path' => $absolute]);
+                    ProcessImageToProduct::dispatch($absolute, auth()->id());
+                } catch (\Throwable $e) {
+                    \Log::warning('Failed to dispatch ProcessImageToProduct for feedback', ['error' => $e->getMessage()]);
+                }
             }
         }
 
