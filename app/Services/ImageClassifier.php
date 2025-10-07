@@ -35,8 +35,13 @@ class ImageClassifier
                 'mime' => $mime,
                 'size' => strlen($bytes),
             ]);
-            $response = Http::withToken($token)
-                ->timeout(60)
+            $client = Http::timeout(60);
+            if (!empty($token)) {
+                $client = $client->withToken($token);
+            } else {
+                Log::warning('ImageClassifier: no HF token configured, calling public endpoint (may be rate limited)');
+            }
+            $response = $client
                 ->withHeaders(['Content-Type' => $mime])
                 ->send('POST', "https://api-inference.huggingface.co/models/{$model}", [
                     'body' => $bytes,
@@ -95,8 +100,13 @@ class ImageClassifier
                 'mime' => $mime,
                 'size' => strlen($bytes),
             ]);
-            $response = Http::withToken($token)
-                ->timeout(30)
+            $client = Http::timeout(30);
+            if (!empty($token)) {
+                $client = $client->withToken($token);
+            } else {
+                Log::warning('ImageClassifier: no HF token configured, calling public endpoint (may be rate limited)');
+            }
+            $response = $client
                 ->withHeaders(['Content-Type' => $mime])
                 ->send('POST', "https://api-inference.huggingface.co/models/{$model}", [
                     'body' => $bytes,
@@ -194,12 +204,8 @@ class ImageClassifier
                 'weight' => 2,
             ],
             'papier' => [
-                'keywords' => ['paper', 'newspaper', 'sheet', 'magazine', 'envelope', 'imprimé', 'feuille'],
+                'keywords' => ['paper', 'newspaper', 'cardboard', 'box', 'magazine', 'carton', 'envelope'],
                 'weight' => 1,
-            ],
-            'carton' => [
-                'keywords' => ['cardboard', 'carton', 'box', 'package', 'packaging', 'boite'],
-                'weight' => 2,
             ],
             'metal' => [
                 'keywords' => ['aluminum', 'steel', 'tin', 'can', 'metallic'],
@@ -251,62 +257,45 @@ class ImageClassifier
             return $best;
         }
 
-        // fallback to labels-only mapping
-        return $this->mapLabelsToCategory($labels);
-    }
-
-    /**
-     * Format strict feedback with category and description.
-     * Category must be one of: Plastique, Métal, Verre, Bois, Papier, Carton, Textile, Autre
-     * Description highlights transformation if provided; otherwise brief item description.
-     *
-     * @param string|null $categorySlug One of internal slugs: plastique, verre, papier, carton, metal, textile, bois, organique, electronique
-     * @param string|null $transformation Concise upcycling sentence (e.g., "plastic bottle transformed into a flowerpot")
-     * @param string|null $caption Optional caption describing the image
-     * @param array<int, array{label:string, score:float}> $labels
-     * @return array{category:string, description:string}
-     */
-    public function formatStrictFeedback(?string $categorySlug, ?string $transformation, ?string $caption, array $labels): array
-    {
-        $mapping = [
-            'plastique' => 'Plastique',
-            'verre' => 'Verre',
-            'papier' => 'Papier',
-            'carton' => 'Carton',
-            'metal' => 'Métal',
-            'textile' => 'Textile',
-            'bois' => 'Bois',
-        ];
-
-        $category = $mapping[$categorySlug ?? ''] ?? 'Autre';
-
-        // Build description
-        $description = '';
-        if ($transformation) {
-            // Make it elegant and positive
-            $nice = ucfirst(trim($transformation, '.')) . '.';
-            // Add a touch if caption is available
-            if ($caption) {
-                $description = $nice . ' ' . ucfirst(rtrim($caption, '.')) . '.';
-            } else {
-                $description = $nice;
-            }
-        } else {
-            // Brief clear description from top label or caption
-            $top = $labels[0]['label'] ?? null;
-            if ($top) {
-                $description = ucfirst(trim((string)$top)) . '.';
-            } elseif ($caption) {
-                $description = ucfirst(rtrim($caption, '.')) . '.';
-            } else {
-                $description = 'Objet recyclé.';
+        // Heuristic fallback: infer material from generic object types
+        // Furniture -> bois if wood cues or typical wooden objects appear
+        $woodHints = ['wood', 'wooden', 'timber', 'table', 'desk', 'chair', 'cabinet', 'drawer', 'shelf', 'wardrobe', 'pallet'];
+        foreach ($woodHints as $w) {
+            if (str_contains($text, $w)) {
+                Log::info('ImageClassifier: heuristic material -> bois', ['hint' => $w]);
+                return 'bois';
             }
         }
 
-        return [
-            'category' => $category,
-            'description' => $description,
-        ];
+        // Metal cues
+        $metalHints = ['metal', 'steel', 'iron', 'aluminum', 'aluminium', 'tin', 'can', 'bolt', 'screw', 'wrench'];
+        foreach ($metalHints as $m) {
+            if (str_contains($text, $m)) {
+                Log::info('ImageClassifier: heuristic material -> metal', ['hint' => $m]);
+                return 'metal';
+            }
+        }
+
+        // Glass cues
+        $glassHints = ['glass', 'bottle', 'jar', 'vase', 'goblet'];
+        foreach ($glassHints as $g) {
+            if (str_contains($text, $g)) {
+                Log::info('ImageClassifier: heuristic material -> verre', ['hint' => $g]);
+                return 'verre';
+            }
+        }
+
+        // Paper/Cardboard cues
+        $paperHints = ['paper', 'cardboard', 'box', 'carton', 'newspaper', 'magazine'];
+        foreach ($paperHints as $p) {
+            if (str_contains($text, $p)) {
+                Log::info('ImageClassifier: heuristic material -> papier', ['hint' => $p]);
+                return 'papier';
+            }
+        }
+
+        // Fallback to labels-only mapping
+        return $this->mapLabelsToCategory($labels);
     }
 
     /**
@@ -342,6 +331,103 @@ class ImageClassifier
             'name' => $name,
             'description' => $desc,
         ];
+    }
+
+    /**
+     * Zero-shot material detection using a VLM classifier (e.g., CLIP zero-shot image classification)
+     * Tries to classify among a fixed set of materials including wood.
+     * Returns slug among: plastique, verre, papier, metal, textile, bois, organique, electronique
+     */
+    public function zeroShotMaterial(string $absoluteImagePath): ?string
+    {
+        $token = config('services.huggingface.token');
+        $model = config('services.huggingface.zeroshot_model', 'openai/clip-vit-base-patch32');
+
+        if (!is_readable($absoluteImagePath)) {
+            Log::warning('ImageClassifier: zeroShotMaterial image not readable', ['path' => $absoluteImagePath]);
+            return null;
+        }
+
+        $candidates = [
+            'plastique', 'verre', 'papier', 'metal', 'textile', 'bois', 'organique', 'electronique'
+        ];
+        $prompts = [
+            'plastique' => 'a product made of plastic',
+            'verre' => 'a product made of glass',
+            'papier' => 'a product made of paper or cardboard',
+            'metal' => 'a product made of metal',
+            'textile' => 'a product made of fabric or textile',
+            'bois' => 'a product made of wood',
+            'organique' => 'organic material like food or plants',
+            'electronique' => 'an electronic device or component',
+        ];
+
+        try {
+            $bytes = @file_get_contents($absoluteImagePath);
+            $mime = function_exists('mime_content_type') ? mime_content_type($absoluteImagePath) : 'image/jpeg';
+            if ($bytes === false) {
+                Log::warning('ImageClassifier: zeroShotMaterial failed reading file', ['path' => $absoluteImagePath]);
+                return null;
+            }
+
+            // Some HF zero-shot pipelines accept inputs as multipart or JSON with text candidates.
+            // We'll send as a JSON payload with base64 image and candidate labels if supported by a hosted space.
+            // Since the public model endpoints for CLIP may not support this directly, we fallback to caption+keywords if call fails.
+            $client = Http::timeout(30);
+            if (!empty($token)) {
+                $client = $client->withToken($token);
+            } else {
+                Log::warning('ImageClassifier: zeroShotMaterial no HF token configured');
+            }
+
+            $response = $client->post('https://api-inference.huggingface.co/models/' . $model, [
+                'parameters' => [
+                    'candidate_labels' => array_values($prompts),
+                    'multi_label' => false,
+                ],
+                'inputs' => base64_encode($bytes),
+            ]);
+
+            if ($response->ok()) {
+                $data = $response->json();
+                // Expected like: { labels: [..], scores: [..] }
+                $labels = $data['labels'] ?? [];
+                $scores = $data['scores'] ?? [];
+                if ($labels && $scores) {
+                    $topIndex = 0;
+                    $topScore = -1;
+                    foreach ($scores as $i => $s) {
+                        if ($s > $topScore) { $topScore = $s; $topIndex = $i; }
+                    }
+                    $topPrompt = $labels[$topIndex] ?? null;
+                    if ($topPrompt) {
+                        // Map back from prompt to slug
+                        foreach ($prompts as $slug => $promptText) {
+                            if ($promptText === $topPrompt) {
+                                Log::info('ImageClassifier: zero-shot material detected', ['slug' => $slug, 'score' => $topScore]);
+                                return $slug;
+                            }
+                        }
+                    }
+                }
+            } else {
+                Log::warning('ImageClassifier: zeroShotMaterial API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('ImageClassifier: zeroShotMaterial exception', ['message' => $e->getMessage()]);
+        }
+
+        // Fallback heuristic: try caption + keywords emphasizing wood
+        $caption = $this->caption($absoluteImagePath);
+        $text = strtolower((string) $caption);
+        if (str_contains($text, 'wood') || str_contains($text, 'wooden') || str_contains($text, 'table')) {
+            Log::info('ImageClassifier: zeroShotMaterial fallback -> bois', ['caption' => $caption]);
+            return 'bois';
+        }
+        return null;
     }
 }
 

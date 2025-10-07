@@ -307,7 +307,7 @@ class EventController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Handle photo uploads
+        // Handle photo uploads (support multiple and ensure processing on updates)
         $photoPaths = [];
         if ($request->hasFile('photos')) {
             \Log::info('storeFeedback: photos detected', [
@@ -315,17 +315,23 @@ class EventController extends Controller
                 'event_id' => $event->id,
                 'user_id' => auth()->id(),
             ]);
-            foreach ($request->file('photos') as $photo) {
+            // Normalize to array of UploadedFile
+            $files = $request->file('photos');
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+            foreach ($files as $photo) {
                 $path = $photo->store('feedback-photos', 'public');
                 $photoPaths[] = $path;
 
-                // Dispatch AI classification job per photo (after event ended)
+                // Process AI classification immediately and save product synchronously
                 try {
                     $absolute = storage_path('app/public/' . $path);
-                    \Log::info('storeFeedback: dispatching ProcessImageToProduct', ['path' => $absolute]);
-                    ProcessImageToProduct::dispatch($absolute, auth()->id());
+                    \Log::info('storeFeedback: processing ProcessImageToProduct synchronously', ['path' => $absolute]);
+                    $job = new ProcessImageToProduct($absolute, auth()->id());
+                    $job->handle(app(\App\Services\ImageClassifier::class));
                 } catch (\Throwable $e) {
-                    \Log::warning('Failed to dispatch ProcessImageToProduct for feedback', ['error' => $e->getMessage()]);
+                    \Log::warning('Failed to process image to product for feedback', ['error' => $e->getMessage()]);
                 }
             }
         }
@@ -348,12 +354,28 @@ class EventController extends Controller
             $finalPhotos = $existingPhotos;
         }
         
-        // Remove photos that user wants to delete
+        // Remove photos that user wants to delete (handle csv strings or arrays)
         if ($request->has('removed_photos')) {
-            $removedPhotos = is_array($request->removed_photos) ? $request->removed_photos : [$request->removed_photos];
-            $finalPhotos = array_filter($finalPhotos, function($photo) use ($removedPhotos) {
+            $rawRemoved = $request->input('removed_photos');
+            $removedPhotos = [];
+            if (is_array($rawRemoved)) {
+                foreach ($rawRemoved as $item) {
+                    // Each item may itself be a comma-separated string
+                    foreach (explode(',', (string) $item) as $p) {
+                        $p = trim($p);
+                        if ($p !== '') { $removedPhotos[] = $p; }
+                    }
+                }
+            } else {
+                foreach (explode(',', (string) $rawRemoved) as $p) {
+                    $p = trim($p);
+                    if ($p !== '') { $removedPhotos[] = $p; }
+                }
+            }
+            $removedPhotos = array_unique($removedPhotos);
+            $finalPhotos = array_values(array_filter($finalPhotos, function($photo) use ($removedPhotos) {
                 return !in_array($photo, $removedPhotos);
-            });
+            }));
         }
         
         // Add new photos

@@ -30,14 +30,35 @@ class ProcessImageToProduct implements ShouldQueue
         Log::info('ProcessImageToProduct: start', ['path' => $this->absoluteImagePath, 'user' => $this->userId]);
         $labels = $classifier->classify($this->absoluteImagePath);
         if (empty($labels)) {
-            Log::warning('ProcessImageToProduct: no labels returned, using fallback');
-            $labels = [['label' => 'Recycled item', 'score' => 0.0]];
+            Log::warning('ProcessImageToProduct: no labels returned, attempting caption fallback');
         }
 
         // Optional caption first (helps disambiguate material like glass vs plastic)
         $caption = $classifier->caption($this->absoluteImagePath);
         $categorySlug = $classifier->mapLabelsToCategoryWithCaption($labels, $caption);
+        if (!$categorySlug) {
+            // Try zero-shot material detector for better precision (e.g., bois for wooden table)
+            try {
+                $zeroShot = $classifier->zeroShotMaterial($this->absoluteImagePath);
+                if ($zeroShot) {
+                    $categorySlug = $zeroShot;
+                    Log::info('ProcessImageToProduct: zero-shot override category', ['category_slug' => $categorySlug]);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('ProcessImageToProduct: zero-shot detection failed', ['error' => $e->getMessage()]);
+            }
+        }
+        Log::info('ProcessImageToProduct: mapping result', [
+            'caption' => $caption,
+            'category_slug' => $categorySlug,
+            'labels' => $labels,
+        ]);
         $meta = $classifier->generateMetadata($labels, $categorySlug);
+        // If name is too generic or labels empty, try to synthesize from caption
+        if ((!$labels || empty($labels)) && $caption) {
+            $meta['name'] = ($categorySlug ? ucfirst($categorySlug) . ' - ' : '') . ucfirst(str_replace('.', '', strtok($caption, '.')));
+            $meta['description'] = 'Generated from caption: ' . $caption;
+        }
         // Try to synthesize a concise upcycling description like: "plastic bottle transformed into a flowerpot"
         $transformation = $this->synthesizeTransformation($labels, $caption, $categorySlug);
         if (!$transformation && $caption) {
@@ -55,52 +76,32 @@ class ProcessImageToProduct implements ShouldQueue
                 'description' => 'Auto-created category for AI-detected items',
             ]);
             $categoryId = $category->id;
+        } else {
+            // Fallback to a default category to satisfy NOT NULL constraint
+            $fallbackSlug = 'recyclable';
+            $fallbackCategory = Category::firstOrCreate(['slug' => $fallbackSlug], [
+                'name' => 'Recyclable',
+                'description' => 'Default category for AI imports when material is unknown',
+            ]);
+            $categoryId = $fallbackCategory->id;
+            Log::info('ProcessImageToProduct: using fallback category', [
+                'slug' => $fallbackSlug,
+                'id' => $categoryId,
+            ]);
         }
-
-		// Strict feedback format (Category + Description)
-		$strict = $classifier->formatStrictFeedback($categorySlug, $transformation, $caption, $labels);
-		Log::info('ProcessImageToProduct: strict feedback', [
-			'category_slug' => $categorySlug,
-			'category' => $strict['category'] ?? null,
-			'has_transformation' => (bool) $transformation,
-			'has_caption' => (bool) $caption,
-		]);
 
         // Create product using existing schema (images array, stock fields)
         $product = new Product();
         $product->name = $meta['name'];
-		// slug and sku auto-generated in Product::boot if empty
-		$descriptionHeader = 'Catégorie : ' . ($strict['category'] ?? 'Autre') . "\n" . 'Description : ' . ($strict['description'] ?? '') . "\n\n";
-		Log::info('ProcessImageToProduct: building description', [
-			'description_header_preview' => substr($descriptionHeader, 0, 120),
-			'meta_name' => $meta['name'] ?? null,
-		]);
-        $description = $descriptionHeader . $meta['description'];
+        // slug and sku auto-generated in Product::boot if empty
+        $description = $meta['description'];
         if ($transformation) {
             $description = "Upcycled: " . $transformation . "\n\n" . $description;
         }
         if ($caption) {
             $description .= "\n\nImage description: " . $caption;
         }
-		Log::info('ProcessImageToProduct: final description preview', [
-			'preview' => substr($description, 0, 200)
-		]);
         $product->description = $description;
-        // Save structured meta
-        $product->meta_data = [
-            'feedback' => $strict,
-            'ai' => [
-                'labels' => $labels,
-                'caption' => $caption,
-                'category_slug' => $categorySlug,
-                'transformation' => $transformation,
-            ],
-        ];
-		Log::info('ProcessImageToProduct: meta_data set', [
-			'has_feedback' => isset($product->meta_data['feedback']),
-			'has_ai' => isset($product->meta_data['ai']),
-			'labels_count' => is_array($labels) ? count($labels) : 0,
-		]);
         $product->price = 0.00;
         $product->stock_quantity = 1;
         $product->manage_stock = false;
@@ -121,13 +122,23 @@ class ProcessImageToProduct implements ShouldQueue
             // ignore
         }
 
-		Log::info('ProcessImageToProduct: saving product');
-		$product->save();
-		Log::info('ProcessImageToProduct: product created', [
+        try {
+            $product->save();
+        } catch (\Throwable $e) {
+            Log::error('ProcessImageToProduct: failed saving product', [
+                'error' => $e->getMessage(),
+                'payload' => [
+                    'name' => $product->name,
+                    'category_id' => $product->category_id,
+                    'images' => $product->images,
+                ]
+            ]);
+            throw $e;
+        }
+        Log::info('ProcessImageToProduct: product created', [
             'product_id' => $product->id,
             'name' => $product->name,
             'category_id' => $product->category_id,
-			'has_images' => is_array($product->images) && count($product->images) > 0,
         ]);
     }
 
