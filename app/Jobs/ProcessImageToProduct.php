@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProcessImageToProduct implements ShouldQueue
 {
@@ -36,6 +37,25 @@ class ProcessImageToProduct implements ShouldQueue
         // Optional caption first (helps disambiguate material like glass vs plastic)
         $caption = $classifier->caption($this->absoluteImagePath);
         $categorySlug = $classifier->mapLabelsToCategoryWithCaption($labels, $caption);
+        // Normalize to app category slugs (fr): plastique, verre, metal, papier, bois, textile, electronique, organique
+        $categorySlug = $this->normalizeCategorySlug($categorySlug, $labels, $caption);
+        // Extra fallback: infer from filename
+        if (!$categorySlug) {
+            $base = strtolower(basename($this->absoluteImagePath));
+            if (preg_match('/(plastic|plastique|pet|bouteille|flacon|sachet|barquette|tray)/', $base)) {
+                $categorySlug = 'plastique';
+            } elseif (preg_match('/(glass|verre|bocal|vase|jar)/', $base)) {
+                $categorySlug = 'verre';
+            } elseif (preg_match('/(wood|bois|pallet|palette|planche|board)/', $base)) {
+                $categorySlug = 'bois';
+            } elseif (preg_match('/(metal|métal|steel|iron|aluminium|aluminum|can|canette)/', $base)) {
+                $categorySlug = 'metal';
+            } elseif (preg_match('/(paper|papier|cardboard|carton|box|boîte)/', $base)) {
+                $categorySlug = 'papier';
+            } elseif (preg_match('/(textile|fabric|cloth|tshirt|jeans|denim|vêtement)/', $base)) {
+                $categorySlug = 'textile';
+            }
+        }
         if (!$categorySlug) {
             // Try zero-shot material detector for better precision (e.g., bois for wooden table)
             try {
@@ -54,13 +74,13 @@ class ProcessImageToProduct implements ShouldQueue
             'labels' => $labels,
         ]);
         $meta = $classifier->generateMetadata($labels, $categorySlug);
-        // If name is too generic or labels empty, try to synthesize from caption
-        if ((!$labels || empty($labels)) && $caption) {
-            $meta['name'] = ($categorySlug ? ucfirst($categorySlug) . ' - ' : '') . ucfirst(str_replace('.', '', strtok($caption, '.')));
-            $meta['description'] = 'Generated from caption: ' . $caption;
-        }
-        // Try to synthesize a concise upcycling description like: "plastic bottle transformed into a flowerpot"
-        $transformation = $this->synthesizeTransformation($labels, $caption, $categorySlug);
+        Log::info('ProcessImageToProduct: meta generated', $meta);
+        // Build French transformation sentence (e.g., "Bouteille en plastique transformée en porte-stylos")
+        $transformation = $this->synthesizeTransformationFr($labels, $caption, $categorySlug);
+        
+        // Always derive natural French name/description per business rules
+        $nameFr = $this->buildFrenchName($categorySlug, $transformation, $caption);
+        $descFr = $this->buildFrenchDescription($categorySlug, $transformation, $caption, $labels);
         if (!$transformation && $caption) {
             // attempt to infer transformation specifically for bird-feeder patterns
             $lower = strtolower($caption);
@@ -71,6 +91,7 @@ class ProcessImageToProduct implements ShouldQueue
 
         $categoryId = null;
         if ($categorySlug) {
+            Log::info('ProcessImageToProduct: creating/fetching category', ['slug' => $categorySlug]);
             $category = Category::firstOrCreate(['slug' => $categorySlug], [
                 'name' => ucfirst($categorySlug),
                 'description' => 'Auto-created category for AI-detected items',
@@ -78,10 +99,10 @@ class ProcessImageToProduct implements ShouldQueue
             $categoryId = $category->id;
         } else {
             // Fallback to a default category to satisfy NOT NULL constraint
-            $fallbackSlug = 'recyclable';
+            $fallbackSlug = 'inconnu';
             $fallbackCategory = Category::firstOrCreate(['slug' => $fallbackSlug], [
-                'name' => 'Recyclable',
-                'description' => 'Default category for AI imports when material is unknown',
+                'name' => 'Inconnu',
+                'description' => 'Catégorie inconnue détectée par IA',
             ]);
             $categoryId = $fallbackCategory->id;
             Log::info('ProcessImageToProduct: using fallback category', [
@@ -92,15 +113,9 @@ class ProcessImageToProduct implements ShouldQueue
 
         // Create product using existing schema (images array, stock fields)
         $product = new Product();
-        $product->name = $meta['name'];
+        $product->name = $nameFr;
         // slug and sku auto-generated in Product::boot if empty
-        $description = $meta['description'];
-        if ($transformation) {
-            $description = "Upcycled: " . $transformation . "\n\n" . $description;
-        }
-        if ($caption) {
-            $description .= "\n\nImage description: " . $caption;
-        }
+        $description = $descFr;
         $product->description = $description;
         $product->price = 0.00;
         $product->stock_quantity = 1;
@@ -111,15 +126,25 @@ class ProcessImageToProduct implements ShouldQueue
         $product->category_id = $categoryId;
         $product->created_by = $this->userId ?: 1;
 
+        // Ensure unique slug (avoid SQL duplicate constraint)
+        try {
+            $baseSlug = Str::slug($product->name);
+            $product->slug = $this->generateUniqueSlug($baseSlug);
+        } catch (\Throwable $e) {
+            // fallback: random slug if something goes wrong
+            $product->slug = Str::slug($product->name) . '-' . strtolower(Str::random(6));
+        }
+
         // Store image path under images array
         try {
             $storagePath = storage_path('app/public');
             if (str_starts_with($this->absoluteImagePath, $storagePath)) {
                 $relative = ltrim(str_replace($storagePath, '', $this->absoluteImagePath), DIRECTORY_SEPARATOR);
                 $product->images = [$relative];
+                Log::info('ProcessImageToProduct: computed relative image path', ['relative' => $relative]);
             }
         } catch (\Throwable $e) {
-            // ignore
+            Log::warning('ProcessImageToProduct: image path processing failed', ['error' => $e->getMessage()]);
         }
 
         try {
@@ -133,7 +158,18 @@ class ProcessImageToProduct implements ShouldQueue
                     'images' => $product->images,
                 ]
             ]);
-            throw $e;
+            // Retry once with a new unique slug if duplicate key on slug
+            if (str_contains(strtolower($e->getMessage()), 'duplicate') && str_contains(strtolower($e->getMessage()), 'slug')) {
+                try {
+                    $product->slug = Str::slug($product->name) . '-' . strtolower(Str::random(6));
+                    $product->save();
+                } catch (\Throwable $e2) {
+                    Log::error('ProcessImageToProduct: retry save failed', ['error' => $e2->getMessage()]);
+                    throw $e2;
+                }
+            } else {
+                throw $e;
+            }
         }
         Log::info('ProcessImageToProduct: product created', [
             'product_id' => $product->id,
@@ -213,6 +249,113 @@ class ProcessImageToProduct implements ShouldQueue
         $sentence = ucfirst(trim($start)) . ' transformed into a ' . $end;
 
         return $sentence;
+    }
+
+    private function generateUniqueSlug(string $baseSlug): string
+    {
+        $slug = $baseSlug ?: strtolower(Str::random(8));
+        $original = $slug;
+        $i = 1;
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $original . '-' . $i;
+            $i++;
+            if ($i > 50) {
+                $slug = $original . '-' . strtolower(Str::random(6));
+                break;
+            }
+        }
+        return $slug;
+    }
+
+    /**
+     * Map model category or materials to app slugs (plastique, verre, metal, papier, bois, textile, electronique, organique)
+     */
+    private function normalizeCategorySlug(?string $categorySlug, array $labels, ?string $caption): ?string
+    {
+        $text = strtolower(trim(($caption ?? '')) . ' ' . implode(' ', array_map(fn($l) => strtolower((string)($l['label'] ?? '')), $labels)));
+
+        $maps = [
+            'plastique' => ['plastic', 'plastique', 'pet', 'polyethylene'],
+            'verre' => ['glass', 'verre'],
+            'metal' => ['metal', 'métal', 'aluminum', 'steel', 'fer', 'alu'],
+            'papier' => ['paper', 'papier', 'cardboard', 'carton'],
+            'bois' => ['wood', 'bois', 'pallet'],
+            'textile' => ['textile', 'cloth', 'fabric', 'tshirt', 'jeans', 'shirt'],
+            'electronique' => ['electronic', 'electronics', 'phone', 'laptop', 'keyboard'],
+            'organique' => ['organic', 'food', 'vegetable', 'fruit', 'compost']
+        ];
+
+        foreach ($maps as $slug => $keywords) {
+            foreach ($keywords as $kw) {
+                if (str_contains($text, $kw)) {
+                    return $slug;
+                }
+            }
+        }
+        return $categorySlug ? strtolower($categorySlug) : null;
+    }
+
+    /**
+     * Build French transformation text from labels/caption/category
+     */
+    private function synthesizeTransformationFr(array $labels, ?string $caption, ?string $categorySlug): ?string
+    {
+        $en = $this->synthesizeTransformation($labels, $caption, $categorySlug);
+        if (!$en) return null;
+        // Rough translation rules for common phrases
+        $map = [
+            'plastic' => 'plastique',
+            'glass' => 'verre',
+            'paper' => 'papier',
+            'metal' => 'métal',
+            'wood' => 'bois',
+            'textile' => 'textile',
+            'electronic' => 'électronique',
+            'organic material' => 'matière organique',
+            'bottle' => 'bouteille',
+            'jar' => 'bocal',
+            'can' => 'canette',
+            'box' => 'boîte',
+            'item' => 'objet',
+            'flowerpot' => 'pot de fleur',
+            'storage' => 'rangement',
+            'lamp' => 'lampe',
+            'decor' => 'décoration',
+            'transformed into a' => 'transformée en',
+        ];
+        $fr = $en;
+        foreach ($map as $from => $to) {
+            $fr = str_ireplace($from, $to, $fr);
+        }
+        // Improve phrasing: "Bouteille en plastique transformée en porte-stylos"
+        $fr = preg_replace('/^([A-Za-zéèêàùç\s]+)\s(bois|plastique|verre|papier|métal|textile|électronique|matière organique)/ui', '$1 en $2', $fr);
+        return ucfirst($fr);
+    }
+
+    private function buildFrenchName(?string $categorySlug, ?string $transformation, ?string $caption): string
+    {
+        if ($transformation) {
+            return $transformation;
+        }
+        if ($caption) {
+            $base = ucfirst(trim(str_replace(['.', '#'], '', strtok($caption, '.'))));
+            return $base;
+        }
+        return ucfirst(($categorySlug ?: 'Objet recyclé')) . ' - Création recyclée';
+    }
+
+    private function buildFrenchDescription(?string $categorySlug, ?string $transformation, ?string $caption, array $labels): string
+    {
+        $parts = [];
+        if ($transformation) $parts[] = $transformation;
+        if ($caption) $parts[] = 'Analyse IA: ' . $caption;
+        if (!empty($labels)) {
+            $top = array_slice(array_map(fn($l) => $l['label'] ?? null, $labels), 0, 5);
+            $top = array_filter($top);
+            if ($top) $parts[] = 'Mots-clés: ' . implode(', ', $top);
+        }
+        if ($categorySlug) $parts[] = 'Catégorie: ' . ucfirst($categorySlug);
+        return implode("\n\n", $parts) ?: 'Produit recyclé généré automatiquement.';
     }
 }
 

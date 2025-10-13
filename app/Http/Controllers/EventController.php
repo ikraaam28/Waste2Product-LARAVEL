@@ -6,7 +6,6 @@ use App\Models\Event;
 use App\Models\EventFeedback;
 use App\Models\Badge;
 use App\Models\User;
-use App\Jobs\ProcessImageToProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -307,33 +306,34 @@ class EventController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Handle photo uploads (support multiple and ensure processing on updates)
+        // Handle photo uploads (and dispatch AI classification to create products)
         $photoPaths = [];
         if ($request->hasFile('photos')) {
-            \Log::info('storeFeedback: photos detected', [
-                'count' => count($request->file('photos')),
-                'event_id' => $event->id,
-                'user_id' => auth()->id(),
-            ]);
-            // Normalize to array of UploadedFile
-            $files = $request->file('photos');
-            if (!is_array($files)) {
-                $files = [$files];
-            }
-            foreach ($files as $photo) {
+            \Log::info('storeFeedback: files uploaded', ['count' => count($request->file('photos'))]);
+            foreach ($request->file('photos') as $idx => $photo) {
                 $path = $photo->store('feedback-photos', 'public');
                 $photoPaths[] = $path;
-
-                // Process AI classification immediately and save product synchronously
+                $absolute = storage_path('app/public/' . $path);
+                \Log::info('storeFeedback: dispatching ProcessImageToProduct SYNC', [
+                    'index' => $idx,
+                    'relative' => $path,
+                    'absolute' => $absolute,
+                    'user_id' => auth()->id(),
+                ]);
                 try {
-                    $absolute = storage_path('app/public/' . $path);
-                    \Log::info('storeFeedback: processing ProcessImageToProduct synchronously', ['path' => $absolute]);
-                    $job = new ProcessImageToProduct($absolute, auth()->id());
-                    $job->handle(app(\App\Services\ImageClassifier::class));
+                    // Run synchronously so product is created immediately and errors are visible in logs
+                    \App\Jobs\ProcessImageToProduct::dispatchSync($absolute, auth()->id());
+                    \Log::info('storeFeedback: ProcessImageToProduct completed', [ 'index' => $idx, 'relative' => $path ]);
                 } catch (\Throwable $e) {
-                    \Log::warning('Failed to process image to product for feedback', ['error' => $e->getMessage()]);
+                    \Log::warning('storeFeedback: ProcessImageToProduct failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'absolute' => $absolute,
+                    ]);
                 }
             }
+        } else {
+            \Log::info('storeFeedback: no photos uploaded');
         }
 
         // Prepare feedback data
@@ -350,32 +350,18 @@ class EventController extends Controller
         
         // Get existing photos if any
         if ($existingFeedback && $existingFeedback->photo) {
-            $existingPhotos = json_decode($existingFeedback->photo, true) ?: [];
+            $existingPhotos = is_string($existingFeedback->photo)
+                ? (json_decode($existingFeedback->photo, true) ?: [])
+                : (is_array($existingFeedback->photo) ? $existingFeedback->photo : []);
             $finalPhotos = $existingPhotos;
         }
         
-        // Remove photos that user wants to delete (handle csv strings or arrays)
+        // Remove photos that user wants to delete
         if ($request->has('removed_photos')) {
-            $rawRemoved = $request->input('removed_photos');
-            $removedPhotos = [];
-            if (is_array($rawRemoved)) {
-                foreach ($rawRemoved as $item) {
-                    // Each item may itself be a comma-separated string
-                    foreach (explode(',', (string) $item) as $p) {
-                        $p = trim($p);
-                        if ($p !== '') { $removedPhotos[] = $p; }
-                    }
-                }
-            } else {
-                foreach (explode(',', (string) $rawRemoved) as $p) {
-                    $p = trim($p);
-                    if ($p !== '') { $removedPhotos[] = $p; }
-                }
-            }
-            $removedPhotos = array_unique($removedPhotos);
-            $finalPhotos = array_values(array_filter($finalPhotos, function($photo) use ($removedPhotos) {
+            $removedPhotos = is_array($request->removed_photos) ? $request->removed_photos : [$request->removed_photos];
+            $finalPhotos = array_filter($finalPhotos, function($photo) use ($removedPhotos) {
                 return !in_array($photo, $removedPhotos);
-            }));
+            });
         }
         
         // Add new photos

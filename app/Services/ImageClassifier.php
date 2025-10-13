@@ -14,7 +14,7 @@ class ImageClassifier
     public function caption(string $absoluteImagePath): ?string
     {
         $token = config('services.huggingface.token');
-        $model = config('services.huggingface.caption_model', 'nlpconnect/vit-gpt2-image-captioning');
+        $model = config('services.huggingface.caption_model', 'Salesforce/blip-image-captioning-base');
 
         if (!is_readable($absoluteImagePath)) {
             Log::warning('ImageClassifier: caption image not readable', ['path' => $absoluteImagePath]);
@@ -79,7 +79,8 @@ class ImageClassifier
     public function classify(string $absoluteImagePath): array
     {
         $token = config('services.huggingface.token');
-        $model = config('services.huggingface.model', 'google/vit-base-patch16-224');
+        $primaryModel = config('services.huggingface.model', 'google/vit-base-patch16-224');
+        $secondaryModel = config('services.huggingface.secondary_model', 'microsoft/resnet-50');
 
         if (!is_readable($absoluteImagePath)) {
             Log::warning('ImageClassifier: image not readable', ['path' => $absoluteImagePath]);
@@ -95,7 +96,7 @@ class ImageClassifier
             }
 
             Log::info('ImageClassifier: sending image to HF', [
-                'model' => $model,
+                'model' => $primaryModel,
                 'path' => $absoluteImagePath,
                 'mime' => $mime,
                 'size' => strlen($bytes),
@@ -108,37 +109,74 @@ class ImageClassifier
             }
             $response = $client
                 ->withHeaders(['Content-Type' => $mime])
-                ->send('POST', "https://api-inference.huggingface.co/models/{$model}", [
+                ->send('POST', "https://api-inference.huggingface.co/models/{$primaryModel}", [
                     'body' => $bytes,
                 ]);
 
+            $primary = [];
             if (!$response->ok()) {
-                Log::warning('ImageClassifier: API error', [
+                Log::warning('ImageClassifier: API error (primary)', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
-                return [];
+            } else {
+                $data = $response->json();
+                if (isset($data[0]) && is_array($data[0]) && isset($data[0]['label'])) {
+                    $primary = array_map(function ($item) {
+                        return [
+                            'label' => (string) ($item['label'] ?? ''),
+                            'score' => (float) ($item['score'] ?? 0),
+                        ];
+                    }, $data);
+                } else {
+                    Log::warning('ImageClassifier: unexpected response format (primary)', [ 'data' => $data ]);
+                }
             }
 
-            $data = $response->json();
-
-            // Some HF models return nested array; normalize to flat label/score list
-            if (isset($data[0]) && is_array($data[0]) && isset($data[0]['label'])) {
-                Log::info('ImageClassifier: received labels', [
-                    'count' => count($data),
-                    'top' => $data[0] ?? null,
-                ]);
-                return array_map(function ($item) {
-                    return [
-                        'label' => (string) ($item['label'] ?? ''),
-                        'score' => (float) ($item['score'] ?? 0),
-                    ];
-                }, $data);
+            // Secondary model ensemble
+            $secondary = [];
+            try {
+                Log::info('ImageClassifier: sending image to HF (secondary)', [ 'model' => $secondaryModel ]);
+                $resp2 = $client
+                    ->withHeaders(['Content-Type' => $mime])
+                    ->send('POST', "https://api-inference.huggingface.co/models/{$secondaryModel}", [
+                        'body' => $bytes,
+                    ]);
+                if ($resp2->ok()) {
+                    $data2 = $resp2->json();
+                    if (isset($data2[0]) && is_array($data2[0]) && isset($data2[0]['label'])) {
+                        $secondary = array_map(function ($item) {
+                            return [
+                                'label' => (string) ($item['label'] ?? ''),
+                                'score' => (float) ($item['score'] ?? 0),
+                            ];
+                        }, $data2);
+                    } else {
+                        Log::warning('ImageClassifier: unexpected response format (secondary)', [ 'data' => $data2 ]);
+                    }
+                } else {
+                    Log::warning('ImageClassifier: API error (secondary)', [
+                        'status' => $resp2->status(),
+                        'body' => $resp2->body(),
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('ImageClassifier: secondary model exception', ['message' => $e->getMessage()]);
             }
 
-            // Fallback empty
-            Log::warning('ImageClassifier: unexpected response format', [ 'data' => $data ]);
-            return [];
+            // Merge by label keep max score
+            $merged = [];
+            foreach (array_merge($primary, $secondary) as $it) {
+                $lbl = strtolower((string)($it['label'] ?? ''));
+                $scr = (float) ($it['score'] ?? 0);
+                if ($lbl === '') continue;
+                if (!isset($merged[$lbl]) || $scr > $merged[$lbl]['score']) {
+                    $merged[$lbl] = ['label' => $lbl, 'score' => $scr];
+                }
+            }
+            usort($merged, fn($a, $b) => $b['score'] <=> $a['score']);
+            Log::info('ImageClassifier: ensemble labels', [ 'count' => count($merged), 'top' => $merged[0] ?? null ]);
+            return array_values($merged);
         } catch (\Throwable $e) {
             Log::error('ImageClassifier: exception', ['message' => $e->getMessage()]);
             return [];
@@ -157,14 +195,25 @@ class ImageClassifier
         $labelString = strtolower(join(' ', array_map(fn($l) => $l['label'], $labels)));
 
         $mapping = [
-            'plastique' => ['plastic', 'bottle', 'container', 'polypropylene', 'polyethylene', 'cup', 'package', 'bag'],
-            'verre' => ['glass', 'wine', 'bottle', 'jar', 'cup'],
-            'papier' => ['paper', 'newspaper', 'book', 'cardboard', 'magazine', 'envelope', 'box'],
-            'metal' => ['can', 'aluminum', 'steel', 'tin', 'metal'],
-            'textile' => ['cloth', 'tshirt', 'shirt', 'jeans', 'fabric', 'towel'],
-            'bois' => ['wood', 'wooden', 'pallet'],
-            'organique' => ['banana', 'apple', 'food', 'organic', 'vegetable', 'fruit'],
-            'electronique' => ['phone', 'laptop', 'keyboard', 'mouse', 'remote'],
+            // Plastique
+            'plastique' => [
+                'plastic','plastique','pet','polypropylene','polyethylene','pe','pp','phthalate',
+                'bottle','bouteille','flacon','container','package','packaging','barquette','tray','sachet','bag','cup'
+            ],
+            // Verre
+            'verre' => [ 'glass','verre','jar','bocal','vase','goblet','carafe','bottle' ],
+            // Papier & carton
+            'papier' => [ 'paper','papier','cardboard','carton','box','boîte','newspaper','magazine','envelope' ],
+            // Métal
+            'metal' => [ 'metal','métal','steel','iron','aluminum','aluminium','tin','can','canette','bolt','screw','wrench' ],
+            // Textile
+            'textile' => [ 'textile','fabric','cloth','tshirt','shirt','jeans','denim','garment','vêtement','towel' ],
+            // Bois
+            'bois' => [ 'wood','bois','wooden','timber','pallet','palette','planche','board' ],
+            // Organique
+            'organique' => [ 'organic','food','vegetable','fruit','compost','banana','apple' ],
+            // Electronique
+            'electronique' => [ 'electronic','electronics','phone','laptop','keyboard','mouse','remote','circuit' ],
         ];
 
         foreach ($mapping as $category => $keywords) {
@@ -240,6 +289,18 @@ class ImageClassifier
             $scores[$category] = $score;
         }
 
+        // Material disambiguation boosts (favor bois for furniture/boards)
+        $woodBoostKeywords = ['wood', 'bois', 'wooden', 'pallet', 'palette', 'planche', 'plank', 'board', 'table', 'dining table', 'desk'];
+        foreach ($woodBoostKeywords as $wb) {
+            if (str_contains($text, $wb)) {
+                $scores['bois'] = ($scores['bois'] ?? 0) + 3; // strong boost towards bois
+            }
+        }
+        // If both papier and bois scored, and wood hints present, prefer bois
+        if (($scores['papier'] ?? 0) > 0 && ($scores['bois'] ?? 0) > 0) {
+            $scores['bois'] += 1;
+        }
+
         arsort($scores);
         $best = array_key_first($scores);
         $runnerUp = array_keys($scores)[1] ?? null;
@@ -248,6 +309,10 @@ class ImageClassifier
             if ($runnerUp && $scores[$best] === $scores[$runnerUp]) {
                 if (in_array('verre', [$best, $runnerUp]) && in_array('plastique', [$best, $runnerUp])) {
                     $best = 'verre';
+                }
+                // Favor bois over papier when furniture/wood cues
+                if (in_array('bois', [$best, $runnerUp]) && in_array('papier', [$best, $runnerUp])) {
+                    $best = 'bois';
                 }
             }
             Log::info('ImageClassifier: caption-aware category mapped', [
