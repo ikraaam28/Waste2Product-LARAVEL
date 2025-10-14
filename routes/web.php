@@ -115,6 +115,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
 Route::delete('/publications/{id}/delete', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
     Route::get('/publications/export/csv', [PublicationController::class, 'exportCsv'])->name('admin.publications.export');
+    Route::post('/publications/{id}/ban', [PublicationController::class, 'adminBanUser'])->name('admin.publications.ban');
 
     // New routes for commentaires
     Route::get('/commentaires', [CommentaireController::class, 'adminIndex'])->name('admin.commentaires.index');

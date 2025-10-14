@@ -36,7 +36,9 @@ class User extends Authenticatable
         'remember_token',
         'profile_picture',
         'google_id',
-        'avatar'
+        'avatar',
+        'banned_at', 
+
     ];
 
     /**
@@ -184,6 +186,14 @@ public function isAdmin(): bool
     {
         return $query->where('is_active', false);
     }
+
+protected $dates = ['banned_at'];
+
+    public function isBanned()
+    {
+        return !is_null($this->banned_at);
+    }
+
 
     /**
      * Publication et commentaire

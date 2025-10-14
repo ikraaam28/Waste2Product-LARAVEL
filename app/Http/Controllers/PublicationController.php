@@ -8,40 +8,42 @@ use App\Models\Commentaire;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 
 class PublicationController extends Controller
 {
     /**
      * Afficher la liste paginée des publications
      */
-public function index()
-{
-    $publications = Publication::with('user')->latest()->paginate(10);
-    return view('publications.index', compact('publications'));
-}
+    public function index()
+    {
+        $publications = Publication::with('user')->latest()->paginate(10);
+        return view('publications.index', compact('publications'));
+    }
 
+    public function myPublications()
+    {
+        $myPublications = Publication::with('user')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
 
-public function myPublications()
-{
-    $myPublications = Publication::with('user')
-        ->where('user_id', Auth::id())
-        ->latest()
-        ->get();
+        $otherPublications = Publication::with('user')
+            ->where('user_id', '!=', Auth::id())
+            ->latest()
+            ->paginate(10);
 
-    $otherPublications = Publication::with('user')
-        ->where('user_id', '!=', Auth::id())
-        ->latest()
-        ->paginate(10);
-
-    return view('publications.my-publications', compact('myPublications', 'otherPublications'));
-}
+        return view('publications.my-publications', compact('myPublications', 'otherPublications'));
+    }
 
     /**
      * Afficher le formulaire pour créer une nouvelle publication
      */
     public function create()
     {
+        if (Auth::check() && Auth::user()->isBanned()) {
+            return redirect()->route('publications.my')->with('error', 'Vous êtes banni et ne pouvez pas créer de publication.');
+        }
         return view('publications.create');
     }
 
@@ -49,35 +51,37 @@ public function myPublications()
      * Enregistrer une nouvelle publication
      */
     public function store(Request $request)
-{
-$validator = Validator::make($request->all(), [
-    'titre' => 'required|string|max:255',
-    'contenu' => 'required|string',
-    'categorie' => 'required|in:reemployment,repair,transformation',
-    'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-]);
+    {
+        if (Auth::user()->isBanned()) {
+            return redirect()->route('publications.my')->with('error', 'Vous êtes banni et ne pouvez pas créer de publication.');
+        }
 
+        $validator = Validator::make($request->all(), [
+            'titre' => 'required|string|max:255',
+            'contenu' => 'required|string',
+            'categorie' => 'required|in:reemployment,repair,transformation',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
 
-    if ($validator->fails()) {
-        return redirect()->back()->withErrors($validator)->withInput();
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('publications', 'public');
+        }
+
+        Publication::create([
+            'titre' => $request->titre,
+            'contenu' => $request->contenu,
+            'categorie' => $request->categorie,
+            'image' => $imagePath,
+            'user_id' => Auth::id(),
+        ]);
+
+        return redirect()->route('publications.my')->with('success', 'Publication créée !');
     }
-
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('publications', 'public');
-    }
-
-    Publication::create([
-        'titre' => $request->titre,
-        'contenu' => $request->contenu,
-        'categorie' => $request->categorie,
-        'image' => $imagePath,
-        'user_id' => Auth::id(),
-    ]);
-
-    // Change this line to redirect to your my-publications page
-    return redirect()->route('publications.my')->with('success', 'Publication créée !');
-}
 
     /**
      * Afficher une publication spécifique avec ses commentaires
@@ -95,7 +99,6 @@ $validator = Validator::make($request->all(), [
     {
         $publication = Publication::findOrFail($id);
 
-        // Vérifier que l'utilisateur est le propriétaire de la publication
         if ($publication->user_id !== Auth::id()) {
             return redirect()->route('publications.index')->with('error', 'Vous n\'êtes pas autorisé à modifier cette publication.');
         }
@@ -106,74 +109,71 @@ $validator = Validator::make($request->all(), [
     /**
      * Mettre à jour une publication existante
      */
-   public function update(Request $request, $id)
-{
-    $publication = Publication::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $publication = Publication::findOrFail($id);
 
-    if ($publication->user_id !== Auth::id()) {
-        return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à modifier cette publication.');
-    }
-
-    $validator = Validator::make($request->all(), [
-        'titre' => 'required|string|max:255',
-        'contenu' => 'required|string',
-    'categorie' => 'required|in:reemployment,repair,transformation',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-    ]);
-
-    if ($validator->fails()) {
-        return redirect()->back()->withErrors($validator)->withInput();
-    }
-
-    $imagePath = $publication->image;
-    if ($request->hasFile('image')) {
-        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-            Storage::disk('public')->delete($imagePath);
+        if ($publication->user_id !== Auth::id()) {
+            return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à modifier cette publication.');
         }
-        $imagePath = $request->file('image')->store('publications', 'public');
+
+        $validator = Validator::make($request->all(), [
+            'titre' => 'required|string|max:255',
+            'contenu' => 'required|string',
+            'categorie' => 'required|in:reemployment,repair,transformation',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $imagePath = $publication->image;
+        if ($request->hasFile('image')) {
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            $imagePath = $request->file('image')->store('publications', 'public');
+        }
+
+        $publication->update([
+            'titre' => $request->titre,
+            'contenu' => $request->contenu,
+            'categorie' => $request->categorie,
+            'image' => $imagePath,
+        ]);
+
+        return redirect()->route('publications.my')->with('success', 'Publication mise à jour !');
     }
 
-    $publication->update([
-        'titre' => $request->titre,
-        'contenu' => $request->contenu,
-        'categorie' => $request->categorie,
-        'image' => $imagePath,
-    ]);
+    public function destroy($id)
+    {
+        $publication = Publication::findOrFail($id);
 
-    return redirect()->route('publications.my')->with('success', 'Publication mise à jour !');
-}
+        if ($publication->user_id !== Auth::id()) {
+            return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à supprimer cette publication.');
+        }
 
-public function destroy($id)
-{
-    $publication = Publication::findOrFail($id);
+        if ($publication->image && Storage::disk('public')->exists($publication->image)) {
+            Storage::disk('public')->delete($publication->image);
+        }
 
-    if ($publication->user_id !== Auth::id()) {
-        return redirect()->route('publications.my')->with('error', 'Vous n\'êtes pas autorisé à supprimer cette publication.');
+        $publication->delete();
+
+        return redirect()->route('publications.my')->with('success', 'Publication supprimée !');
     }
 
-    if ($publication->image && Storage::disk('public')->exists($publication->image)) {
-        Storage::disk('public')->delete($publication->image);
-    }
-
-    $publication->delete();
-
-    return redirect()->route('publications.my')->with('success', 'Publication supprimée !');
-}
-
-/**
+    /**
      * Afficher la liste de toutes les publications pour l'admin avec filtres et statistiques
      */
     public function adminIndex(Request $request)
     {
-        // Check if the user is an admin
         if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized. Admin access required.');
         }
 
-        // Initialize query
         $query = Publication::with('user')->whereHas('user');
 
-        // Apply filters
         if ($request->filled('category')) {
             $query->where('categorie', $request->category);
         }
@@ -197,10 +197,8 @@ public function destroy($id)
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // Paginate results
         $publications = $query->latest()->paginate(10)->appends($request->query());
 
-        // Statistics
         $stats = [
             'total_publications' => Publication::count(),
             'category_distribution' => Publication::groupBy('categorie')
@@ -221,16 +219,11 @@ public function destroy($id)
         return view('admin.publications.index', compact('publications', 'stats'));
     }
 
-
-
-
-
     /**
      * Export publications to CSV
      */
     public function exportCsv()
     {
-        // Check if the user is an admin
         if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized. Admin access required.');
         }
@@ -265,23 +258,60 @@ public function destroy($id)
         return response()->stream($callback, 200, $headers);
     }
 
+  /**
+     * Ban a user and delete their publications
+     */
+    public function adminBanUser($id)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+
+        $publication = Publication::with('user')->findOrFail($id);
+        $user = $publication->user;
+
+        if ($user) {
+            // Ban the user by setting banned_at timestamp
+            $user->update(['banned_at' => now()]);
+
+            // Delete all publications by the banned user
+            $user->publications()->each(function ($pub) {
+                if ($pub->image && Storage::disk('public')->exists($pub->image)) {
+                    Storage::disk('public')->delete($pub->image);
+                }
+                $pub->delete();
+            });
+
+            // Log out the banned user if they are currently authenticated
+            if (Auth::id() === $user->id) {
+                Auth::logout();
+                return redirect()->route('login')->with('success', 'You have been banned and logged out.');
+            }
+
+            \Log::info("User ID {$user->id} banned and publications deleted.");
+        }
+
+        return redirect()->route('admin.publications.index')->with('success', 'User banned and their publications deleted!');
+    }
+
     /**
      * Delete a single publication
      */
-   public function adminDestroy($id)
-{
-    if (!Auth::user()->isAdmin()) {
-        abort(403, 'Unauthorized. Admin access required.');
+    public function adminDestroy($id)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+
+        \Log::info("Attempting to delete publication with ID: {$id}");
+        $publication = Publication::findOrFail($id);
+        \Log::info("Publication found: " . json_encode($publication));
+
+        if ($publication->image && Storage::disk('public')->exists($publication->image)) {
+            Storage::disk('public')->delete($publication->image);
+        }
+        $publication->delete();
+
+        return redirect()->route('admin.publications.index')->with('success', 'Publication deleted!');
     }
-
-    \Log::info("Attempting to delete publication with ID: {$id}");
-    $publication = Publication::findOrFail($id);
-    \Log::info("Publication found: " . json_encode($publication));
-
-    if ($publication->image && Storage::disk('public')->exists($publication->image)) {
-        Storage::disk('public')->delete($publication->image);
-    }
-    $publication->delete();
-
-    return redirect()->route('admin.publications.index')->with('success', 'Publication deleted!');
-}}
+}

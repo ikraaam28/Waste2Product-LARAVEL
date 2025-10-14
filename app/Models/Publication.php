@@ -27,4 +27,17 @@ public function commentaires()
 {
     return $this->hasMany(Commentaire::class)->whereNull('parent_id');
 }
+
+public static function boot()
+    {
+        parent::boot();
+
+        // Automatically delete publications if the user is banned
+        static::saving(function ($publication) {
+            if ($publication->user && $publication->user->isBanned()) {
+                $publication->delete();
+                throw new \Exception('Cannot save publication: User is banned.');
+            }
+        });
+    }
 }

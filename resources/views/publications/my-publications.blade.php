@@ -17,7 +17,7 @@
         @endif
 
         <!-- Form to create a new publication -->
-        @if(auth()->check())
+        @if(auth()->check() && !auth()->user()->isBanned())
         <div class="card mb-4 shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
             <div class="card-header bg-primary text-white py-3">
                 <h5 class="mb-0">Add a New Publication</h5>
@@ -49,6 +49,10 @@
                 </form>
             </div>
         </div>
+        @elseif(auth()->check() && auth()->user()->isBanned())
+            <div class="alert alert-danger text-center">
+                Vous êtes banni et ne pouvez pas créer de publication.
+            </div>
         @endif
 
         <!-- Your publications -->

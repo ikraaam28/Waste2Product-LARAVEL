@@ -30,8 +30,11 @@
                         <p class="text-muted">Par {{ $publication->user->full_name }} 
                             | {{ $publication->created_at->diffForHumans() }}</p>
                         <span class="badge bg-success">{{ ucfirst($publication->categorie) }}</span>
+                        @if($publication->user->isBanned())
+                            <span class="badge bg-danger ms-2">Banni</span>
+                        @endif
                     </div>
-                    @if(auth()->id() === $publication->user_id)
+                    @if(auth()->check() && auth()->id() === $publication->user_id && !auth()->user()->isBanned())
                         <div>
                             <a href="{{ route('publications.edit', $publication->id) }}" 
                                class="btn btn-sm btn-outline-primary me-2">
@@ -55,28 +58,32 @@
         </div>
 
         <!-- Formulaire d'ajout de commentaire -->
-        @if(auth()->check())
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-comment"></i> Ajouter un commentaire</h5>
+        @if(auth()->check() && !auth()->user()->isBanned())
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-comment"></i> Ajouter un commentaire</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('commentaires.store', $publication->id) }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label">Votre commentaire</label>
+                            <textarea name="contenu" class="form-control @error('contenu') is-invalid @enderror" 
+                                      rows="4" placeholder="Partagez vos pensées..." required>{{ old('contenu') }}</textarea>
+                            @error('contenu')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Commenter
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ route('commentaires.store', $publication->id) }}">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label">Votre commentaire</label>
-                        <textarea name="contenu" class="form-control @error('contenu') is-invalid @enderror" 
-                                  rows="4" placeholder="Partagez vos pensées..." required>{{ old('contenu') }}</textarea>
-                        @error('contenu')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Commenter
-                    </button>
-                </form>
+        @elseif(auth()->check() && auth()->user()->isBanned())
+            <div class="alert alert-danger text-center">
+                Vous êtes banni et ne pouvez pas ajouter de commentaires.
             </div>
-        </div>
         @endif
 
         <!-- Liste des commentaires -->

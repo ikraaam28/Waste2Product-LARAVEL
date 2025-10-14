@@ -148,6 +148,11 @@
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
 
+                                                        <!-- Ban User Button with Modal -->
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banModal{{ $publication->id }}">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+
                                                         <!-- Delete Modal -->
                                                         <div class="modal fade" id="deleteModal{{ $publication->id }}" tabindex="-1" aria-hidden="true">
                                                             <div class="modal-dialog modal-dialog-centered">
@@ -164,6 +169,29 @@
                                                                             @csrf
                                                                             @method('DELETE')
                                                                             <button type="submit" class="btn btn-danger">Delete</button>
+                                                                        </form>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Ban Modal -->
+                                                        <div class="modal fade" id="banModal{{ $publication->id }}" tabindex="-1" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Confirm Ban</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        Are you sure you want to ban "{{ $publication->user->first_name ?? 'Deleted User' }} {{ $publication->user->last_name ?? '' }}"? This will delete all their publications and prevent further posting.
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <form action="{{ route('admin.publications.ban', $publication->id) }}" method="POST">
+                                                                            @csrf
+                                                                            @method('POST')
+                                                                            <button type="submit" class="btn btn-warning">Ban</button>
                                                                         </form>
                                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                                     </div>
