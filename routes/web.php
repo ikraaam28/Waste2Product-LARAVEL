@@ -90,6 +90,15 @@ Route::middleware('auth')->group(function () {
 
     // Garder resource pour les autres méthodes (store, show, etc.) si nécessaire
     Route::resource('publications', PublicationController::class)->except(['index']);
+    // Routes pour les commentaires
+    Route::post('publications/{publication}/commentaires', [CommentaireController::class, 'store'])
+        ->name('commentaires.store');
+    Route::get('commentaires/{commentaire}/edit', [CommentaireController::class, 'edit'])
+        ->name('commentaires.edit');
+    Route::put('commentaires/{commentaire}', [CommentaireController::class, 'update'])
+        ->name('commentaires.update');
+    Route::delete('commentaires/{commentaire}', [CommentaireController::class, 'destroy'])
+        ->name('commentaires.destroy');
 });
 // Admin
 Route::prefix('admin')->middleware(['auth'])->group(function () {

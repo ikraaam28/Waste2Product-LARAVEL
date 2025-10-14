@@ -23,8 +23,8 @@ class Publication extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function commentaires()
-    {
-        return $this->hasMany(Commentaire::class);
-    }
+public function commentaires()
+{
+    return $this->hasMany(Commentaire::class)->whereNull('parent_id');
+}
 }
