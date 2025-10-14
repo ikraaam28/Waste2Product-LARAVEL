@@ -116,6 +116,10 @@ Route::get('/publications', [PublicationController::class, 'adminIndex'])->name(
 Route::delete('/publications/{id}/delete', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
     Route::get('/publications/export/csv', [PublicationController::class, 'exportCsv'])->name('admin.publications.export');
 
+    // New routes for commentaires
+    Route::get('/commentaires', [CommentaireController::class, 'adminIndex'])->name('admin.commentaires.index');
+    Route::delete('/commentaires/{id}/delete', [CommentaireController::class, 'adminDestroy'])->name('admin.commentaires.destroy');
+Route::get('/commentaires/export/csv', [CommentaireController::class, 'exportCsv'])->name('admin.commentaires.export');
     // Forms
     Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');
 
