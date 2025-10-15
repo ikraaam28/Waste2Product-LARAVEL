@@ -46,8 +46,11 @@ class PublicationController extends Controller
     /**
      * Afficher le formulaire pour créer une nouvelle publication
      */
-    public function create()
+     public function create()
     {
+        if (Auth::check() && Auth::user()->isBanned()) {
+            return redirect()->route('publications.my')->with('error', 'Vous êtes banni et ne pouvez pas créer de publication.');
+        }
         return view('publications.create');
     }
 
@@ -56,6 +59,12 @@ class PublicationController extends Controller
      */
     public function store(Request $request)
     {
+
+
+        if (Auth::user()->isBanned()) {
+            return redirect()->route('publications.my')->with('error', 'Vous êtes banni et ne pouvez pas créer de publication.');
+        }
+
         $validator = Validator::make($request->all(), [
             'titre' => 'required|string|max:255',
             'contenu' => 'required|string',
@@ -300,5 +309,41 @@ class PublicationController extends Controller
             \Log::error('Admin destroy publication error: ' . $e->getMessage());
             return redirect()->route('admin.publications.index')->with('error', 'Erreur lors de la suppression');
         }
+    }
+
+    /**
+     * Ban a user and delete their publications
+     */
+    public function adminBanUser($id)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+
+        $publication = Publication::with('user')->findOrFail($id);
+        $user = $publication->user;
+
+        if ($user) {
+            // Ban the user by setting banned_at timestamp
+            $user->update(['banned_at' => now()]);
+
+            // Delete all publications by the banned user
+            $user->publications()->each(function ($pub) {
+                if ($pub->image && Storage::disk('public')->exists($pub->image)) {
+                    Storage::disk('public')->delete($pub->image);
+                }
+                $pub->delete();
+            });
+
+            // Log out the banned user if they are currently authenticated
+            if (Auth::id() === $user->id) {
+                Auth::logout();
+                return redirect()->route('login')->with('success', 'You have been banned and logged out.');
+            }
+
+            \Log::info("User ID {$user->id} banned and publications deleted.");
+        }
+
+        return redirect()->route('admin.publications.index')->with('success', 'User banned and their publications deleted!');
     }
 }

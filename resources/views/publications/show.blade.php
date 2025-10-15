@@ -8,12 +8,25 @@
         </div>
 
         <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted mb-1">Par {{ $publication->user->full_name }} 
+                        | {{ $publication->created_at->diffForHumans() }}</p>
+                    <span class="badge bg-success">{{ ucfirst($publication->categorie) }}</span>
+                    @if($publication->user->isBanned())
+                        <span class="badge bg-danger ms-2">Banni</span>
+                    @endif
+                </div>
+                @if(auth()->id() === $publication->user_id)
+                    <a href="{{ route('publications.edit', $publication->id) }}" 
+                       class="btn btn-sm btn-outline-primary">Modifier</a>
+                @endif
+            </div>
             <div class="card-body">
                 <p>{{ $publication->contenu }}</p>
                 @if($publication->image)
                     <img src="{{ asset('storage/' . $publication->image) }}" alt="{{ $publication->titre }}" class="img-fluid mb-3" style="max-height: 300px;">
                 @endif
-                <p><strong>Par :</strong> {{ $publication->user->full_name }} | <strong>Catégorie :</strong> {{ ucfirst($publication->categorie) }}</p>
             </div>
         </div>
 
@@ -32,7 +45,7 @@
                         </span>
                     </div>
                     
-                    @if(auth()->check() && auth()->id() !== $publication->user_id)
+                    @if(auth()->check() && auth()->id() !== $publication->user_id && !auth()->user()->isBanned())
                     <div class="reaction-buttons d-flex gap-2">
                         {{-- Like Toggle Button --}}
                         <form method="POST" action="{{ route('publications.like', $publication) }}" class="like-form d-inline reaction-form">
@@ -62,6 +75,10 @@
                             @endif
                         </form>
                     </div>
+                    @elseif(auth()->check() && auth()->user()->isBanned())
+                    <div class="alert alert-danger">
+                        <small>Vous êtes banni et ne pouvez pas réagir aux publications.</small>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -75,6 +92,9 @@
                     <div class="card-body">
                         <p>{{ $commentaire->contenu }}</p>
                         <small>Par : {{ $commentaire->user->full_name }} | {{ $commentaire->created_at->diffForHumans() }}</small>
+                        @if($commentaire->user->isBanned())
+                            <span class="badge bg-danger ms-2">Banni</span>
+                        @endif
                     </div>
                 </div>
             @endforeach
@@ -82,20 +102,32 @@
             <p class="text-center">Aucun commentaire pour le moment.</p>
         @endif
 
-        @if(auth()->check())
-            <div class="card mt-4">
+        <!-- Formulaire d'ajout de commentaire -->
+        @if(auth()->check() && !auth()->user()->isBanned())
+            <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5>Ajouter un commentaire</h5>
+                    <h5 class="mb-0"><i class="fas fa-comment"></i> Ajouter un commentaire</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('commentaires.store', $publication->id) }}">
                         @csrf
-                        <div class="form-group">
-                            <textarea name="contenu" class="form-control" required placeholder="Ajoutez un commentaire..."></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">Votre commentaire</label>
+                            <textarea name="contenu" class="form-control @error('contenu') is-invalid @enderror" 
+                                      rows="4" placeholder="Partagez vos pensées..." required>{{ old('contenu') }}</textarea>
+                            @error('contenu')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2">Commenter</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Commenter
+                        </button>
                     </form>
                 </div>
+            </div>
+        @elseif(auth()->check() && auth()->user()->isBanned())
+            <div class="alert alert-danger text-center">
+                <i class="fas fa-ban"></i> Vous êtes banni et ne pouvez pas ajouter de commentaires.
             </div>
         @endif
     </div>

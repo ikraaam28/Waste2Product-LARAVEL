@@ -80,4 +80,17 @@ class Publication extends Model
             ->where('user_id', auth()->id())
             ->first()?->type;
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        // Automatically delete publications if the user is banned
+        static::saving(function ($publication) {
+            if ($publication->user && $publication->user->isBanned()) {
+                $publication->delete();
+                throw new \Exception('Cannot save publication: User is banned.');
+            }
+        });
+    }
 }

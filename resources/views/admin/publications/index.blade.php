@@ -239,29 +239,39 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: @json(array_keys($stats['monthly_trends'])),
-            datasets: [{
-                label: 'Publications per Month',
-                data: @json(array_values($stats['monthly_trends'])),
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Number of Publications' } },
-                x: { title: { display: true, text: 'Month' } }
+    // Safe access to monthly_trends with fallback
+    @if(isset($stats['monthly_trends']) && is_array($stats['monthly_trends']) && !empty($stats['monthly_trends']))
+        const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @json(array_keys($stats['monthly_trends'])),
+                datasets: [{
+                    label: 'Publications per Month',
+                    data: @json(array_values($stats['monthly_trends'])),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            plugins: { legend: { display: true, position: 'top' } }
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    @else
+        // Fallback: Hide or show empty chart message
+        console.warn('Monthly trends data not available');
+        const chartContainer = document.getElementById('monthlyTrendsChart').parentElement;
+        if (chartContainer) {
+            chartContainer.innerHTML = '<p class="text-muted text-center">Données mensuelles non disponibles.</p>';
         }
-    });
+    @endif
 });
 </script>
 
