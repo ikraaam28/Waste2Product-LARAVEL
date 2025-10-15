@@ -14,7 +14,7 @@ class Publication extends Model
         'contenu',    // Description/text
         'categorie',  // Catégorie: 'reemploi', 'reparation', 'transformation'
         'image',      // Chemin vers photo/vidéo (optionnel)
-        'user_id',    // ID de l'utilisateur qui poste
+        'user_id',    // ID de l'utilisateur 
     ];
 
     // Relations
