@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\PublicationReactionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
@@ -99,6 +100,11 @@ Route::middleware('auth')->group(function () {
         ->name('commentaires.update');
     Route::delete('commentaires/{commentaire}', [CommentaireController::class, 'destroy'])
         ->name('commentaires.destroy');
+
+    Route::post('/publications/{id}/like', [PublicationReactionController::class, 'like'])
+        ->name('publications.like');
+    Route::post('/publications/{id}/dislike', [PublicationReactionController::class, 'dislike'])
+        ->name('publications.dislike');
 });
 // Admin
 Route::prefix('admin')->middleware(['auth'])->group(function () {
