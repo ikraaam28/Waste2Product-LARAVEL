@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\QuizAttempt;
+use GuzzleHttp\Client;
+
+
 class TutoController extends Controller
 {
     public function index(Request $request)
@@ -81,6 +84,124 @@ public function show(Tuto $tuto)
         return view('tutos.show', compact('tuto', 'userReaction', 'likes', 'dislikes', 'allReactions', 'quizzes', 'averagePercentage', 'completedQuizzes', 'totalQuizzes'));
     }
 
+    public function uploadCertificate(Tuto $tuto)
+    {
+        // Check eligibility (all quizzes completed and average >= 70%)
+        $userAttempts = QuizAttempt::where('user_id', Auth::id())
+            ->whereIn('quiz_id', $tuto->quizzes->pluck('id'))
+            ->get();
+        $completedQuizzes = $userAttempts->count();
+        $totalQuizzes = $tuto->quizzes->count();
+        $averagePercentage = $userAttempts->isEmpty() ? 0 : $userAttempts->avg('percentage');
+
+        if ($completedQuizzes !== $totalQuizzes || $averagePercentage < 70) {
+            return redirect()->route('tutos.show', $tuto)->with('error', 'You are not eligible for a certificate.');
+        }
+
+        return view('certificates.upload', compact('tuto'));
+    }
+
+public function generateCertificate(Request $request, Tuto $tuto)
+{
+    // 🔹 Vérifier l'éligibilité
+    $userAttempts = QuizAttempt::where('user_id', Auth::id())
+        ->whereIn('quiz_id', $tuto->quizzes->pluck('id'))
+        ->get();
+    $completedQuizzes = $userAttempts->count();
+    $totalQuizzes = $tuto->quizzes->count();
+    $averagePercentage = $userAttempts->isEmpty() ? 0 : $userAttempts->avg('percentage');
+
+    if ($completedQuizzes !== $totalQuizzes || $averagePercentage < 70) {
+        return redirect()->route('tutos.show', $tuto)
+            ->with('error', 'You are not eligible for a certificate.');
+    }
+
+    // 🔹 Données utilisateur
+    $userName = Auth::user()->name;
+
+    // 🔹 Convertir le logo en Base64
+    $logoPath = public_path('assets/img/recycleverse1.png');
+    if (!file_exists($logoPath)) {
+        return redirect()->route('tutos.show', $tuto)
+            ->with('error', 'Logo file not found.');
+    }
+    $logoData = base64_encode(file_get_contents($logoPath));
+    $logoBase64 = "data:image/png;base64,{$logoData}";
+
+    // 🔹 Préparer le HTML du certificat
+    $html = "
+    <html>
+    <head>
+        <style>
+            body { font-family: 'DejaVu Sans', sans-serif; text-align: center; color: #333; background: #fff; }
+            .certificate { width: 80%; margin: 50px auto; border: 10px solid #004c99; padding: 20px; }
+            .logo { max-width: 150px; margin-bottom: 20px; }
+            h1 { font-size: 2.5em; color: #004c99; }
+            h2 { font-size: 1.5em; color: #004c99; }
+            p { font-size: 1.2em; margin: 5px 0; }
+            .app-name { font-weight: bold; font-size: 1.1em; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class='certificate'>
+            <img class='logo' src='{$logoBase64}' alt='RecycleVerse Logo'>
+            <h1>Certificate of Participation</h1>
+            <h2>Congratulations!</h2>
+            <p>This certifies that</p>
+            <p><strong>{$userName}</strong></p>
+            <p>has successfully participated in the tutorial</p>
+            <p><strong>{$tuto->title}</strong></p>
+            <p>with an average score of <strong>".number_format($averagePercentage, 2)."%</strong>.</p>
+            <p>Issued on: ".date('F d, Y')."</p>
+            <p class='app-name'>Proudly presented by <strong>RecycleVerse</strong></p>
+        </div>
+    </body>
+    </html>
+    ";
+
+    try {
+        // 🔹 Appel API PDF.co
+        $client = new Client(['verify' => false]);
+        $apiKey = env('PDFCO_API_KEY');
+
+        $response = $client->post('https://api.pdf.co/v1/pdf/convert/from/html', [
+            'headers' => [
+                'x-api-key' => $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'html' => $html,
+                'name' => 'certificate_' . Auth::id() . '_' . time() . '.pdf',
+                'inline' => true,
+                'margins' => ['top'=>10,'bottom'=>10,'left'=>10,'right'=>10],
+            ],
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        if (!isset($result['url']) || $result['error']) {
+            Log::error('PDF.co error', ['result' => $result]);
+            return redirect()->route('tutos.show', $tuto)
+                ->with('error', 'Failed to generate certificate.');
+        }
+
+        // 🔹 Télécharger le PDF depuis le lien temporaire
+        $pdfResponse = $client->get($result['url'], ['verify' => false]);
+        $pdfContent = $pdfResponse->getBody()->getContents();
+
+        // 🔹 Sauvegarder localement
+        $storagePath = 'certificates/certificate_' . Auth::id() . '_' . time() . '.pdf';
+        Storage::put($storagePath, $pdfContent);
+
+        // 🔹 Télécharger automatiquement le PDF
+        return response()->download(storage_path('app/' . $storagePath))->deleteFileAfterSend(true);
+
+    } catch (\Exception $e) {
+        Log::error('PDF generation failed', ['message' => $e->getMessage()]);
+        return redirect()->route('tutos.show', $tuto)
+            ->with('error', 'Failed to generate certificate: ' . $e->getMessage());
+    }
+}
     
     public function adminIndex()
     {
@@ -261,4 +382,6 @@ public function show(Tuto $tuto)
 
         return back()->with('success', $request->parent_id ? 'Reply added!' : 'Question asked!');
     }
+
+
 }

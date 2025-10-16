@@ -193,6 +193,18 @@
         border-radius: 10px;
         transition: width 0.3s ease;
     }
+
+    /* New style for certificate icon */
+    .certificate-icon {
+        font-size: 2rem;
+        color: #28a745;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .certificate-icon:hover {
+        transform: scale(1.2);
+    }
 </style>
 
 <div class="container-fluid product py-5 my-5">
@@ -318,6 +330,11 @@
                                             </div>
                                         @endforeach
                                     </div>
+                                </div>
+                                <!-- Progress Bar (Always Displayed) -->
+                                <div class="progress-bar-container">
+                                    <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
+                                    <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -446,7 +463,12 @@
                             $attempt = $quiz->attempts->firstWhere('user_id', Auth::id());
                         @endphp
                         @if ($attempt)
-                            <span>{{ $quiz->title }} - <span class="quiz-percentage">{{ number_format($attempt->percentage, 2) }}%</span> <span class="{{ $attempt->percentage >= 70 ? 'quiz-status-succeeded' : 'quiz-status-failed' }}">{{ $attempt->percentage >= 70 ? 'Succeeded' : 'Failed' }}</span></span>
+                            <a href="{{ route('quizzes.show', $quiz) }}" class="text-decoration-none">
+                                {{ $quiz->title }} - <span class="quiz-percentage">{{ number_format($attempt->percentage, 2) }}%</span> 
+                                <span class="{{ $attempt->percentage >= 70 ? 'quiz-status-succeeded' : 'quiz-status-failed' }}">
+                                    {{ $attempt->percentage >= 70 ? 'Succeeded' : 'Failed' }}
+                                </span>
+                            </a>
                         @else
                             <a href="{{ route('quizzes.show', $quiz) }}" class="text-decoration-none">{{ $quiz->title }}</a>
                         @endif
@@ -455,12 +477,26 @@
             </div>
         @endif
 
-        <!-- Progress Bar if not all quizzes are completed -->
+        <!-- Progress Bar (Always Displayed) -->
         @auth
-            @if ($completedQuizzes < $totalQuizzes)
-                <div class="progress-bar-container">
-                    <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
-                    <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
+            <div class="progress-bar-container">
+                <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
+                <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
+            </div>
+
+            <!-- Certificate Logic Based on Average Percentage -->
+            @php
+                $allQuizzesCompleted = $completedQuizzes === $totalQuizzes;
+                $averagePercentageThreshold = $averagePercentage >= 70;
+            @endphp
+            @if ($allQuizzesCompleted && $averagePercentageThreshold)
+                <div class="text-center mt-4">
+                    <i class="fas fa-certificate certificate-icon" data-toggle="tooltip" title="Upload Certificate"></i>
+                    <a href="{{ route('certificates.upload', $tuto) }}" class="btn btn-success mt-2">Upload Your Certificate</a>
+                </div>
+            @elseif ($allQuizzesCompleted && !$averagePercentageThreshold)
+                <div class="text-center mt-4 text-danger">
+                    <p>Failed: Average quiz score is below 70%. No certificate available.</p>
                 </div>
             @endif
         @endauth

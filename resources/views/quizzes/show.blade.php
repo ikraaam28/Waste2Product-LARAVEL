@@ -33,7 +33,7 @@
                                     <p class="text-muted"><strong>Feedback:</strong> {{ $correctAnswers[$question->id]['feedback'] }}</p>
                                 </div>
                             @endforeach
-                            <a href="{{ route('quizzes.index') }}" class="btn btn-primary btn-lg w-100 py-3 mt-4 shadow">Back to Quizzes</a>
+                            <a href="{{ route('tutos.index') }}" class="btn btn-primary btn-lg w-100 py-3 mt-4 shadow">Back to Tutorials</a>
                         </div>
                     </div>
                 @else

@@ -18,6 +18,7 @@ use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\CommentaireController;
 use App\Http\Controllers\TutoController;
 use App\Http\Controllers\QuizController;
+use GuzzleHttp\Client;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -278,8 +279,37 @@ Route::get('/tutos', [TutoController::class, 'index'])->name('tutos.index');
 Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('tutos.show');
 Route::post('/tutos/{tuto}/react', [TutoController::class, 'react'])->name('tutos.react')->middleware('auth');
 Route::post('/tutos/{tuto}/question', [TutoController::class, 'askQuestion'])->name('tutos.question')->middleware('auth');
+Route::get('/tutos/{tuto}/certificates/upload', [TutoController::class, 'uploadCertificate'])->name('certificates.upload')->middleware('auth');
+Route::get('/tutos/{tuto}/certificates/upload', [TutoController::class, 'uploadCertificate'])->name('certificates.upload')->middleware('auth');
+Route::post('/tutos/{tuto}/certificates/upload', [TutoController::class, 'generateCertificate'])->name('certificates.generate')->middleware('auth');
+Route::post('/tutos/{tuto}/certificates/generate', [TutoController::class, 'generateCertificate'])
+    ->name('certificates.generate');
+
+
 
 // Frontend Quiz Routes
 Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
 Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show')->middleware('auth');
-Route::post('/quizzes/{quiz}/attempt', [QuizController::class, 'submitAttempt'])->name('quizzes.attempt')->middleware('auth');
+Route::post('/quizzes/{quiz}/submit', [QuizController::class, 'submit'])->name('quizzes.submit')->middleware('auth');
+Route::get('/test-pdfco', function () {
+    try {
+        $client = new Client(['verify' => false]);
+        $response = $client->post('https://api.pdf.co/v1/pdf/convert/from/html', [
+            'headers' => [
+                'x-api-key' => env('PDFCO_API_KEY'),
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'html' => '<h1>Test PDF.co fonctionne !</h1>',
+                'name' => 'test.pdf',
+                'inline' => true,
+            ],
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        return response()->json($result);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});
