@@ -57,3 +57,12 @@ jobs:
 
     - name: Run Tests
       run: php artisan test
+
+    - name: Run Unit Tests
+      run: php artisan test --testsuite=Unit
+
+    - name: Generate Coverage
+      run: |
+       composer require --dev phpunit/php-code-coverage
+        php artisan test --coverage
+
