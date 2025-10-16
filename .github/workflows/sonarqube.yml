@@ -20,23 +20,16 @@ jobs:
           php-version: 8.2
           extensions: mbstring, bcmath, mysqli, pdo_mysql
 
-      - name: Install Composer dependencies
-        run: composer install --no-progress --no-suggest --prefer-dist
-
       - name: Copy .env
         run: cp .env.example .env
 
-      - name: Generate APP_KEY
-        run: php artisan key:generate
-
-      - name: Run SonarScanner
+      - name: Run SonarScanner (Docker)
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          composer require --dev sonarsource/sonar-scanner-cli
-          ./vendor/bin/sonar-scanner \
-            -Dsonar.projectKey=waste2product \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          docker run --rm \
+            -e SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }} \
+            -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
+            -v ${{ github.workspace }}:/usr/src \
+            sonarsource/sonar-scanner-cli
