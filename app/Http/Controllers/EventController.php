@@ -306,13 +306,34 @@ class EventController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Handle photo uploads
+        // Handle photo uploads (and dispatch AI classification to create products)
         $photoPaths = [];
         if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $photo) {
+            \Log::info('storeFeedback: files uploaded', ['count' => count($request->file('photos'))]);
+            foreach ($request->file('photos') as $idx => $photo) {
                 $path = $photo->store('feedback-photos', 'public');
                 $photoPaths[] = $path;
+                $absolute = storage_path('app/public/' . $path);
+                \Log::info('storeFeedback: dispatching ProcessImageToProduct SYNC', [
+                    'index' => $idx,
+                    'relative' => $path,
+                    'absolute' => $absolute,
+                    'user_id' => auth()->id(),
+                ]);
+                try {
+                    // Run synchronously so product is created immediately and errors are visible in logs
+                    \App\Jobs\ProcessImageToProduct::dispatchSync($absolute, auth()->id());
+                    \Log::info('storeFeedback: ProcessImageToProduct completed', [ 'index' => $idx, 'relative' => $path ]);
+                } catch (\Throwable $e) {
+                    \Log::warning('storeFeedback: ProcessImageToProduct failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'absolute' => $absolute,
+                    ]);
+                }
             }
+        } else {
+            \Log::info('storeFeedback: no photos uploaded');
         }
 
         // Prepare feedback data
@@ -329,7 +350,9 @@ class EventController extends Controller
         
         // Get existing photos if any
         if ($existingFeedback && $existingFeedback->photo) {
-            $existingPhotos = json_decode($existingFeedback->photo, true) ?: [];
+            $existingPhotos = is_string($existingFeedback->photo)
+                ? (json_decode($existingFeedback->photo, true) ?: [])
+                : (is_array($existingFeedback->photo) ? $existingFeedback->photo : []);
             $finalPhotos = $existingPhotos;
         }
         

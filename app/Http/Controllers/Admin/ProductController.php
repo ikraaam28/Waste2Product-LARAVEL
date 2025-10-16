@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Jobs\ProcessImageToProduct;
 
 class ProductController extends Controller
 {
@@ -191,6 +192,13 @@ class ProductController extends Controller
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('products', 'public');
                     $images[] = $path;
+                    // Dispatch AI classification job for first image only (example)
+                    try {
+                        $absolute = storage_path('app/public/' . $path);
+                        ProcessImageToProduct::dispatch($absolute, $this->getDefaultAdminId());
+                    } catch (\Throwable $e) {
+                        \Log::warning('Failed to dispatch ProcessImageToProduct', ['error' => $e->getMessage()]);
+                    }
                 }
                 $productData['images'] = $images;
             }

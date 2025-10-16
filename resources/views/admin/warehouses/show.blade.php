@@ -210,6 +210,12 @@
                                     @endif
                                 </p>
                             </div>
+
+                            <!-- Map (read-only) -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold text-muted">Location on map</label>
+                                <div id="showMap" style="height:300px; border-radius:8px; border:1px solid #e9ecef;"></div>
+                            </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label fw-semibold text-muted">City</label>
                                 <p class="mb-0">{{ $warehouse->city ?? 'Not specified' }}</p>
@@ -375,6 +381,48 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const lat = parseFloat("{{ $warehouse->latitude ?? 'NaN' }}");
+    const lng = parseFloat("{{ $warehouse->longitude ?? 'NaN' }}");
+    const defaultLat = 34.0, defaultLng = 9.0; // Tunisia center
+    const hasCoords = !isNaN(lat) && !isNaN(lng);
+
+    const centerLat = hasCoords ? lat : defaultLat;
+    const centerLng = hasCoords ? lng : defaultLng;
+    const zoom = hasCoords ? 13 : 6;
+
+    // disable default zoom control to re-add it at top-right
+    const map = L.map('showMap', { scrollWheelZoom: false, zoomControl: false }).setView([centerLat, centerLng], zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add zoom control at top-right (visible, intuitive)
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Add a scale control (metric)
+    L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 150 }).addTo(map);
+
+    // optional: enable double-click zoom and keyboard zoom
+    map.doubleClickZoom.enable();
+    map.keyboard.enable();
+
+    if (hasCoords) {
+        L.marker([lat, lng]).addTo(map).bindPopup("{{ addslashes($warehouse->name) }}").openPopup();
+    }
+});
+</script>
+
+<style>
+/* small safety in case styles are missing */
+#showMap { min-height: 200px; }
+</style>
 
 <style>
 .avatar-title {

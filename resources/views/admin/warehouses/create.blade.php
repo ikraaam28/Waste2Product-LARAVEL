@@ -117,6 +117,18 @@
                                         <textarea name="address" id="address" class="form-control" rows="2" 
                                                   placeholder="Enter complete address">{{ old('address') }}</textarea>
                                     </div>
+
+                                    <div class="mt-2 d-flex gap-2">
+                                        <button type="button" id="geocodeBtn" class="btn btn-sm btn-outline-primary">Rechercher adresse</button>
+                                        <small class="text-muted align-self-center">ou cliquez sur la carte pour positionner l'entrepôt</small>
+                                    </div>
+
+                                    <!-- Map -->
+                                    <div id="map" class="mt-2"></div>
+
+                                    <!-- Hidden lat/lng fields -->
+                                    <input type="hidden" name="latitude" id="latitudeField">
+                                    <input type="hidden" name="longitude" id="longitudeField">
                                 </div>
 
                                 <!-- City -->
@@ -298,6 +310,121 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const latField = document.getElementById('latitudeField');
+    const lngField = document.getElementById('longitudeField');
+    const addressField = document.getElementById('address');
+    const geocodeBtn = document.getElementById('geocodeBtn');
+
+    // default center (Tunisia)
+    const defaultLat = parseFloat(latField.value) || 34.0;
+    const defaultLng = parseFloat(lngField.value) || 9.0;
+    const defaultZoom = (latField.value && lngField.value) ? 13 : 6;
+
+    const map = L.map('map').setView([defaultLat, defaultLng], defaultZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+    if (latField.value && lngField.value) {
+        marker = L.marker([parseFloat(latField.value), parseFloat(lngField.value)], {draggable:true}).addTo(map);
+        marker.on('dragend', onMarkerDrag);
+    }
+
+    map.on('click', function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
+    });
+
+    function placeMarker(lat, lng) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], {draggable:true}).addTo(map);
+            marker.on('dragend', function(ev){ let p = ev.target.getLatLng(); onMarkerDrag({target:{_latlng:p}}); });
+        }
+        latField.value = lat;
+        lngField.value = lng;
+        map.setView([lat, lng], 13);
+    }
+
+    function onMarkerDrag(e){
+        const lat = e.target._latlng.lat || e.target.getLatLng().lat;
+        const lng = e.target._latlng.lng || e.target.getLatLng().lng;
+        latField.value = lat;
+        lngField.value = lng;
+        reverseGeocode(lat, lng);
+    }
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    addressField.value = data.display_name;
+                    // try to fill city/country/postal if inputs exist
+                    if (data.address) {
+                        const city = data.address.city || data.address.town || data.address.village || data.address.county || '';
+                        const postcode = data.address.postcode || '';
+                        const country = data.address.country || '';
+                        const cityInput = document.getElementById('cityField') || document.getElementById('city');
+                        if (cityInput) cityInput.value = city;
+                        const postalInput = document.getElementById('postal_code');
+                        if (postalInput) postalInput.value = postcode;
+                        const countryInput = document.getElementById('countryField') || document.getElementById('country_select');
+                        if (countryInput && countryInput.tagName === 'INPUT') countryInput.value = country;
+                        // if country select exists, do not force change to select; leave manual for admin
+                    }
+                }
+            })
+            .catch(console.error);
+    }
+
+    // Geocode address to coords (Nominatim search)
+    geocodeBtn.addEventListener('click', function() {
+        const q = addressField.value.trim();
+        if (!q) return alert('Enter an address to search.');
+        fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=1&addressdetails=1`)
+            .then(r => r.json())
+            .then(results => {
+                if (results && results.length) {
+                    const res = results[0];
+                    placeMarker(res.lat, res.lon);
+                    // fill address (display_name) and other fields
+                    addressField.value = res.display_name || q;
+                    if (res.address) {
+                        const city = res.address.city || res.address.town || res.address.village || res.address.county || '';
+                        const postcode = res.address.postcode || '';
+                        const country = res.address.country || '';
+                        const cityInput = document.getElementById('cityField') || document.getElementById('city_select');
+                        if (cityInput && cityInput.tagName === 'INPUT') cityInput.value = city;
+                        const postalInput = document.getElementById('postal_code');
+                        if (postalInput) postalInput.value = postcode;
+                        const countryInput = document.getElementById('countryField') || document.getElementById('country_select');
+                        if (countryInput && countryInput.tagName === 'INPUT') countryInput.value = country;
+                    }
+                } else {
+                    alert('Adresse non trouvée.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Erreur de géocodage.');
+            });
+    });
+});
+</script>
+
+<style>
+#map { height: 300px; border-radius: 8px; border: 1px solid #e9ecef; }
+</style>
 
 <style>
 .section-header {
