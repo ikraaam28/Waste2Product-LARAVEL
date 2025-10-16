@@ -44,13 +44,6 @@ class Event extends Model
                     ->withTimestamps();
     }
 
-    /**
-     * Relation avec les produits liés
-     */
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class, 'event_products');
-    }
 
     /**
      * Relation avec les feedbacks
@@ -66,6 +59,14 @@ class Event extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relation avec les produits
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'event_products');
     }
 
     /**
@@ -89,7 +90,7 @@ class Event extends Model
      */
     public function scopeUpcoming($query)
     {
-        return $query->where('date', '>=', now());
+        return $query->where('date', '>', now()->startOfDay());
     }
 
     /**

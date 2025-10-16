@@ -130,7 +130,18 @@ public function front(Request $request)
 
 public function showFront(Partner $partner)
 {
-    return view('partners.show', compact('partner'));
+    $partner->load('warehouses');
+    $warehousePoints = $partner->warehouses->map(function($w){
+        return [
+            'id' => $w->id,
+            'name' => $w->name,
+            'latitude' => $w->latitude,
+            'longitude' => $w->longitude,
+            'address' => $w->address,
+        ];
+    })->values();
+
+    return view('partners.show', compact('partner', 'warehousePoints'));
 }
 
 

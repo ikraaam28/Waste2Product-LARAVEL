@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\EventFeedback;
 use App\Models\Badge;
 use App\Models\User;
@@ -29,7 +27,7 @@ class EventController extends Controller
         
         $upcomingEvents = Event::active()
             ->upcoming()
-            ->with(['participants', 'products'])
+            ->with(['participants'])
             ->orderBy('date')
             ->limit(5)
             ->get();
@@ -54,7 +52,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::with(['participants', 'products', 'creator'])
+        $events = Event::with(['participants', 'creator'])
             ->orderBy('date')
             ->get();
             
@@ -68,7 +66,7 @@ class EventController extends Controller
      */
     public function manage()
     {
-        $events = Event::with(['participants', 'products', 'creator'])
+        $events = Event::with(['participants', 'creator'])
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -80,7 +78,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load(['participants', 'products.category', 'feedbacks', 'creator']);
+        $event->load(['participants', 'feedbacks', 'creator']);
         return view('admin.events.show', compact('event'));
     }
 
@@ -90,7 +88,7 @@ class EventController extends Controller
     public function create()
     {
         $categories = $this->getEventCategories();
-        $products = Product::with('category')->get();
+        $products = \App\Models\Product::with('category')->get();
         return view('admin.events.create', compact('categories', 'products'));
     }
 
@@ -111,7 +109,7 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1|max:1000',
             'products' => 'nullable|array',
-            'products.*' => 'exists:products,id'
+            'products.*' => 'exists:products,id',
         ]);
 
         $data = $request->all();
@@ -124,6 +122,7 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
+        // Attach products
         if ($request->has('products')) {
             $event->products()->attach($request->products);
         }
@@ -138,8 +137,7 @@ class EventController extends Controller
     public function edit(Event $event)
     {
         $categories = $this->getEventCategories();
-        $products = Product::with('category')->get();
-        $event->load('products');
+        $products = \App\Models\Product::with('category')->get();
         return view('admin.events.edit', compact('event', 'categories', 'products'));
     }
 
@@ -158,7 +156,7 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'max_participants' => 'nullable|integer|min:1',
             'products' => 'nullable|array',
-            'products.*' => 'exists:products,id'
+            'products.*' => 'exists:products,id',
         ]);
 
         $data = $request->all();
@@ -172,6 +170,7 @@ class EventController extends Controller
 
         $event->update($data);
 
+        // Sync products
         if ($request->has('products')) {
             $event->products()->sync($request->products);
         } else {
@@ -307,13 +306,34 @@ class EventController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Handle photo uploads
+        // Handle photo uploads (and dispatch AI classification to create products)
         $photoPaths = [];
         if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $photo) {
+            \Log::info('storeFeedback: files uploaded', ['count' => count($request->file('photos'))]);
+            foreach ($request->file('photos') as $idx => $photo) {
                 $path = $photo->store('feedback-photos', 'public');
                 $photoPaths[] = $path;
+                $absolute = storage_path('app/public/' . $path);
+                \Log::info('storeFeedback: dispatching ProcessImageToProduct SYNC', [
+                    'index' => $idx,
+                    'relative' => $path,
+                    'absolute' => $absolute,
+                    'user_id' => auth()->id(),
+                ]);
+                try {
+                    // Run synchronously so product is created immediately and errors are visible in logs
+                    \App\Jobs\ProcessImageToProduct::dispatchSync($absolute, auth()->id());
+                    \Log::info('storeFeedback: ProcessImageToProduct completed', [ 'index' => $idx, 'relative' => $path ]);
+                } catch (\Throwable $e) {
+                    \Log::warning('storeFeedback: ProcessImageToProduct failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'absolute' => $absolute,
+                    ]);
+                }
             }
+        } else {
+            \Log::info('storeFeedback: no photos uploaded');
         }
 
         // Prepare feedback data
@@ -330,7 +350,9 @@ class EventController extends Controller
         
         // Get existing photos if any
         if ($existingFeedback && $existingFeedback->photo) {
-            $existingPhotos = json_decode($existingFeedback->photo, true) ?: [];
+            $existingPhotos = is_string($existingFeedback->photo)
+                ? (json_decode($existingFeedback->photo, true) ?: [])
+                : (is_array($existingFeedback->photo) ? $existingFeedback->photo : []);
             $finalPhotos = $existingPhotos;
         }
         
@@ -446,7 +468,7 @@ class EventController extends Controller
      */
     public function apiEvents()
     {
-        $events = Event::with(['participants', 'products'])
+        $events = Event::with(['participants'])
             ->get()
             ->map(function ($event) {
                 $color = $this->getCategoryColor($event->category);
@@ -561,7 +583,7 @@ class EventController extends Controller
      */
     public function publicShow(Event $event)
     {
-        $event->load(['participants', 'products.category', 'creator']);
+        $event->load(['participants', 'creator']);
         
         // Vérifier si l'utilisateur est déjà inscrit
         $isParticipating = false;

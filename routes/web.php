@@ -8,11 +8,15 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
-
-
+use App\Http\Controllers\PublicationController;
+use App\Http\Controllers\CommentaireController;
+use App\Http\Controllers\TutoController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -23,6 +27,10 @@ Route::post('/signup', [AuthController::class, 'store'])->name('signup.store');
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Google OAuth
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
@@ -52,26 +60,20 @@ Route::post('/events/{event}/participate', [EventController::class, 'participate
 Route::get('/events/{event}/qr/{participant}', [EventController::class, 'showQrCode'])->name('events.qr');
 Route::post('/events/{event}/feedback', [EventController::class, 'storeFeedback'])->name('events.feedback.store');
 
-
-
 // Frontend list of partners with filters
 Route::get('/partners', [PartnerController::class, 'front'])->name('partners.front');
 
 // Frontend single partner details
 Route::get('/partners/{partner}', [PartnerController::class, 'showFront'])->name('partners.show');
 
-
-
-
-
 // Routes frontend si nécessaire
 Route::get('warehouses', [WarehouseController::class, 'frontIndex'])->name('warehouses.front');
 Route::get('warehouses/{warehouse}', [WarehouseController::class, 'frontShow'])->name('warehouses.show');
 
-
-
 // Routes des produits
 Route::get('/products', [ProductController::class, 'index'])->name('products');
+Route::get('/products/category/{slug}', [ProductController::class, 'category'])->name('products.category');
+Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 // Routes de la boutique
 Route::get('/store', [StoreController::class, 'index'])->name('store');
@@ -79,10 +81,19 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 // Routes du blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
+
+// Routes pour publications
+Route::middleware('auth')->group(function () {
+    // Redéfinir la route pour /publications vers myPublications
+    Route::get('/publications', [PublicationController::class, 'myPublications'])->name('publications.my');
+    Route::post('publications/{publication}/commentaires', [CommentaireController::class, 'store'])->name('commentaires.store');
+
+    // Garder resource pour les autres méthodes (store, show, etc.) si nécessaire
+    Route::resource('publications', PublicationController::class)->except(['index']);
+});
 // Admin
-Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
-// Admin components
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::view('/', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');
     Route::view('/components/buttons', 'admin.components.buttons')->name('admin.components.buttons');
     Route::view('/components/gridsystem', 'admin.components.gridsystem')->name('admin.components.gridsystem');
@@ -92,6 +103,9 @@ Route::prefix('admin')->group(function () {
     Route::view('/components/font-awesome-icons', 'admin.components.font-awesome-icons')->name('admin.components.fontawesome');
     Route::view('/components/simple-line-icons', 'admin.components.simple-line-icons')->name('admin.components.simpleline');
     Route::view('/components/typography', 'admin.components.typography')->name('admin.components.typography');
+Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
+Route::delete('/publications/{id}/delete', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
+    Route::get('/publications/export/csv', [PublicationController::class, 'exportCsv'])->name('admin.publications.export');
 
     // Forms
     Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');
@@ -111,7 +125,11 @@ Route::prefix('admin')->group(function () {
     // Widgets
     Route::view('/widgets', 'admin.widgets')->name('admin.widgets');
 
+
+
+
     // Events
+
     Route::get('/events/dashboard', [EventController::class, 'dashboard'])->name('admin.events.dashboard');
     Route::get('/events', [EventController::class, 'index'])->name('admin.events.index');
     Route::get('/events/manage', [EventController::class, 'manage'])->name('admin.events.manage');
@@ -129,21 +147,16 @@ Route::prefix('admin')->group(function () {
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('admin.events.destroy');
     Route::patch('/events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('admin.events.toggle-status');
 
+    // Partners Management
+    Route::get('partners', [PartnerController::class, 'index'])->name('admin.partners.index');
+    Route::get('partners/create', [PartnerController::class, 'create'])->name('admin.partners.create');
+    Route::post('partners', [PartnerController::class, 'store'])->name('admin.partners.store');
+    Route::get('partners/{partner}', [PartnerController::class, 'show'])->name('admin.partners.show');
+    Route::get('partners/{partner}/edit', [PartnerController::class, 'edit'])->name('admin.partners.edit');
+    Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
+    Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
 
-
-// Partners Management
-Route::get('partners', [PartnerController::class, 'index'])->name('admin.partners.index');
-Route::get('partners/create', [PartnerController::class, 'create'])->name('admin.partners.create');
-Route::post('partners', [PartnerController::class, 'store'])->name('admin.partners.store');
-Route::get('partners/{partner}', [PartnerController::class, 'show'])->name('admin.partners.show');
-Route::get('partners/{partner}/edit', [PartnerController::class, 'edit'])->name('admin.partners.edit');
-Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
-Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
-
-
-
-    // Warehouses Management 
-    
+    // Warehouses Management
     Route::get('warehouses', [WarehouseController::class, 'index'])->name('admin.warehouses.index');
     Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('admin.warehouses.create');
     Route::post('warehouses', [WarehouseController::class, 'store'])->name('admin.warehouses.store');
@@ -153,6 +166,52 @@ Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name
     Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
     Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
 
+    // Users Management
+    Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
+    Route::post('users', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::get('users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
+    Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+    Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::patch('users/{user}/toggle-verification', [AdminUserController::class, 'toggleVerification'])->name('admin.users.toggle-verification');
+    Route::patch('users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+    Route::get('users/export/csv', [AdminUserController::class, 'export'])->name('admin.users.export');
+
+    // Products Management
+    Route::get('products', [AdminProductController::class, 'index'])->name('admin.products.index');
+    Route::get('products/create', [AdminProductController::class, 'create'])->name('admin.products.create');
+    Route::post('products', [AdminProductController::class, 'store'])->name('admin.products.store');
+    Route::get('products/{product}', [AdminProductController::class, 'show'])->name('admin.products.show');
+    Route::get('products/{product}/edit', [AdminProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
+    Route::patch('products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('admin.products.toggle-status');
+    Route::patch('products/{product}/toggle-featured', [AdminProductController::class, 'toggleFeatured'])->name('admin.products.toggle-featured');
+    Route::post('products/bulk-action', [AdminProductController::class, 'bulkAction'])->name('admin.products.bulk-action');
+    Route::get('products/export/csv', [AdminProductController::class, 'export'])->name('admin.products.export');
+    Route::post('products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('admin.products.duplicate');
+
+    // Categories Management
+    Route::get('categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
+    Route::get('categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+    Route::post('categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+    Route::get('categories/{category}', [AdminCategoryController::class, 'show'])->name('admin.categories.show');
+    Route::get('categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+    Route::put('categories/{category}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
+    Route::patch('categories/{category}/toggle-status', [AdminCategoryController::class, 'toggleStatus'])->name('admin.categories.toggle-status');
+    Route::post('categories/bulk-action', [AdminCategoryController::class, 'bulkAction'])->name('admin.categories.bulk-action');
+    Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
+
+    //tuto
+Route::get('/tutos', [TutoController::class, 'adminIndex'])->name('admin.tutos.index');
+Route::get('/tutos/create', [TutoController::class, 'create'])->name('admin.tutos.create');
+Route::get('/tutos/{tuto}', [TutoController::class, 'adminShow'])->name('admin.tutos.show');
+Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store');
+ Route::get('/tutos/{tuto}/edit', [TutoController::class, 'edit'])->name('admin.tutos.edit');
+    Route::put('/tutos/{tuto}', [TutoController::class, 'update'])->name('admin.tutos.update');
+    Route::delete('/tutos/{tuto}', [TutoController::class, 'destroy'])->name('admin.tutos.destroy');
 
 });
 
@@ -169,38 +228,46 @@ Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name
 // Removed catch-all to external template pages to avoid dependency on kaiadmin-lite
 
 // Legacy redirects: map old /admin/pages/* URLs to new Blade routes
-Route::redirect('/admin/pages', '/admin');
-Route::redirect('/admin/pages/', '/admin');
-Route::get('/admin/pages/{slug}', function (string $slug) {
-    $slug = trim($slug, '/');
-    if ($slug === '' || $slug === 'index' || $slug === 'index.html') {
-        return redirect()->to(url('admin'));
-    }
-
-    // drop trailing .html if present
-    if (substr($slug, -5) === '.html') {
-        $slug = substr($slug, 0, -5);
-    }
-
-    // Normalize any leading ./ or ../ segments
-    $slug = preg_replace('#^(?:\./)+#', '', $slug);
-    $slug = preg_replace('#^(?:\.+/)+#', '', $slug);
-
-    // Direct mappings for known sections
-    $sections = ['components', 'charts', 'tables', 'maps'];
-    foreach ($sections as $section) {
-        if (strpos($slug, $section . '/') === 0) {
-            $rest = substr($slug, strlen($section) + 1);
-            return redirect()->to(url("admin/{$section}/{$rest}"));
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::redirect('/admin/pages', '/admin');
+    Route::redirect('/admin/pages/', '/admin');
+    Route::get('/admin/pages/{slug}', function (string $slug) {
+        $slug = trim($slug, '/');
+        if ($slug === '' || $slug === 'index' || $slug === 'index.html') {
+            return redirect()->to(url('admin'));
         }
-    }
 
-    if ($slug === 'forms/forms') {
-        return redirect()->to(url('admin/forms/forms'));
-    }
-    if ($slug === 'widgets') {
-        return redirect()->to(url('admin/widgets'));
-    }
+        // drop trailing .html if present
+        if (substr($slug, -5) === '.html') {
+            $slug = substr($slug, 0, -5);
+        }
 
-    abort(404);
+
+        // Normalize any leading ./ or ../ segments
+        $slug = preg_replace('#^(?:\./)+#', '', $slug);
+        $slug = preg_replace('#^(?:\.+/)+#', '', $slug);
+
+        // Direct mappings for known sections
+        $sections = ['components', 'charts', 'tables', 'maps'];
+        foreach ($sections as $section) {
+            if (strpos($slug, $section . '/') === 0) {
+                $rest = substr($slug, strlen($section) + 1);
+                return redirect()->to(url("admin/{$section}/{$rest}"));
+            }
+        }
+
+        if ($slug === 'forms/forms') {
+            return redirect()->to(url('admin/forms/forms'));
+        }
+        if ($slug === 'widgets') {
+            return redirect()->to(url('admin/widgets'));
+        }
+
+        abort(404);
+    });
 });
+Route::get('/tutos', [TutoController::class, 'index'])->name('tutos.index');
+Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('tutos.show');
+Route::post('/tutos/{tuto}/react', [TutoController::class, 'react'])->name('tutos.react')->middleware('auth');
+Route::post('/tutos/{tuto}/question', [TutoController::class, 'askQuestion'])->name('tutos.question')->middleware('auth');
+

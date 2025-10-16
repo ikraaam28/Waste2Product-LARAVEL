@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            if (this.value.length >= 3 || this.value.length === 0) {
+            if (this.value.length >= 3 || this.value.length == 0) {
                 filterForm.submit();
             }
         }, 500);

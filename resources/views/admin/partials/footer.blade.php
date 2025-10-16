@@ -11,7 +11,3 @@
   </div>
   <div class="custom-toggle"><i class="icon-settings"></i></div>
 </footer>
-
-
-
-

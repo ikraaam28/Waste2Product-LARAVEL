@@ -31,10 +31,19 @@ return new class extends Migration
             $table->index('city');
             $table->index('status');
         });
+
+        Schema::table('warehouses', function (Blueprint $table) {
+            $table->decimal('latitude', 10, 7)->nullable()->after('country');
+            $table->decimal('longitude', 10, 7)->nullable()->after('latitude');
+        });
     }
 
     public function down()
     {
+        Schema::table('warehouses', function (Blueprint $table) {
+            $table->dropColumn(['latitude', 'longitude']);
+        });
+
         Schema::dropIfExists('warehouses');
     }
 };

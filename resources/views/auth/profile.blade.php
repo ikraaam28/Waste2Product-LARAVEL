@@ -246,6 +246,33 @@
                     </div>
                     @endif
 
+                    <!-- Action Buttons Section -->
+                    <div class="p-4 border-top bg-light">
+                        <div class="text-center mb-3">
+                            <h6 class="text-muted mb-0">
+                                <i class="fas fa-cog me-2"></i>Account Actions
+                            </h6>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-primary w-100 btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
+                                    <i class="fas fa-edit me-2"></i>Edit my information
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ route('profile.reset-password') }}" class="btn btn-warning w-100 btn-lg shadow-sm">
+                                    <i class="fas fa-key me-2"></i>Change my password
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Click on any button above to manage your account settings
+                            </small>
+                        </div>
+                    </div>
+
                     <!-- Stats Footer -->
                     <div class="bg-gradient-secondary text-white py-3 px-4">
                         <div class="row text-center">
@@ -267,13 +294,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- Bouton pour ouvrir le modal -->
-<div class="mt-4 text-center">
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
-        Edit my information
-    </button>
 </div>
 
 <!-- Modal Bootstrap -->
@@ -342,9 +362,6 @@
     </div>
 </div>
 
-<a href="{{ route('profile.reset-password') }}" class="btn btn-warning me-2">
-    <i class="fas fa-key me-1"></i>Change my password
-</a>
 
 <style>
     :root {
@@ -447,6 +464,34 @@
     .btn-primary:hover {
         background: linear-gradient(135deg, #218838, #1ea085);
         box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #ff8c00);
+        border: none;
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #e0a800, #e67e00);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+        color: #212529;
+    }
+
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
     }
 
     @media (max-width: 768px) {

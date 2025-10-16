@@ -6,9 +6,9 @@
         <div class="page-header">
             <h3 class="fw-bold mb-3">Edit Event</h3>
             <ul class="breadcrumbs mb-3">
-                <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
+                <li class="nav-home"><a href="{{ route('admin.events.index') }}"><i class="icon-home"></i></a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">Events</a></li>
+                <li class="nav-item"><a href="{{ route('admin.events.index') }}">Events</a></li>
                 <li class="separator"><i class="icon-arrow-right"></i></li>
                 <li class="nav-item">Edit</li>
             </ul>
@@ -155,7 +155,7 @@
                                 <label>Related Products by Category</label>
                                 <div class="row">
                                     @php
-                                        $productCategories = \App\Models\ProductCategory::all();
+                                        $productCategories = \App\Models\Category::all();
                                     @endphp
                                     @foreach($productCategories as $productCategory)
                                         <div class="col-md-4">
@@ -178,7 +178,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="card-body" id="category_{{ $productCategory->id }}">
-                                                    @foreach($products->where('category_id', $productCategory->id) as $product)
+                                                    @foreach($products->filter(function($product) use ($productCategory) { return $product->category_id == $productCategory->id; }) as $product)
                                                         <div class="form-check">
                                                             <input class="form-check-input product-checkbox" type="checkbox" 
                                                                    name="products[]" value="{{ $product->id }}" 

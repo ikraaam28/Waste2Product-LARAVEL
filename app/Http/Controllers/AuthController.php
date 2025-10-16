@@ -13,6 +13,7 @@ use App\Mail\ResetPasswordEmail;
 
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -77,6 +78,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'newsletter_subscription' => $request->has('newsletter_subscription'),
             'terms_accepted' => true,
+            'role' => 'user',
         ]);
 
         // Envoyer l'email de bienvenue
@@ -90,58 +92,64 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Compte créé avec succès ! Veuillez vous connecter pour continuer.');
     }
 
-    /**
-     * Afficher le formulaire de login
-     */
-    public function login()
-    {
-        return view('auth.login');
-    }
+  
+ public function login()
+{
+    return view('auth.login');
+}
 
-    /**
-     * Gérer la soumission du formulaire de login
-     */
-    public function authenticate(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ], [
-            'email.required' => 'L\'adresse email est requise.',
-            'email.email' => 'Veuillez entrer une adresse email valide.',
-            'password.required' => 'Le mot de passe est requis.',
-        ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+public function authenticate(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ], [
+        'email.required' => 'The email address is required.',
+        'email.email' => 'Please enter a valid email address.',
+        'password.required' => 'The password is required.',
+    ]);
 
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('')
-                ->with('success', 'Connexion réussie ! Bienvenue !');
-        }
-
+    if ($validator->fails()) {
         return redirect()->back()
-            ->withErrors(['email' => 'Les identifiants fournis sont incorrects.'])
+            ->withErrors($validator)
             ->withInput();
     }
 
-    /**
-     * Déconnexion de l'utilisateur
-     */
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('login')
-            ->with('success', 'Vous avez été déconnecté avec succès.');
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        \Log::info('Utilisateur connecté : ', [
+            'email' => Auth::user()->email,
+            'role' => Auth::user()->role,
+            'isAdmin' => Auth::user()->isAdmin(),
+        ]);
+
+        if (Auth::user()->isAdmin()) {
+            \Log::info('Redirection vers admin.dashboard');
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Welcome back, Admin!');
+        }
+
+        \Log::info('Redirection vers home');
+        return redirect()->route('home')->with('success', 'Login successful! Welcome!');
     }
+
+    return redirect()->back()
+        ->withErrors(['email' => 'Les identifiants fournis sont incorrects.'])
+        ->withInput();
+}
+
+
+public function logout(Request $request)
+{
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('home')
+        ->with('success', 'You have been logged out successfully.');
+}
  
 
 // Affiche formulaire "mot de passe oublié"
@@ -243,6 +251,9 @@ public function updateProfilePicture(Request $request)
     return redirect()->route('profile')->with('success', 'Photo de profil mise à jour !');
 }
 
+/**
+ * Update user profile
+ */
 public function updateProfile(Request $request)
 {
     $user = Auth::user();
@@ -271,7 +282,67 @@ public function updateProfile(Request $request)
         'newsletter_subscription' => $request->has('newsletter_subscription'),
     ]);
 
-    return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès !');
+    return redirect()->route('profile')->with('success', 'Profile updated successfully!');
+}
+
+/**
+ * Redirect to Google OAuth
+ */
+public function redirectToGoogle()
+{
+    return Socialite::driver('google')->redirect();
+}
+
+/**
+ * Handle Google OAuth callback
+ */
+public function handleGoogleCallback()
+{
+    try {
+        $googleUser = Socialite::driver('google')->user();
+
+        // Check if user already exists with this email
+        $existingUser = User::where('email', $googleUser->getEmail())->first();
+
+        if ($existingUser) {
+            // Update Google ID if not set
+            if (!$existingUser->google_id) {
+                $existingUser->update([
+                    'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                ]);
+            }
+
+            Auth::login($existingUser);
+            return redirect()->intended('/')->with('success', 'Connexion réussie avec Google !');
+        }
+
+        // Create new user
+        $user = User::create([
+            'first_name' => $googleUser->user['given_name'] ?? explode(' ', $googleUser->getName())[0],
+            'last_name' => $googleUser->user['family_name'] ?? (explode(' ', $googleUser->getName())[1] ?? ''),
+            'email' => $googleUser->getEmail(),
+            'google_id' => $googleUser->getId(),
+            'avatar' => $googleUser->getAvatar(),
+            'email_verified_at' => now(),
+            'terms_accepted' => true,
+            'password' => Hash::make(Str::random(24)), // Random password for Google users
+        ]);
+
+        // Send welcome email
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi email bienvenue Google: ' . $e->getMessage());
+        }
+
+        Auth::login($user);
+        return redirect()->intended('/')->with('success', 'Compte créé avec succès via Google ! Bienvenue sur Waste2Product !');
+
+    } catch (\Exception $e) {
+        \Log::error('Google OAuth Error: ' . $e->getMessage());
+        return redirect()->route('login')->with('error', 'Erreur lors de la connexion avec Google. Veuillez réessayer.');
+    }
 }
 
 public function redirectToResetPassword()

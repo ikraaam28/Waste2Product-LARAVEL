@@ -24,7 +24,9 @@ class Warehouse extends Model
         'contact_phone',
         'contact_email',
         'status',
-        'description'
+        'description',
+        'latitude',
+        'longitude',
     ];
 
     // Relation avec le partenaire
@@ -33,11 +35,6 @@ class Warehouse extends Model
         return $this->belongsTo(Partner::class);
     }
 
-    // Relation avec les produits (si vous en avez)
-    // public function products()
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
 
     // Accesseurs
     public function getAvailableCapacityAttribute()
