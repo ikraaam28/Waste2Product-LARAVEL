@@ -235,8 +235,66 @@
                 </div>
             </div>
         </div>
+
+        <!-- Map Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-info text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Localisation des Entrepôts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="partnerWarehousesMap" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const points = @json($warehousePoints ?? []);
+    const map = L.map('partnerWarehousesMap', { zoomControl: true }).setView([34.0, 9.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
+
+    const bounds = L.latLngBounds();
+    let hasAny = false;
+
+    points.forEach(p => {
+        if (!p.latitude || !p.longitude) return;
+        const lat = parseFloat(p.latitude);
+        const lng = parseFloat(p.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        hasAny = true;
+        const popup = `<strong>${escapeHtml(p.name)}</strong><br>${escapeHtml(p.address || '')}<br><a href="#warehouseModal${p.id}" data-bs-toggle="modal">Details</a>`;
+        L.marker([lat, lng]).addTo(map).bindPopup(popup);
+        bounds.extend([lat, lng]);
+    });
+
+    if (hasAny) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+    } else {
+        map.setView([34.0, 9.0], 6);
+        // optional: show message or partner address marker if you have partner coords
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"'`=\/]/g, function (c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c];
+        });
+    }
+});
+</script>
+<style>#partnerWarehousesMap{min-height:200px}</style>
 
 <style>
 .card {
