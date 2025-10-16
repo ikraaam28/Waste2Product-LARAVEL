@@ -10,17 +10,57 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class PublicationController extends Controller
 {
     /**
      * Afficher la liste paginée des publications
      */
-    public function index()
-    {
-        $publications = Publication::with(['user', 'publicationReactions'])->latest()->paginate(10);
-        return view('publications.index', compact('publications'));
+public function index(Request $request)
+{
+    $filter = $request->get('filter', 'mine');
+    $dateFilter = $request->get('date_filter', 'recent');
+    $order = $dateFilter === 'recent' ? 'desc' : 'asc';
+
+    if (auth()->check()) {
+    $myPublications = auth()->user()
+    ->publications()
+    ->with('user')
+    ->orderBy('created_at', 'desc') // or asc depending on your filter
+    ->paginate(3);
+
+    } else {
+        // Return an empty paginator to avoid "appends()" errors
+        $empty = new Collection();
+        $myPublications = new LengthAwarePaginator(
+            $empty, // items
+            0,      // total
+            3,      // per page
+            1,      // current page
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
     }
+
+    $myPublications->appends($request->query());
+
+    $otherPublications = Publication::with('user')
+        ->where('user_id', '!=', auth()->id())
+        ->orderBy('created_at', $order)
+        ->paginate(3);
+
+    $otherPublications->appends($request->query());
+
+    return view('publications.index', compact(
+        'myPublications',
+        'otherPublications',
+        'filter',
+        'dateFilter'
+    ));
+}
+
+
 
     public function myPublications()
     {
