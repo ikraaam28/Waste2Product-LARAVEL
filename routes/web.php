@@ -9,6 +9,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\TutoController;
+use App\Http\Controllers\QuizController;
 
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -36,7 +37,6 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 
 // Routes du blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
-
 // Admin
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');

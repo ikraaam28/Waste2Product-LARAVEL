@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tuto extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'description',
-        'category',
+        'category_id',
         'steps',
         'media',
         'user_id',
+        'views',
         'is_published',
         'admin_notes',
-        'views',
-        'likes_count',
-        'dislikes_count',
     ];
 
     protected $casts = [
@@ -31,13 +32,34 @@ class Tuto extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function questions()
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(Question::class)->orderBy('created_at', 'desc');
     }
 
     public function reactions()
     {
         return $this->hasMany(Reaction::class);
     }
+
+    public function likes()
+    {
+        return $this->hasMany(Reaction::class)->where('type', 'like');
+    }
+
+    public function dislikes()
+    {
+        return $this->hasMany(Reaction::class)->where('type', 'dislike');
+    }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
+    
 }

@@ -2,6 +2,7 @@
 
 @section('content')
 <style>
+    /* Existing styles remain unchanged */
     .tuto-card {
         background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(10px);
@@ -142,6 +143,56 @@
         background: rgba(255, 255, 255, 0.6);
         transform: translateX(5px);
     }
+
+    /* New styles for quiz list and progress */
+    .quiz-list {
+        margin-top: 2rem;
+    }
+
+    .quiz-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .quiz-item:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+
+    .quiz-percentage {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .quiz-status-failed {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .quiz-status-succeeded {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .progress-bar-container {
+        margin-top: 1rem;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+
+    .progress-bar {
+        height: 20px;
+        background: linear-gradient(135deg, #1572E8 0%, #0d47a1 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
 </style>
 
 <div class="container-fluid product py-5 my-5">
@@ -243,10 +294,6 @@
                                     @endphp
                                     <div class="d-flex flex-wrap align-items-center gap-3 text-muted mb-3">
                                         <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-user text-primary"></i>
-                                            <span class="fw-medium">{{ $tuto->user->full_name }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
                                             <i class="fas fa-tag text-success"></i>
                                             <span>{{ $englishCategory }}</span>
                                         </div>
@@ -260,7 +307,7 @@
                                     </h3>
                                     <p class="text-dark fs-6 lh-lg">{{ $tuto->description }}</p>
                                 </div>
-   <!-- Steps -->
+                                <!-- Steps -->
                                 <div class="tuto-card p-4 mb-4">
                                     <h3 class="h4 fw-bold text-dark mb-4">Steps</h3>
                                     <div class="list-group list-group-flush">
@@ -385,6 +432,38 @@
                 @endforeach
             </div>
         @endif
+
+        <!-- Quiz List Section -->
+        @if ($quizzes->isNotEmpty())
+            <div class="quiz-list">
+                <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
+                    <p class="fs-5 fw-medium fst-italic text-primary">Related Quizzes</p>
+                    <h1 class="display-6">Test Your Knowledge</h1>
+                </div>
+                @foreach ($quizzes as $quiz)
+                    <div class="quiz-item">
+                        @php
+                            $attempt = $quiz->attempts->firstWhere('user_id', Auth::id());
+                        @endphp
+                        @if ($attempt)
+                            <span>{{ $quiz->title }} - <span class="quiz-percentage">{{ number_format($attempt->percentage, 2) }}%</span> <span class="{{ $attempt->percentage >= 70 ? 'quiz-status-succeeded' : 'quiz-status-failed' }}">{{ $attempt->percentage >= 70 ? 'Succeeded' : 'Failed' }}</span></span>
+                        @else
+                            <a href="{{ route('quizzes.show', $quiz) }}" class="text-decoration-none">{{ $quiz->title }}</a>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <!-- Progress Bar if not all quizzes are completed -->
+        @auth
+            @if ($completedQuizzes < $totalQuizzes)
+                <div class="progress-bar-container">
+                    <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
+                    <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
+                </div>
+            @endif
+        @endauth
     </div>
 </div>
 

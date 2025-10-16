@@ -43,6 +43,19 @@
             </ul>
           </div>
         </li>
+                <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#quizzes">
+            <i class="fas fa-question-circle"></i>
+            <p>Quizzes</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="quizzes">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.quizzes.index') }}"><span class="sub-item">List Quizzes</span></a></li>
+              <li><a href="{{ route('admin.quizzes.create') }}"><span class="sub-item">Create Quiz</span></a></li>
+            </ul>
+          </div>
+        </li>
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#base">
             <i class="fas fa-layer-group"></i>

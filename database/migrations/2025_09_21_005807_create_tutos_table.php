@@ -12,8 +12,7 @@ class CreateTutosTable extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
-            $table->enum('category', ['plastique', 'bois', 'papier', 'metal', 'verre', 'autre']);
-            $table->json('steps');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade'); 
             $table->json('media')->nullable();
             $table->unsignedBigInteger('views')->default(0);
             $table->unsignedBigInteger('likes_count')->default(0);

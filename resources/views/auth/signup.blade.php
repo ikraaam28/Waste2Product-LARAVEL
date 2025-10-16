@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- reCAPTCHA v2 Script -->
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
 <style>
 /* Custom styles for signup form */
 .form-control:focus {
@@ -834,78 +834,76 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Démarrer la vérification
     checkRecaptchaLoaded();
-    
-    // Gestion du submit du formulaire
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Vérifier la validité du formulaire
-        if (form.checkValidity()) {
-            // Déclencher reCAPTCHA v2 invisible
-            if (typeof grecaptcha !== 'undefined') {
-                console.log('Executing reCAPTCHA...');
-                grecaptcha.execute();
-            } else {
-                console.error('reCAPTCHA not loaded');
-                alert('reCAPTCHA not loaded. Please refresh the page.');
-            }
-        } else {
-            // Afficher les erreurs
-            form.classList.add('was-validated');
-        }
-    });
-    
-    // reCAPTCHA v2 invisible - Callback function
-    window.onRecaptchaSuccess = function(token) {
-        console.log('reCAPTCHA v2 success:', token);
-        
-        // Ajouter le token reCAPTCHA au formulaire
-        const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
-        if (recaptchaInput) {
-            recaptchaInput.value = token;
-        } else {
-            // Créer un input caché pour le token reCAPTCHA
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'g-recaptcha-response';
-            hiddenInput.value = token;
-            form.appendChild(hiddenInput);
-        }
-        
-        // Désactiver le bouton pour éviter les double soumissions
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
-        }
-        
-        // Soumettre le formulaire après validation reCAPTCHA
-        form.submit();
-    };
-    
-    
-    // reCAPTCHA v2 invisible - Callback en cas d'erreur
-    window.onRecaptchaError = function(error) {
-        console.error('reCAPTCHA v2 error:', error);
-        alert('reCAPTCHA verification failed. Please try again.');
-        
-        // Réactiver le bouton
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
-        }
-    };
-    
-    // reCAPTCHA v2 invisible - Callback d'expiration
-    window.onRecaptchaExpired = function() {
-        console.log('reCAPTCHA v2 expired');
+// Gestion du submit du formulaire
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Vérifier la validité du formulaire
+    if (form.checkValidity()) {
+        // Déclencher reCAPTCHA v2 invisible
         if (typeof grecaptcha !== 'undefined') {
-            grecaptcha.reset();
+            console.log('Executing reCAPTCHA...');
+            grecaptcha.execute();
+        } else {
+            console.error('reCAPTCHA not loaded');
+            alert('reCAPTCHA not loaded. Please refresh the page.');
         }
-    };
-    
-    // Gestion du popup d'erreur
+    } else {
+        // Afficher les erreurs
+        form.classList.add('was-validated');
+    }
+});
+
+// reCAPTCHA v2 invisible - Callback function
+window.onRecaptchaSuccess = function(token) {
+    console.log('reCAPTCHA v2 success:', token);
+
+    // Ajouter le token reCAPTCHA au formulaire
+    const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
+    if (recaptchaInput) {
+        recaptchaInput.value = token;
+    } else {
+        // Créer un input caché pour le token reCAPTCHA
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'g-recaptcha-response';
+        hiddenInput.value = token;
+        form.appendChild(hiddenInput);
+    }
+
+    // Désactiver le bouton pour éviter les double soumissions
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
+    }
+
+    // Soumettre le formulaire après validation reCAPTCHA
+    form.submit();
+};
+
+// reCAPTCHA v2 invisible - Callback en cas d'erreur
+window.onRecaptchaError = function(error) {
+    console.error('reCAPTCHA v2 error:', error);
+    alert('reCAPTCHA verification failed. Please try again.');
+
+    // Réactiver le bouton
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
+    }
+};
+
+// reCAPTCHA v2 invisible - Callback d'expiration
+window.onRecaptchaExpired = function() {
+    console.log('reCAPTCHA v2 expired');
+    if (typeof grecaptcha !== 'undefined') {
+        grecaptcha.reset();
+    }
+};
+
+// Gestion du popup d'erreur
     const errorPopup = document.querySelector('.error-popup');
     if (errorPopup) {
         // Fermeture automatique après 8 secondes
@@ -917,18 +915,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         }, 8000);
+//     // Gestion du popup d'erreur
+//     const errorPopup = document.querySelector('.error-popup');
+//     if (errorPopup) {
+//         // Auto-close after 8 seconds
+//         setTimeout(() => {
+//             if (errorPopup) {
+//                 errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+//                 setTimeout(() => {
+//                     errorPopup.remove();
+//                 }, 500);
+//             }
+//         }, 8000);
         
-        // Fermeture manuelle
-        const closeBtn = errorPopup.querySelector('.error-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-                setTimeout(() => {
-                    errorPopup.remove();
-                }, 500);
-            });
-        }
-    }
+//         // Fermeture manuelle
+//         const closeBtn = errorPopup.querySelector('.error-close');
+//         if (closeBtn) {
+//             closeBtn.addEventListener('click', () => {
+//                 errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+//                 setTimeout(() => {
+//                     errorPopup.remove();
+//                 }, 500);
+//             });
+//         }
+//     }
     
     // Gestion du popup de succès
     const successPopup = document.querySelector('.success-popup');
@@ -942,18 +952,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         }, 5000);
+//     // Gestion du popup de succès
+//     const successPopup = document.querySelector('.success-popup');
+//     if (successPopup) {
+//         // Auto-close after 5 seconds (faster than error)
+//         setTimeout(() => {
+//             if (successPopup) {
+//                 successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+//                 setTimeout(() => {
+//                     successPopup.remove();
+//                 }, 500);
+//             }
+//         }, 5000);
         
-        // Fermeture manuelle
-        const closeBtn = successPopup.querySelector('.success-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-                setTimeout(() => {
-                    successPopup.remove();
-                }, 500);
-            });
-        }
-    }
+//         // Fermeture manuelle
+//         const closeBtn = successPopup.querySelector('.success-close');
+//         if (closeBtn) {
+//             closeBtn.addEventListener('click', () => {
+//                 successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+//                 setTimeout(() => {
+//                     successPopup.remove();
+//                 }, 500);
+//             });
+//         }
+//     }
 });
 </script>
 
