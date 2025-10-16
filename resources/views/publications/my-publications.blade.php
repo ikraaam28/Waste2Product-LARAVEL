@@ -32,15 +32,16 @@
                 <form method="POST" action="{{ route('publications.store') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="text" name="titre" class="form-control @error('titre') is-invalid @enderror" id="titre" value="{{ old('titre') }}" required>
-                                <label for="titre">Title</label>
-                                @error('titre')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+<div class="col-md-6">
+    <div class="form-floating">
+        <input type="text" name="titre" class="form-control @error('titre') is-invalid @enderror" id="titre" value="{{ old('titre') }}" required>
+        <label for="titre">Title</label>
+        @error('titre')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <button type="button" id="generate-title-btn" class="btn btn-outline-success mt-2">Generate Title with AI</button>
+</div>
                         <div class="col-md-6">
                             <select name="categorie" class="form-select @error('categorie') is-invalid @enderror" required>
                                 <option value="">Select category</option>
@@ -435,6 +436,52 @@
 <script>
 $(document).ready(function() {
     // Filter Tab URL Update
+
+    // Generate Title Button
+// Generate Title Button - FIXED VERSION
+$('#generate-title-btn').on('click', function() {
+    const content = $('#contenu').val().trim();
+    console.log('Content being sent:', content); // DEBUG - check browser console
+    
+    if (!content || content.length < 10) {
+        Swal.fire('Error', 'Please enter at least 10 characters of content!', 'error');
+        return;
+    }
+
+    const $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> AI Thinking...');
+
+    $.ajax({
+        url: '{{ route("publications.generateTitle") }}',
+        method: 'POST',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            content: content  // This was the problem!
+        },
+        success: function(data) {
+            console.log('Success:', data); // DEBUG
+            if (data.title) {
+                $('#titre').val(data.title);
+                Swal.fire({
+                    icon: 'success',
+                    title: '🎉 Title Generated!',
+                    text: data.title,
+                    timer: 2000
+                });
+            } else {
+                Swal.fire('Error', 'No title returned. Try again.', 'error');
+            }
+        },
+        error: function(xhr) {
+            console.log('Error details:', xhr.responseJSON); // DEBUG
+            let error = xhr.responseJSON?.error || 'Unknown error';
+            Swal.fire('❌ Error', error, 'error');
+        },
+        complete: function() {
+            $btn.prop('disabled', false).html('✨ Generate Title with AI');
+        }
+    });
+});
 // Filter tabs
 $('.filter-tab').click(function(e) {
     e.preventDefault();

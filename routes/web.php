@@ -83,6 +83,16 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 
+Route::post('/generate-title', [PublicationController::class, 'generateTitle'])->name('publications.generateTitle');
+
+Route::get('/test-title', function() {
+    return [
+        'token' => !empty(env('HUGGINGFACE_TOKEN')) ? '✅ Present' : '❌ Missing',
+        'content' => request('content'),
+        'timestamp' => now()
+    ];
+});
+
 // Routes pour publications
 Route::middleware('auth')->group(function () {
     // Redéfinir la route pour /publications vers myPublications
