@@ -2,9 +2,9 @@ name: SonarQube Analysis
 
 on:
   push:
-    branches: [ Mehdi ]
+    branches: [ ikram ]
   pull_request:
-    branches: [ Mehdi ]
+    branches: [ ikram ]
 
 jobs:
   sonar:
