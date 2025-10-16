@@ -2,7 +2,7 @@
   <div class="sidebar-logo">
     <div class="logo-header" data-background-color="dark">
       <a href="{{ url('admin') }}" class="logo">
-        <img src="{{ asset('vendor/kaiadmin/img/kaiadmin/logo_light.svg') }}" alt="navbar brand" class="navbar-brand" height="20" />
+        <img src="{{ asset('assets/img/recycleverse1.png') }}" alt="RecycleVerse" class="navbar-brand" height="60" />
       </a>
       <div class="nav-toggle">
         <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
@@ -14,6 +14,7 @@
   <div class="sidebar-wrapper scrollbar scrollbar-inner">
     <div class="sidebar-content">
       <ul class="nav nav-secondary">
+        {{--
         <li class="nav-item active">
           <a data-bs-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
             <i class="fas fa-home"></i>
@@ -26,10 +27,44 @@
             </ul>
           </div>
         </li>
+        --}}
         <li class="nav-section">
           <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
-          <h4 class="text-section">Components</h4>
+          <h4 class="text-section">Gestion</h4>
         </li>
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#users">
+            <i class="fas fa-users"></i>
+            <p>Users</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="users">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.users.index') }}"><span class="sub-item">User List</span></a></li>
+              <li><a href="{{ route('admin.users.create') }}"><span class="sub-item">Add User</span></a></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#catalog">
+            <i class="fas fa-store"></i>
+            <p>Catalog</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="catalog">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.products.index') }}"><span class="sub-item">Products</span></a></li>
+              <li><a href="{{ route('admin.products.create') }}"><span class="sub-item">Add Product</span></a></li>
+              <li><a href="{{ route('admin.categories.index') }}"><span class="sub-item">Categories</span></a></li>
+              <li><a href="{{ route('admin.categories.create') }}"><span class="sub-item">Add Category</span></a></li>
+            </ul>
+          </div>
+        </li>
+        
+        {{-- <li class="nav-section">
+          <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
+          <h4 class="text-section">Components</h4>
+        </li> --}}
          <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tutorials">
             <i class="fas fa-book"></i>
@@ -57,11 +92,24 @@
           </div>
         </li>
         <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#publications">
+            <i class="fas fa-book"></i> <!-- Use an appropriate Font Awesome icon -->
+            <p>Publications</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="publications">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.publications.index') }}"><span class="sub-item">Publications List</span></a></li>
+            </ul>
+          </div>
+        </li>
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#base">
             <i class="fas fa-layer-group"></i>
             <p>Base</p>
             <span class="caret"></span>
           </a>
+
           <div class="collapse" id="base">
             <ul class="nav nav-collapse">
               <li><a href="{{ url('admin/components/avatars') }}"><span class="sub-item">Avatars</span></a></li>
@@ -75,8 +123,8 @@
               <li><a href="{{ url('admin/components/typography') }}"><span class="sub-item">Typography</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#sidebarLayouts">
             <i class="fas fa-th-list"></i>
             <p>Sidebar Layouts</p>
@@ -88,8 +136,8 @@
               <li><a href="#"><span class="sub-item">Icon Menu</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#forms">
             <i class="fas fa-pen-square"></i>
             <p>Forms</p>
@@ -100,8 +148,8 @@
               <li><a href="{{ url('admin/forms/forms') }}"><span class="sub-item">Basic Form</span></a></li>
             </ul>
           </div>
-        </li>
-          <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tuttos">
             <i class="fas fa-tutto"></i>
             <p>tutto</p>
@@ -114,8 +162,8 @@
 </ul>
 
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#tables">
             <i class="fas fa-table"></i>
             <p>Tables</p>
@@ -127,8 +175,8 @@
               <li><a href="{{ url('admin/tables/datatables') }}"><span class="sub-item">Datatables</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#maps">
             <i class="fas fa-map-marker-alt"></i>
             <p>Maps</p>
@@ -140,8 +188,8 @@
               <li><a href="{{ url('admin/maps/jsvectormap') }}"><span class="sub-item">Jsvectormap</span></a></li>
             </ul>
           </div>
-        </li>
-        <li class="nav-item">
+        </li> --}}
+        {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#charts">
             <i class="far fa-chart-bar"></i>
             <p>Charts</p>
@@ -153,7 +201,8 @@
               <li><a href="{{ url('admin/charts/sparkline') }}"><span class="sub-item">Sparkline</span></a></li>
             </ul>
           </div>
-        </li>
+        </li> --}}
+        
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#events">
             <i class="fas fa-calendar-alt"></i>
@@ -162,18 +211,67 @@
           </a>
           <div class="collapse" id="events">
             <ul class="nav nav-collapse">
-              <li><a href="{{ url('admin/events') }}"><span class="sub-item">Events</span></a></li>
-              <li><a href="{{ url('admin/events/drop') }}"><span class="sub-item">Drop Event</span></a></li>
-              <li><a href="{{ url('admin/events/feedback') }}"><span class="sub-item">Feedback</span></a></li>
+              {{-- <li><a href="{{ route('admin.events.dashboard') }}"><span class="sub-item">Dashboard</span></a></li> --}}
+              <li><a href="{{ route('admin.events.index') }}"><span class="sub-item">All Events</span></a></li>
+              <li><a href="{{ route('admin.events.manage') }}"><span class="sub-item">Event List</span></a></li>
+              <li><a href="{{ route('admin.events.qr-scanner') }}"><span class="sub-item">QR Scanner</span></a></li>
+              {{-- <li><a href="{{ route('admin.events.feedback') }}"><span class="sub-item">Feedback & Impact</span></a></li> --}}
+              {{-- <li><a href="{{ route('admin.events.badges') }}"><span class="sub-item">Badges</span></a></li> --}}
             </ul>
           </div>
         </li>
+
+
+
+<li class="nav-item">
+    <a data-bs-toggle="collapse" href="#partners">
+        <i class="fas fa-handshake"></i>
+        <p>Partners</p>
+        <span class="caret"></span>
+    </a>
+    <div class="collapse" id="partners">
+        <ul class="nav nav-collapse">
+            <li><a href="{{ route('admin.partners.index') }}"><span class="sub-item">All partners</span></a></li>
+            <li><a href="{{ route('admin.partners.create') }}"><span class="sub-item">Add a partner</span></a></li>
+        </ul>
+    </div>
+</li>
+
+
+<li class="nav-item">
+    <a data-bs-toggle="collapse" href="#warehouses">
+        <i class="fas fa-warehouse"></i>
+        <p>Warehouses</p>
+        <span class="caret"></span>
+    </a>
+    <div class="collapse" id="warehouses">
+        <ul class="nav nav-collapse">
+            <li><a href="{{ route('admin.warehouses.index') }}"><span class="sub-item">All Warehouses</span></a></li>
+            <li><a href="{{ route('admin.warehouses.create') }}"><span class="sub-item">Add Warehouse</span></a></li>
+        </ul>
+    </div>
+</li>
+
+
+        {{--
         <li class="nav-item">
           <a href="{{ url('admin/widgets') }}">
             <i class="fas fa-desktop"></i>
             <p>Widgets</p>
             <span class="badge badge-success">4</span>
           </a>
+        </li>
+        --}}
+        
+        <!-- Logout Button -->
+        <li class="nav-item" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px;">
+          <form action="{{ route('logout') }}" method="POST" style="display: inline; width: 100%;">
+            @csrf
+            <button type="submit" class="btn btn-link nav-link text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 10px 20px; color: #dc3545 !important; font-weight: 500;">
+              <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
+              <span>Logout</span>
+            </button>
+          </form>
         </li>
       </ul>
     </div>

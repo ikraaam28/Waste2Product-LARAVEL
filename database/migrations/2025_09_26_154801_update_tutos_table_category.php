@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateTutosTableCategorysecond extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -61,4 +61,4 @@ class UpdateTutosTableCategorysecond extends Migration
             $table->enum('category', ['plastique', 'bois', 'papier', 'metal', 'verre', 'autre'])->change();
         });
     }
-}
+};

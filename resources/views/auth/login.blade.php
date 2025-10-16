@@ -341,6 +341,19 @@
     }
 }
 
+/* Google Sign-In Button Styles */
+.btn-outline-danger:hover {
+    background-color: #db4437 !important;
+    color: white !important;
+    border-color: #db4437 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(219, 68, 55, 0.3);
+}
+
+.btn-outline-danger:hover .position-absolute {
+    transform: translateX(0) !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .error-popup,
@@ -532,11 +545,27 @@
                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
                                         </button>
                                     </div>
+                                    <div class="col-12 text-end">
+    <a href="{{ route('password.request') }}" class="text-decoration-none text-primary">
+        Forgot password?
+    </a>
+</div>
+
                                     <div class="col-12 text-center">
                                         <div class="position-relative">
                                             <hr class="my-4">
                                             <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</span>
                                         </div>
+                                        <!-- Google Sign-In Button -->
+                                        <div class="mb-4">
+                                            <a href="{{ route('auth.google') }}" class="btn btn-outline-danger rounded-pill py-3 px-5 w-100 position-relative overflow-hidden" style="border: 2px solid #db4437; color: #db4437; font-weight: 600; letter-spacing: 0.5px; transition: all 0.3s ease;">
+                                                <span class="position-relative z-1">
+                                                    <i class="fab fa-google me-2"></i>Sign in with Google
+                                                </span>
+                                                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(219, 68, 55, 0.1), rgba(219, 68, 55, 0.05)); transform: translateX(-100%); transition: transform 0.6s ease;"></div>
+                                            </a>
+                                        </div>
+
                                         <p class="mb-0">Don't have an account yet? <a href="{{ route('signup') }}" class="text-primary fw-bold text-decoration-none">Sign Up <i class="fa fa-arrow-right ms-1"></i></a></p>
                                     </div>
                                 </div>
