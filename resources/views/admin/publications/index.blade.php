@@ -93,7 +93,7 @@
                                 </form>
 
                                 <!-- Export Button -->
-                                <form action="{{ route('admin.publications.export') }}" method="POST" class="mt-2">
+                                <form action="{{ route('admin.publications.export') }}" method="GET" class="mt-2">
                                     @csrf
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-file-export"></i> Export
