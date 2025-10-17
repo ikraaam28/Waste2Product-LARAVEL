@@ -63,5 +63,6 @@ jobs:
 
     - name: Generate Coverage
       run: |
-        php artisan test --coverage-clover=coverage.xml
+       composer require --dev phpunit/php-code-coverage
+        php artisan test --coverage
 
