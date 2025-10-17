@@ -33,13 +33,14 @@ jobs:
         run: php artisan test --coverage-clover=coverage.xml
 
       - name: Run SonarScanner
+        uses: SonarSource/sonarqube-scan-action@master
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          composer require --dev sonarsource/sonar-scanner-cli
-          ./vendor/bin/sonar-scanner \
-            -Dsonar.projectKey=waste2product \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+        with:
+          args: >
+            -Dsonar.projectKey=waste2product
+            -Dsonar.sources=.
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.php.coverage.reportPaths=coverage.xml
