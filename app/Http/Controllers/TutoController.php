@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\QuizAttempt;
 use GuzzleHttp\Client;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 
 class TutoController extends Controller
@@ -103,7 +105,7 @@ public function show(Tuto $tuto)
 
 public function generateCertificate(Request $request, Tuto $tuto)
 {
-    // 🔹 Vérifier l'éligibilité
+    // Récupérer la progression et l'admissibilité
     $userAttempts = QuizAttempt::where('user_id', Auth::id())
         ->whereIn('quiz_id', $tuto->quizzes->pluck('id'))
         ->get();
@@ -111,24 +113,18 @@ public function generateCertificate(Request $request, Tuto $tuto)
     $totalQuizzes = $tuto->quizzes->count();
     $averagePercentage = $userAttempts->isEmpty() ? 0 : $userAttempts->avg('percentage');
 
+    // Vérification des conditions d'éligibilité
     if ($completedQuizzes !== $totalQuizzes || $averagePercentage < 70) {
         return redirect()->route('tutos.show', $tuto)
-            ->with('error', 'You are not eligible for a certificate.');
+            ->with('error', 'Vous n\'êtes pas éligible au certificat.');
     }
 
-    // 🔹 Données utilisateur
-    $userName = Auth::user()->name;
-
-    // 🔹 Convertir le logo en Base64
+    // Préparer le HTML du certificat (personnalise ce template selon tes besoins)
+    $userName = Auth::user()->full_name;
     $logoPath = public_path('assets/img/recycleverse1.png');
-    if (!file_exists($logoPath)) {
-        return redirect()->route('tutos.show', $tuto)
-            ->with('error', 'Logo file not found.');
-    }
-    $logoData = base64_encode(file_get_contents($logoPath));
-    $logoBase64 = "data:image/png;base64,{$logoData}";
+    $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : null;
+    $logoHtml = $logoData ? "<img class='logo' src='data:image/png;base64,{$logoData}' alt='Logo'>" : "";
 
-    // 🔹 Préparer le HTML du certificat
     $html = "
     <html>
     <head>
@@ -144,15 +140,15 @@ public function generateCertificate(Request $request, Tuto $tuto)
     </head>
     <body>
         <div class='certificate'>
-            <img class='logo' src='{$logoBase64}' alt='RecycleVerse Logo'>
+            {$logoHtml}
             <h1>Certificate of Participation</h1>
             <h2>Congratulations!</h2>
             <p>This certifies that</p>
             <p><strong>{$userName}</strong></p>
             <p>has successfully participated in the tutorial</p>
             <p><strong>{$tuto->title}</strong></p>
-            <p>with an average score of <strong>".number_format($averagePercentage, 2)."%</strong>.</p>
-            <p>Issued on: ".date('F d, Y')."</p>
+            <p>with an average score of <strong>" . number_format($averagePercentage, 2) . "%</strong>.</p>
+            <p>Issued on: " . date('F d, Y') . "</p>
             <p class='app-name'>Proudly presented by <strong>RecycleVerse</strong></p>
         </div>
     </body>
@@ -160,48 +156,313 @@ public function generateCertificate(Request $request, Tuto $tuto)
     ";
 
     try {
-        // 🔹 Appel API PDF.co
-        $client = new Client(['verify' => false]);
-        $apiKey = env('PDFCO_API_KEY');
-
-        $response = $client->post('https://api.pdf.co/v1/pdf/convert/from/html', [
-            'headers' => [
-                'x-api-key' => $apiKey,
-                'Content-Type' => 'application/json',
+        $client = new \GuzzleHttp\Client();
+        $apiKey = '9fa09c30-61a1-4c7a-a3ab-f9ea2dcd0469'; // Tu peux te servir du .env si tu préfères
+        $response = $client->post('https://api.pdflayer.com/api/convert', [
+            'form_params' => [
+                'access_key' => $apiKey,
+                'document_html' => $html,
+                'document_name' => 'certificate_' . Auth::id() . '_' . time() . '.pdf',
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'margin_left' => 10,
+                'margin_right' => 10,
             ],
-            'json' => [
-                'html' => $html,
-                'name' => 'certificate_' . Auth::id() . '_' . time() . '.pdf',
-                'inline' => true,
-                'margins' => ['top'=>10,'bottom'=>10,'left'=>10,'right'=>10],
-            ],
+            'stream' => true,
+            'timeout' => 60
         ]);
 
-        $result = json_decode($response->getBody(), true);
+        // Sauvegarde du PDF dans storage/app/certificates
+        $fileName = 'certificates/certificate_' . Auth::id() . '_' . time() . '.pdf';
+        Storage::put($fileName, $response->getBody());
 
-        if (!isset($result['url']) || $result['error']) {
-            Log::error('PDF.co error', ['result' => $result]);
-            return redirect()->route('tutos.show', $tuto)
-                ->with('error', 'Failed to generate certificate.');
-        }
-
-        // 🔹 Télécharger le PDF depuis le lien temporaire
-        $pdfResponse = $client->get($result['url'], ['verify' => false]);
-        $pdfContent = $pdfResponse->getBody()->getContents();
-
-        // 🔹 Sauvegarder localement
-        $storagePath = 'certificates/certificate_' . Auth::id() . '_' . time() . '.pdf';
-        Storage::put($storagePath, $pdfContent);
-
-        // 🔹 Télécharger automatiquement le PDF
-        return response()->download(storage_path('app/' . $storagePath))->deleteFileAfterSend(true);
+        // Téléchargement automatique du PDF
+        return response()->download(storage_path('app/' . $fileName))->deleteFileAfterSend(true);
 
     } catch (\Exception $e) {
-        Log::error('PDF generation failed', ['message' => $e->getMessage()]);
+        \Log::error('PDFLayer PDF generation failed', ['error' => $e->getMessage()]);
         return redirect()->route('tutos.show', $tuto)
-            ->with('error', 'Failed to generate certificate: ' . $e->getMessage());
+            ->with('error', "Generation échouée : " . $e->getMessage());
     }
 }
+
+
+
+/**
+ * Afficher le certificat HTML
+ */
+public function showCertificate(Tuto $tuto)
+{
+    // Vérifier l'éligibilité
+    $userAttempts = QuizAttempt::where('user_id', Auth::id())
+        ->whereIn('quiz_id', $tuto->quizzes->pluck('id'))
+        ->get();
+    
+    $completedQuizzes = $userAttempts->count();
+    $totalQuizzes = $tuto->quizzes->count();
+    $averagePercentage = $userAttempts->isEmpty() ? 0 : $userAttempts->avg('percentage');
+
+    if ($completedQuizzes !== $totalQuizzes || $averagePercentage < 70) {
+        return redirect()->route('tutos.show', $tuto)
+            ->with('error', 'You are not eligible for a certificate.');
+    }
+
+    // Récupérer le nom de l'utilisateur connecté
+    $userName = Auth::user()->full_name;
+
+    return view('certificates.show', compact('tuto', 'completedQuizzes', 'totalQuizzes', 'averagePercentage', 'userName'));
+}
+
+
+/**
+ * Télécharger le certificat en PDF
+ */
+public function downloadCertificate(Request $request, Tuto $tuto)
+{
+    // Vérifier à nouveau l'éligibilité
+    $userAttempts = QuizAttempt::where('user_id', Auth::id())
+        ->whereIn('quiz_id', $tuto->quizzes->pluck('id'))
+        ->get();
+    
+    $completedQuizzes = $userAttempts->count();
+    $totalQuizzes = $tuto->quizzes->count();
+    $averagePercentage = $userAttempts->isEmpty() ? 0 : $userAttempts->avg('percentage');
+
+    if ($completedQuizzes !== $totalQuizzes || $averagePercentage < 70) {
+        return redirect()->route('tutos.show', $tuto)
+            ->with('error', 'You are not eligible for a certificate.');
+    }
+
+    try {
+        $dompdf = new Dompdf();
+        
+        $userName = Auth::user()->full_name;
+        $currentDate = now()->format('F d, Y');
+        
+        $html = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+                
+                body { 
+                    font-family: 'Montserrat', 'DejaVu Sans', sans-serif; 
+                    text-align: center; 
+                    color: #2c3e50;
+                    margin: 0;
+                    padding: 0;
+                    background: #f8f9fa;
+                }
+                
+                .certificate { 
+                    background: white;
+                    border: 25px solid #f1c40f;
+                    padding: 60px 40px;
+                    margin: 20px;
+                    position: relative;
+                    min-height: 700px;
+                }
+                
+                .certificate-badge {
+                    position: absolute;
+                    top: -20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #e74c3c;
+                    color: white;
+                    padding: 12px 40px;
+                    border-radius: 30px;
+                    font-weight: bold;
+                    font-size: 16px;
+                }
+                
+                .certificate-title {
+                    font-size: 42px;
+                    color: #2c3e50;
+                    margin: 40px 0 20px 0;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+                
+                .certificate-subtitle {
+                    font-size: 20px;
+                    color: #7f8c8d;
+                    margin-bottom: 40px;
+                }
+                
+                .user-name {
+                    font-size: 36px;
+                    color: #e74c3c;
+                    font-weight: bold;
+                    margin: 30px 0;
+                    text-transform: uppercase;
+                }
+                
+                .tutorial-title {
+                    font-size: 24px;
+                    color: #2980b9;
+                    font-weight: bold;
+                    margin: 25px 0;
+                    font-style: italic;
+                }
+                
+                .score-badge {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #27ae60, #2ecc71);
+                    color: white;
+                    padding: 15px 35px;
+                    border-radius: 50px;
+                    font-size: 22px;
+                    font-weight: bold;
+                    margin: 25px 0;
+                }
+                
+                .certificate-text {
+                    font-size: 18px;
+                    color: #34495e;
+                    margin: 15px 0;
+                    line-height: 1.6;
+                }
+                
+                .signature-section {
+                    display: flex;
+                    justify-content: space-around;
+                    margin: 50px 0 30px 0;
+                    border-top: 2px solid #bdc3c7;
+                    padding-top: 30px;
+                }
+                
+                .signature {
+                    text-align: center;
+                }
+                
+                .signature-line {
+                    width: 180px;
+                    height: 2px;
+                    background: #34495e;
+                    margin: 15px auto;
+                }
+                
+                .certificate-date {
+                    font-size: 14px;
+                    color: #7f8c8d;
+                    margin-top: 20px;
+                }
+                
+                .decoration {
+                    position: absolute;
+                    font-size: 80px;
+                    opacity: 0.1;
+                    color: #3498db;
+                }
+                
+                .decoration-1 { top: 40px; left: 40px; }
+                .decoration-2 { top: 40px; right: 40px; }
+                .decoration-3 { bottom: 40px; left: 40px; }
+                .decoration-4 { bottom: 40px; right: 40px; }
+            </style>
+        </head>
+        <body>
+            <div class=\"certificate\">
+                <!-- Badge -->
+                <div class=\"certificate-badge\">
+                    CERTIFICATE OF ACHIEVEMENT
+                </div>
+                
+                <!-- Decorations -->
+                <div class=\"decoration decoration-1\">★</div>
+                <div class=\"decoration decoration-2\">★</div>
+                <div class=\"decoration decoration-3\">★</div>
+                <div class=\"decoration decoration-4\">★</div>
+                
+                <!-- Header -->
+                <div>
+                    <h1 class=\"certificate-title\">Certificate of Excellence</h1>
+                    <p class=\"certificate-subtitle\">Awarded with Honors</p>
+                </div>
+                
+                <!-- Body -->
+                <div>
+                    <p class=\"certificate-text\">This certificate is proudly awarded to</p>
+                    
+                    <div class=\"user-name\">
+                        {$userName}
+                    </div>
+                    
+                    <p class=\"certificate-text\">for successfully completing the tutorial</p>
+                    
+                    <div class=\"tutorial-title\">
+                        \"{$tuto->title}\"
+                    </div>
+                    
+                    <p class=\"certificate-text\">with an outstanding average score of</p>
+                    
+                    <div class=\"score-badge\">
+                        ".number_format($averagePercentage, 2)."%
+                    </div>
+                    
+                    <p class=\"certificate-text\">
+                        Quizzes completed: <strong>{$completedQuizzes}/{$totalQuizzes}</strong>
+                    </p>
+                </div>
+                
+                <!-- Footer -->
+                <div>
+                    <div class=\"signature-section\">
+                        <div class=\"signature\">
+                            <div class=\"signature-line\"></div>
+                            <p>Educational Director</p>
+                            <p><strong>RecycleVerse Academy</strong></p>
+                        </div>
+                        
+                        <div class=\"signature\">
+                            <div class=\"signature-line\"></div>
+                            <p>Date Issued</p>
+                            <p><strong>{$currentDate}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <p class=\"certificate-date\">
+                        Certificate ID: RV".Auth::id()."-{$tuto->id}-".time()."
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>";
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->set_option('isHtml5ParserEnabled', true);
+        $dompdf->set_option('isRemoteEnabled', true);
+        $dompdf->render();
+
+        $fileName = 'RecycleVerse_Certificate_' . Auth::user()->name . '_' . time() . '.pdf';
+
+        return response()->streamDownload( // streamDownload est plus efficace en mémoire que download pour les fichiers générés à la volée
+            function () use ($dompdf) {
+                echo $dompdf->output();
+            },
+            $fileName,
+            [
+                'Content-Type' => 'application/pdf',
+            ]
+        );
+
+    } catch (\Exception $e) {
+        Log::error('Certificate PDF generation failed', [
+            'message' => $e->getMessage(),
+            'user_id' => Auth::id(),
+            'tuto_id' => $tuto->id
+        ]);
+        
+        return redirect()->route('certificates.show', $tuto)
+            ->with('error', 'Error generating PDF: ' . $e->getMessage());
+    }
+}
+
+
     
     public function adminIndex()
     {

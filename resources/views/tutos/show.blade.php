@@ -194,16 +194,69 @@
         transition: width 0.3s ease;
     }
 
-    /* New style for certificate icon */
+    /* Updated styles for certificate section */
+    .certificate-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 2rem 0;
+        text-align: center;
+        color: white;
+    }
+
     .certificate-icon {
-        font-size: 2rem;
-        color: #28a745;
-        cursor: pointer;
+        font-size: 3rem;
+        color: #f1c40f;
+        margin-bottom: 1rem;
         transition: transform 0.3s ease;
     }
 
     .certificate-icon:hover {
         transform: scale(1.2);
+    }
+
+    .certificate-btn {
+        background: linear-gradient(135deg, #f1c40f, #f39c12);
+        border: none;
+        padding: 12px 30px;
+        font-size: 18px;
+        border-radius: 50px;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4);
+    }
+
+    .certificate-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(241, 196, 15, 0.6);
+        color: white;
+    }
+
+    .certificate-message {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .achievement-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        margin: 10px 0;
+    }
+
+    /* Loading animation */
+    .loading-spinner {
+        display: none;
+    }
+
+    .certificate-loading .loading-spinner {
+        display: inline-block;
+    }
+
+    .certificate-loading .btn-text {
+        display: none;
     }
 </style>
 
@@ -343,6 +396,74 @@
             </div>
         </div>
 
+        <!-- Certificate Section -->
+        @auth
+            @php
+                $allQuizzesCompleted = $completedQuizzes === $totalQuizzes;
+                $averagePercentageThreshold = $averagePercentage >= 70;
+            @endphp
+            
+            @if ($allQuizzesCompleted && $averagePercentageThreshold)
+                <div class="certificate-section wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <i class="fas fa-certificate certificate-icon"></i>
+                            <h2 class="text-white mb-3">Congratulations! 🎉</h2>
+                            <p class="certificate-message">
+                                You've successfully completed all quizzes with an excellent average score of 
+                                <strong>{{ number_format($averagePercentage, 2) }}%</strong>!
+                            </p>
+                            
+                            <div class="achievement-badge">
+                                <i class="fas fa-trophy me-2"></i>
+                                <span>Certificate Unlocked!</span>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <a href="{{ route('certificates.show', $tuto) }}" class="btn certificate-btn me-3">
+                                    <i class="fas fa-eye me-2"></i>
+                                    View Certificate
+                                </a>
+                                
+                                <form action="{{ route('certificates.download', $tuto) }}" method="POST" class="d-inline" id="downloadForm">
+                                    @csrf
+                                    <button type="submit" class="btn certificate-btn" id="downloadBtn">
+                                        <span class="btn-text">
+                                            <i class="fas fa-download me-2"></i>
+                                            Download PDF
+                                        </span>
+                                        <div class="loading-spinner">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            Generating PDF...
+                                        </div>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <p class="mt-3 mb-0 opacity-75">
+                                <small>Your personalized certificate is ready for download</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @elseif ($allQuizzesCompleted && !$averagePercentageThreshold)
+                <div class="alert alert-warning text-center wow fadeInUp" data-wow-delay="0.2s">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Almost there!</strong> You've completed all quizzes, but your average score 
+                    ({{ number_format($averagePercentage, 2) }}%) is below the 70% required for certification.
+                    <a href="{{ route('quizzes.index') }}" class="alert-link">Try again to improve your score!</a>
+                </div>
+            @else
+                <div class="alert alert-info text-center wow fadeInUp" data-wow-delay="0.2s">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Complete all <strong>{{ $totalQuizzes }}</strong> quizzes with an average score of 70% or higher to unlock your certificate. 
+                    Currently completed: <strong>{{ $completedQuizzes }}/{{ $totalQuizzes }}</strong>
+                </div>
+            @endif
+        @endauth
+
         <!-- Questions & Answers Section -->
         <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
             <p class="fs-5 fw-medium fst-italic text-primary">Questions & Answers</p>
@@ -476,30 +597,6 @@
                 @endforeach
             </div>
         @endif
-
-        <!-- Progress Bar (Always Displayed) -->
-        @auth
-            <div class="progress-bar-container">
-                <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
-                <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
-            </div>
-
-            <!-- Certificate Logic Based on Average Percentage -->
-            @php
-                $allQuizzesCompleted = $completedQuizzes === $totalQuizzes;
-                $averagePercentageThreshold = $averagePercentage >= 70;
-            @endphp
-            @if ($allQuizzesCompleted && $averagePercentageThreshold)
-                <div class="text-center mt-4">
-                    <i class="fas fa-certificate certificate-icon" data-toggle="tooltip" title="Upload Certificate"></i>
-                    <a href="{{ route('certificates.upload', $tuto) }}" class="btn btn-success mt-2">Upload Your Certificate</a>
-                </div>
-            @elseif ($allQuizzesCompleted && !$averagePercentageThreshold)
-                <div class="text-center mt-4 text-danger">
-                    <p>Failed: Average quiz score is below 70%. No certificate available.</p>
-                </div>
-            @endif
-        @endauth
     </div>
 </div>
 
@@ -511,8 +608,19 @@ function toggleReplyForm(questionId) {
     } else {
         form.style.display = 'none';
     }
-    //r
 }
+
+// PDF download loading animation
+document.addEventListener('DOMContentLoaded', function() {
+    const downloadForm = document.getElementById('downloadForm');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    if (downloadForm && downloadBtn) {
+        downloadForm.addEventListener('submit', function() {
+            downloadBtn.classList.add('certificate-loading');
+        });
+    }
+});
 </script>
 
 @endsection

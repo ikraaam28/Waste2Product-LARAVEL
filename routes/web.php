@@ -329,6 +329,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         abort(404);
     });
 });
+
 Route::get('/tutos', [TutoController::class, 'index'])->name('tutos.index');
 Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('tutos.show');
 Route::post('/tutos/{tuto}/react', [TutoController::class, 'react'])->name('tutos.react')->middleware('auth');
@@ -338,6 +339,10 @@ Route::get('/tutos/{tuto}/certificates/upload', [TutoController::class, 'uploadC
 Route::post('/tutos/{tuto}/certificates/upload', [TutoController::class, 'generateCertificate'])->name('certificates.generate')->middleware('auth');
 Route::post('/tutos/{tuto}/certificates/generate', [TutoController::class, 'generateCertificate'])
     ->name('certificates.generate');
+
+
+    Route::get('/tutos/{tuto}/certificate', [TutoController::class, 'showCertificate'])->name('certificates.show')->middleware('auth');
+    Route::post('/tutos/{tuto}/certificate/download', [TutoController::class, 'downloadCertificate'])->name('certificates.download')->middleware('auth');
 
 
 
@@ -367,3 +372,4 @@ Route::get('/test-pdfco', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+  
