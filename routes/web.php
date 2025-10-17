@@ -84,6 +84,8 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 
 Route::post('/generate-title', [PublicationController::class, 'generateTitle'])->name('publications.generateTitle');
+Route::get('/publications/{id}/translate', [PublicationController::class, 'translate']);
+
 
 Route::get('/test-title', function() {
     return [

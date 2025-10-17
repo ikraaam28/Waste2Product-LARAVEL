@@ -436,4 +436,44 @@ public function generateTitle(Request $request)
         return response()->json(['title' => 'Green Recycling Idea']);
     }
 }
+
+public function translate($id, Request $request)
+{
+    $publication = Publication::findOrFail($id);
+
+    // Langue cible (ex: 'fr', 'en', 'es', 'ar', etc.)
+    $targetLang = $request->get('lang', 'en');
+
+    // Appel à l'API LibreTranslate
+    $response = Http::post('https://libretranslate.com/translate', [
+        'q' => $publication->title,
+        'source' => 'auto',
+        'target' => $targetLang,
+        'format' => 'text',
+    ]);
+
+    $translatedTitle = $response->json()['translatedText'] ?? $publication->title;
+
+    $responseContent = Http::post('https://libretranslate.com/translate', [
+        'q' => $publication->content,
+        'source' => 'auto',
+        'target' => $targetLang,
+        'format' => 'text',
+    ]);
+
+    $translatedContent = $responseContent->json()['translatedText'] ?? $publication->content;
+
+    return response()->json([
+        'original' => [
+            'title' => $publication->title,
+            'content' => $publication->content,
+        ],
+        'translated' => [
+            'title' => $translatedTitle,
+            'content' => $translatedContent,
+        ],
+        'language' => $targetLang
+    ]);
+}
+
 }

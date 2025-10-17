@@ -32,16 +32,16 @@
                 <form method="POST" action="{{ route('publications.store') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="row g-3">
-<div class="col-md-6">
-    <div class="form-floating">
-        <input type="text" name="titre" class="form-control @error('titre') is-invalid @enderror" id="titre" value="{{ old('titre') }}" required>
-        <label for="titre">Title</label>
-        @error('titre')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-    <button type="button" id="generate-title-btn" class="btn btn-outline-success mt-2">Generate Title with AI</button>
-</div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" name="titre" class="form-control @error('titre') is-invalid @enderror" id="titre" value="{{ old('titre') }}" required>
+                                <label for="titre">Title</label>
+                                @error('titre')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <button type="button" id="generate-title-btn" class="btn btn-outline-success mt-2">Generate Title with AI</button>
+                        </div>
                         <div class="col-md-6">
                             <select name="categorie" class="form-select @error('categorie') is-invalid @enderror" required>
                                 <option value="">Select category</option>
@@ -121,7 +121,6 @@
                 </div>
             </div>
 
-            
             <div class="card-body p-0">
                 <div class="tab-content" id="publicationTabContent">
                     <!-- My Publications Tab -->
@@ -170,26 +169,23 @@
                                 </div>
                                 @endforeach
                             </div>
-@if(method_exists($myPublications, 'appends'))
-    <div class="text-center mt-4">
-        {{ $myPublications->appends(request()->query())->links() }}
-    </div>
-@endif
-
-
-                     @if(method_exists($myPublications, 'currentPage'))
-    <div class="text-center mt-2">
-        <small class="text-muted">
-            Page {{ $myPublications->currentPage() }} of {{ $myPublications->lastPage() }}
-            @if(request('date_filter') == 'recent')
-                (most recent first)
-            @elseif(request('date_filter') == 'oldest')
-                (oldest first)
-            @endif
-        </small>
-    </div>
-@endif
-
+                            @if(method_exists($myPublications, 'appends'))
+                                <div class="text-center mt-4">
+                                    {{ $myPublications->appends(request()->query())->links() }}
+                                </div>
+                            @endif
+                            @if(method_exists($myPublications, 'currentPage'))
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">
+                                        Page {{ $myPublications->currentPage() }} of {{ $myPublications->lastPage() }}
+                                        @if(request('date_filter') == 'recent')
+                                            (most recent first)
+                                        @elseif(request('date_filter') == 'oldest')
+                                            (oldest first)
+                                        @endif
+                                    </small>
+                                </div>
+                            @endif
                         @else
                             <div class="text-center py-5">
                                 <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
@@ -220,12 +216,14 @@
                                         </div>
                                         
                                         <div class="reaction-counts mt-2 mb-3 d-flex justify-content-center gap-2">
-                                            <small class="text-success likes-count-{{ $publication->id }}">
-                                                <i class="fas fa-thumbs-up me-1"></i>{{ $publication->likes_count }}
-                                            </small>
-                                            <small class="text-danger dislikes-count-{{ $publication->id }}">
-                                                <i class="fas fa-thumbs-down me-1"></i>{{ $publication->dislikes_count }}
-                                            </small>
+                                            <span class="likes-count-{{ $publication->id }} text-success">
+                                                <i class="fas fa-thumbs-up me-1"></i>
+                                                <strong id="likes-count-{{ $publication->id }}">{{ $publication->likes_count }}</strong> likes
+                                            </span>
+                                            <span class="dislikes-count-{{ $publication->id }} text-danger">
+                                                <i class="fas fa-thumbs-down me-1"></i>
+                                                <strong id="dislikes-count-{{ $publication->id }}">{{ $publication->dislikes_count }}</strong> dislikes
+                                            </span>
                                         </div>
                                         
                                         <div class="d-flex gap-2 mt-3 action-icons justify-content-center">
@@ -234,28 +232,29 @@
                                             </a>
                                             @if(auth()->check() && auth()->id() !== $publication->user_id)
                                             <div class="reaction-buttons d-flex gap-1">
-                                                <form method="POST" action="{{ route('publications.like', $publication) }}" 
-                                                      class="d-inline like-form reaction-form" data-publication-id="{{ $publication->id }}">
+                                                {{-- Like Toggle Button --}}
+                                                <form method="POST" action="{{ route('publications.like', $publication) }}" class="like-form d-inline reaction-form" data-pub-id="{{ $publication->id }}">
                                                     @csrf
                                                     @if($publication->isLikedByAuthUser())
-                                                        <button type="submit" class="btn minimal-reaction-btn btn-success" title="Remove Like">
+                                                        <button type="submit" class="btn btn-success btn-sm reaction-btn active-like minimal-reaction-btn" title="Remove Like">
                                                             <i class="fas fa-thumbs-up"></i>
                                                         </button>
                                                     @else
-                                                        <button type="submit" class="btn minimal-reaction-btn btn-outline-success" title="Like">
+                                                        <button type="submit" class="btn btn-outline-success btn-sm reaction-btn minimal-reaction-btn" title="Like">
                                                             <i class="fas fa-thumbs-up"></i>
                                                         </button>
                                                     @endif
                                                 </form>
-                                                <form method="POST" action="{{ route('publications.dislike', $publication) }}" 
-                                                      class="d-inline dislike-form reaction-form" data-publication-id="{{ $publication->id }}">
+                                                
+                                                {{-- Dislike Toggle Button --}}
+                                                <form method="POST" action="{{ route('publications.dislike', $publication) }}" class="dislike-form d-inline reaction-form" data-pub-id="{{ $publication->id }}">
                                                     @csrf
                                                     @if($publication->isDislikedByAuthUser())
-                                                        <button type="submit" class="btn minimal-reaction-btn btn-danger" title="Remove Dislike">
+                                                        <button type="submit" class="btn btn-danger btn-sm reaction-btn active-dislike minimal-reaction-btn" title="Remove Dislike">
                                                             <i class="fas fa-thumbs-down"></i>
                                                         </button>
                                                     @else
-                                                        <button type="submit" class="btn minimal-reaction-btn btn-outline-danger" title="Dislike">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm reaction-btn minimal-reaction-btn" title="Dislike">
                                                             <i class="fas fa-thumbs-down"></i>
                                                         </button>
                                                     @endif
@@ -368,18 +367,6 @@
     outline: none;
 }
 
-.minimal-btn {
-    border-radius: 8px;
-    background: #28a745;
-    border: none;
-    transition: all 0.2s ease;
-}
-.minimal-btn:hover {
-    background: #218838;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
-}
-
 .minimal-action {
     width: 40px !important;
     height: 40px !important;
@@ -397,16 +384,28 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.minimal-reaction-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    padding: 0;
-    font-size: 12px;
+/* Reaction Button Styles - Same as first code */
+.reaction-btn {
     transition: all 0.2s ease;
+    padding: 8px 15px;
+    border-radius: 25px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
-.minimal-reaction-btn:hover {
+.reaction-btn:hover {
     transform: scale(1.05);
+}
+.reaction-btn.active-like, .reaction-btn.active-dislike {
+    animation: pulse 0.5s ease-in-out;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 .action-icons {
@@ -426,73 +425,72 @@
     .action-icons {
         gap: 6px !important;
     }
-    .minimal-reaction-btn {
-        width: 28px;
-        height: 28px;
+    .reaction-btn {
+        width: 36px;
+        height: 36px;
     }
 }
 </style>
 
 <script>
 $(document).ready(function() {
-    // Filter Tab URL Update
-
-    // Generate Title Button
-// Generate Title Button - FIXED VERSION
-$('#generate-title-btn').on('click', function() {
-    const content = $('#contenu').val().trim();
-    console.log('Content being sent:', content); // DEBUG - check browser console
-    
-    if (!content || content.length < 10) {
-        Swal.fire('Error', 'Please enter at least 10 characters of content!', 'error');
-        return;
+    // Ensure CSRF token is available
+    if (!$('meta[name="csrf-token"]').length) {
+        $('head').append('<meta name="csrf-token" content="{{ csrf_token() }}">');
     }
 
-    const $btn = $(this);
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> AI Thinking...');
-
-    $.ajax({
-        url: '{{ route("publications.generateTitle") }}',
-        method: 'POST',
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content'),
-            content: content  // This was the problem!
-        },
-        success: function(data) {
-            console.log('Success:', data); // DEBUG
-            if (data.title) {
-                $('#titre').val(data.title);
-                Swal.fire({
-                    icon: 'success',
-                    title: '🎉 Title Generated!',
-                    text: data.title,
-                    timer: 2000
-                });
-            } else {
-                Swal.fire('Error', 'No title returned. Try again.', 'error');
-            }
-        },
-        error: function(xhr) {
-            console.log('Error details:', xhr.responseJSON); // DEBUG
-            let error = xhr.responseJSON?.error || 'Unknown error';
-            Swal.fire('❌ Error', error, 'error');
-        },
-        complete: function() {
-            $btn.prop('disabled', false).html('✨ Generate Title with AI');
-        }
+    // Filter tabs
+    $('.filter-tab').click(function(e) {
+        e.preventDefault();
+        const filter = $(this).data('filter');
+        const url = new URL(window.location.href);
+        const dateFilter = $('select[name="date_filter"]').val();
+        url.searchParams.set('filter', filter);
+        url.searchParams.set('date_filter', dateFilter);
+        window.location.href = url.toString();
     });
-});
-// Filter tabs
-$('.filter-tab').click(function(e) {
-    e.preventDefault();
-    const filter = $(this).data('filter');
-    const url = new URL(window.location.href);
-    const dateFilter = $('select[name="date_filter"]').val();
-    url.searchParams.set('filter', filter);
-    url.searchParams.set('date_filter', dateFilter);
-    window.location.href = url.toString();
-});
 
+    // Generate Title Button
+    $('#generate-title-btn').on('click', function() {
+        const content = $('#contenu').val().trim();
+        
+        if (!content || content.length < 10) {
+            Swal.fire('Error', 'Please enter at least 10 characters of content!', 'error');
+            return;
+        }
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> AI Thinking...');
+
+        $.ajax({
+            url: '{{ route("publications.generateTitle") }}',
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                content: content
+            },
+            success: function(data) {
+                if (data.title) {
+                    $('#titre').val(data.title);
+                    Swal.fire({
+                        icon: 'success',
+                        title: '🎉 Title Generated!',
+                        text: data.title,
+                        timer: 2000
+                    });
+                } else {
+                    Swal.fire('Error', 'No title returned. Try again.', 'error');
+                }
+            },
+            error: function(xhr) {
+                let error = xhr.responseJSON?.error || 'Unknown error';
+                Swal.fire('❌ Error', error, 'error');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('✨ Generate Title with AI');
+            }
+        });
+    });
 
     // Image preview
     $(document).on('change', 'input[type="file"]', function() {
@@ -546,25 +544,20 @@ $('.filter-tab').click(function(e) {
         });
     });
 
-    // AJAX Reaction Handling
+    // AJAX Reaction Handling - ADAPTED FROM FIRST CODE
     $(document).on('submit', '.reaction-form', function(e) {
         e.preventDefault();
         
         const $form = $(this);
         const url = $form.attr('action');
-        const publicationId = $form.data('publication-id');
-        const $publicationItem = $('[data-publication-id="' + publicationId + '"]');
-        const $likesCount = $publicationItem.find('.likes-count-' + publicationId);
-        const $dislikesCount = $publicationItem.find('.dislikes-count-' + publicationId);
-        const $likeButton = $publicationItem.find('.like-form button');
-        const $dislikeButton = $publicationItem.find('.dislike-form button');
-        const isLikeForm = $form.hasClass('like-form');
-        
-        // Show loading state
+        const pubId = $form.data('pub-id');
         const $btn = $form.find('button');
         const originalHtml = $btn.html();
         const originalClass = $btn.attr('class');
+        const isLikeForm = $form.hasClass('like-form');
         const wasActive = $btn.hasClass('active-like') || $btn.hasClass('active-dislike');
+        
+        // Show loading state
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
         
         $.ajax({
@@ -578,46 +571,49 @@ $('.filter-tab').click(function(e) {
             },
             success: function(data) {
                 if (data.success) {
-                    // Update counts
-                    $likesCount.html('<i class="fas fa-thumbs-up me-1"></i>' + data.likes_count + ' likes');
-                    $dislikesCount.html('<i class="fas fa-thumbs-down me-1"></i>' + data.dislikes_count + ' dislikes');
+                    // Update counts for this specific publication
+                    $(`#likes-count-${pubId}`).text(data.likes_count);
+                    $(`#dislikes-count-${pubId}`).text(data.dislikes_count);
                     
-                    // Toggle button states
+                    // Update button states for this publication
+                    const $likeBtn = $(`.like-form[data-pub-id="${pubId}"] button`);
+                    const $dislikeBtn = $(`.dislike-form[data-pub-id="${pubId}"] button`);
+                    
                     if (data.user_reaction === 'like') {
                         // Active like, inactive dislike
-                        $likeButton.removeClass('btn-outline-success active-dislike').addClass('btn-success active-like');
-                        $likeButton.html('<i class="fas fa-thumbs-up"></i>');
-                        $likeButton.prop('title', 'Remove Like');
+                        $likeBtn.removeClass('btn-outline-success active-dislike').addClass('btn-success active-like');
+                        $likeBtn.html('<i class="fas fa-thumbs-up"></i>');
+                        $likeBtn.prop('title', 'Remove Like');
                         
-                        $dislikeButton.removeClass('btn-danger active-dislike').addClass('btn-outline-danger');
-                        $dislikeButton.html('<i class="fas fa-thumbs-down"></i>');
-                        $dislikeButton.prop('title', 'Dislike');
+                        $dislikeBtn.removeClass('btn-danger active-dislike').addClass('btn-outline-danger');
+                        $dislikeBtn.html('<i class="fas fa-thumbs-down"></i>');
+                        $dislikeBtn.prop('title', 'Dislike');
                     } else if (data.user_reaction === 'dislike') {
                         // Active dislike, inactive like
-                        $dislikeButton.removeClass('btn-outline-danger active-like').addClass('btn-danger active-dislike');
-                        $dislikeButton.html('<i class="fas fa-thumbs-down"></i>');
-                        $dislikeButton.prop('title', 'Remove Dislike');
+                        $dislikeBtn.removeClass('btn-outline-danger active-like').addClass('btn-danger active-dislike');
+                        $dislikeBtn.html('<i class="fas fa-thumbs-down"></i>');
+                        $dislikeBtn.prop('title', 'Remove Dislike');
                         
-                        $likeButton.removeClass('btn-success active-like').addClass('btn-outline-success');
-                        $likeButton.html('<i class="fas fa-thumbs-up"></i>');
-                        $likeButton.prop('title', 'Like');
+                        $likeBtn.removeClass('btn-success active-like').addClass('btn-outline-success');
+                        $likeBtn.html('<i class="fas fa-thumbs-up"></i>');
+                        $likeBtn.prop('title', 'Like');
                     } else {
                         // No reaction - both inactive
-                        $likeButton.removeClass('btn-success active-like').addClass('btn-outline-success');
-                        $likeButton.html('<i class="fas fa-thumbs-up"></i>');
-                        $likeButton.prop('title', 'Like');
+                        $likeBtn.removeClass('btn-success active-like').addClass('btn-outline-success');
+                        $likeBtn.html('<i class="fas fa-thumbs-up"></i>');
+                        $likeBtn.prop('title', 'Like');
                         
-                        $dislikeButton.removeClass('btn-danger active-dislike').addClass('btn-outline-danger');
-                        $dislikeButton.html('<i class="fas fa-thumbs-down"></i>');
-                        $dislikeButton.prop('title', 'Dislike');
+                        $dislikeBtn.removeClass('btn-danger active-dislike').addClass('btn-outline-danger');
+                        $dislikeBtn.html('<i class="fas fa-thumbs-down"></i>');
+                        $dislikeBtn.prop('title', 'Dislike');
                     }
                     
                     // Success notification
                     let message = '';
                     if (isLikeForm) {
-                        message = wasActive ? 'Unlike removed' : '👍 Post liked!';
+                        message = wasActive ? 'Unlike retiré' : '👍 Publication aimée !';
                     } else {
-                        message = wasActive ? 'Dislike removed' : '👎 Post disliked!';
+                        message = wasActive ? 'Dislike retiré' : '👎 Publication détestée !';
                     }
                     
                     Swal.fire({
@@ -632,15 +628,17 @@ $('.filter-tab').click(function(e) {
                 }
             },
             error: function(xhr) {
-                let errorMessage = 'An error occurred';
+                let errorMessage = 'Une erreur est survenue';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
                 }
-                Swal.fire('Error', errorMessage, 'error');
+                Swal.fire('Erreur', errorMessage, 'error');
+                
+                // Revert button state on error
+                $btn.attr('class', originalClass).html(originalHtml);
             },
             complete: function() {
-                // Reset button
-                $btn.prop('disabled', false).attr('class', originalClass).html(originalHtml);
+                $btn.prop('disabled', false);
             }
         });
     });

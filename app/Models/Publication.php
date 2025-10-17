@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Publication extends Model
 {
@@ -53,6 +54,7 @@ class Publication extends Model
     {
         return $this->dislikes()->count();
     }
+    
 
     // Check user reactions
     public function isLikedByAuthUser()

@@ -13,12 +13,7 @@ class PublicationReactionController extends Controller
     public function like($id)
     {
         try {
-            // Manually fetch publication by ID
-            $publication = Publication::find($id);
-            
-            if (!$publication) {
-                return response()->json(['error' => 'Publication not found'], 404);
-            }
+            $publication = Publication::findOrFail($id);
 
             if (!Auth::check()) {
                 return response()->json(['error' => 'Authentication required'], 401);
@@ -51,22 +46,16 @@ class PublicationReactionController extends Controller
                 $action = 'liked';
             }
 
-            $likesCount = PublicationReaction::where('publication_id', $publication->id)
-                ->where('type', 'like')->count();
-                
-            $dislikesCount = PublicationReaction::where('publication_id', $publication->id)
-                ->where('type', 'dislike')->count();
+            $this->updateCounts($publication->id, $userId);
 
-            $userReaction = PublicationReaction::where('user_id', $userId)
-                ->where('publication_id', $publication->id)
-                ->value('type');
-            
             return response()->json([
                 'success' => true,
                 'action' => $action,
-                'likes_count' => $likesCount,
-                'dislikes_count' => $dislikesCount,
-                'user_reaction' => $userReaction ?? null
+                'likes_count' => PublicationReaction::where('publication_id', $publication->id)
+                    ->where('type', 'like')->count(),
+                'dislikes_count' => PublicationReaction::where('publication_id', $publication->id)
+                    ->where('type', 'dislike')->count(),
+                'user_reaction' => $this->getUserReaction($publication->id, $userId)
             ]);
             
         } catch (\Exception $e) {
@@ -75,18 +64,14 @@ class PublicationReactionController extends Controller
                 'publication_id' => $id,
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Server error: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Server error'], 500);
         }
     }
 
     public function dislike($id)
     {
         try {
-            $publication = Publication::find($id);
-            
-            if (!$publication) {
-                return response()->json(['error' => 'Publication not found'], 404);
-            }
+            $publication = Publication::findOrFail($id);
 
             if (!Auth::check()) {
                 return response()->json(['error' => 'Authentication required'], 401);
@@ -119,22 +104,16 @@ class PublicationReactionController extends Controller
                 $action = 'disliked';
             }
 
-            $likesCount = PublicationReaction::where('publication_id', $publication->id)
-                ->where('type', 'like')->count();
-                
-            $dislikesCount = PublicationReaction::where('publication_id', $publication->id)
-                ->where('type', 'dislike')->count();
+            $this->updateCounts($publication->id, $userId);
 
-            $userReaction = PublicationReaction::where('user_id', $userId)
-                ->where('publication_id', $publication->id)
-                ->value('type');
-            
             return response()->json([
                 'success' => true,
                 'action' => $action,
-                'likes_count' => $likesCount,
-                'dislikes_count' => $dislikesCount,
-                'user_reaction' => $userReaction ?? null
+                'likes_count' => PublicationReaction::where('publication_id', $publication->id)
+                    ->where('type', 'like')->count(),
+                'dislikes_count' => PublicationReaction::where('publication_id', $publication->id)
+                    ->where('type', 'dislike')->count(),
+                'user_reaction' => $this->getUserReaction($publication->id, $userId)
             ]);
             
         } catch (\Exception $e) {
@@ -143,7 +122,19 @@ class PublicationReactionController extends Controller
                 'publication_id' => $id,
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Server error: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Server error'], 500);
         }
+    }
+
+    private function updateCounts($publicationId, $userId)
+    {
+        // This method can be used for caching or other optimizations if needed
+    }
+
+    private function getUserReaction($publicationId, $userId)
+    {
+        return PublicationReaction::where('user_id', $userId)
+            ->where('publication_id', $publicationId)
+            ->value('type');
     }
 }
