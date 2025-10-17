@@ -4,7 +4,7 @@
     <div class="container py-3">
         {{-- ✅ Titre avec ID pour traduction --}}
         <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-            <h1 class="display-6" id="pub-title">{{ $publication->titre }}</h1>
+            <h1 class="display-6" id="pub-title" data-original="{{ $publication->titre }}">{{ $publication->titre }}</h1>
         </div>
 
         {{-- ✅ Publication Card (cadre réduit) --}}
@@ -23,31 +23,42 @@
                     @endif
                 </div>
 
-                <div class="translation-controls">
-                    <select id="lang-select" class="form-select form-select-sm modern-lang-select">
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="en" selected>🇬🇧 English</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="de">🇩🇪 Deutsch</option>
-                        <option value="it">🇮🇹 Italiano</option>
-                        <option value="pt">🇵🇹 Português</option>
-                        <option value="ar">🇸🇦 العربية</option>
-                    </select>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="translation-controls">
+                        <select id="lang-select" class="form-select form-select-sm modern-lang-select">
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="en" selected>🇬🇧 English</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="pt">🇵🇹 Português</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                        </select>
+                    </div>
+                    
+                    {{-- Edit and PDF buttons container --}}
+                    <div class="d-flex gap-1">
+                        @if(auth()->id() === $publication->user_id)
+                            <a href="{{ route('publications.edit', $publication->id) }}" class="btn btn-sm btn-outline-success" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        @endif
+                        {{-- PDF Export Button - visible to authenticated users --}}
+                        @if(auth()->check())
+                            <button type="button" id="export-pdf" class="btn btn-sm btn-outline-primary" title="Export PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                        @endif
+                    </div>
                 </div>
-
-                @if(auth()->id() === $publication->user_id)
-                    <a href="{{ route('publications.edit', $publication->id) }}" class="btn btn-sm btn-outline-success ms-2">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                @endif
             </div>
 
             <div class="card-body p-2">
                 <div class="publication-content" id="publication-content">
-                    <p id="pub-content" class="lead">{{ $publication->contenu }}</p>
+                    <p id="pub-content" class="lead" data-original="{{ $publication->contenu }}">{{ $publication->contenu }}</p>
                     @if($publication->image)
                         <img src="{{ asset('storage/' . $publication->image) }}" alt="{{ $publication->titre }}"
-                             class="img-fluid rounded shadow-sm mb-2" style="max-height: 300px; object-fit: cover;">
+                             class="img-fluid rounded shadow-sm mb-2 publication-image" style="max-height: 300px; object-fit: cover;">
                     @endif
 
                     <div id="translation-info" class="alert alert-info alert-dismissible fade show mt-2 p-2 d-none small" role="alert">
@@ -210,11 +221,16 @@
     </div>
 </div>
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
+{{-- External script libraries --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <style>
+/* Your existing styles remain the same */
 .compact-card, .compact-reactions, .compact-comments {
     border-radius: 10px !important;
     max-width: 700px !important;
@@ -277,6 +293,23 @@
 .card {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
 }
+
+#export-pdf {
+    border-radius: 4px !important;
+    transition: all 0.2s ease;
+}
+
+#export-pdf:hover {
+    background-color: #0d6efd !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+#export-pdf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .compact-card, .compact-reactions, .compact-comments {
         max-width: 100% !important;
@@ -294,6 +327,19 @@
 $(document).ready(function() {
     let currentLang = 'en', isTranslating = false, translationTimeout;
     
+    // Store PHP data in JavaScript variables
+    const publicationData = {
+        id: {{ $publication->id }},
+        author: "{{ addslashes($publication->user->full_name) }}",
+        date: "{{ $publication->created_at->format('F d, Y') }}",
+        category: "{{ ucfirst($publication->categorie) }}",
+        hasImage: {{ $publication->image ? 'true' : 'false' }},
+        imageUrl: @if($publication->image) "{{ asset('storage/' . $publication->image) }}" @else '' @endif,
+        originalTitle: "{{ addslashes($publication->titre) }}",
+        originalContent: "{{ addslashes($publication->contenu) }}"
+    };
+    
+    // Your existing functions (unchanged)
     $('.comment-textarea').on('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 80) + 'px';
@@ -328,8 +374,8 @@ $(document).ready(function() {
         if (isTranslating || lang === currentLang) return;
         isTranslating = true;
         
-        const originalTitle = $('#pub-title').data('original') || $('#pub-title').text();
-        const originalContent = $('#pub-content').data('original') || $('#pub-content').text();
+        const originalTitle = $('#pub-title').data('original') || publicationData.originalTitle;
+        const originalContent = $('#pub-content').data('original') || publicationData.originalContent;
         
         if (!$('#pub-title').data('original')) {
             $('#pub-title').data('original', originalTitle);
@@ -343,6 +389,7 @@ $(document).ready(function() {
             if (lang === 'fr') {
                 $('#pub-title').text(originalTitle);
                 $('#pub-content').text(originalContent);
+                $('#translation-info').addClass('d-none');
             } else {
                 const [title, content] = await Promise.all([
                     translateText(originalTitle, lang),
@@ -350,8 +397,11 @@ $(document).ready(function() {
                 ]);
                 $('#pub-title').text(title);
                 $('#pub-content').text(content);
-                const langNames = {'en':'English','es':'Español','de':'Deutsch','it':'Italiano','pt':'Português','ar':'العربية'};
-                $('#lang-name').text(langNames[lang] || lang).end().removeClass('d-none');
+                const langNames = {
+                    'en':'English','es':'Español','de':'Deutsch','it':'Italiano',
+                    'pt':'Português','ar':'العربية'
+                };
+                $('#lang-name').text(langNames[lang] || lang).parent().removeClass('d-none');
             }
             currentLang = lang;
         } catch (e) {
@@ -372,6 +422,7 @@ $(document).ready(function() {
 
     $(window).on('load', () => translatePublication('en'));
 
+    // Emoji functionality (unchanged)
     $('.emoji-btn').on('click', e => {
         e.stopPropagation();
         $('#emojiPicker').toggleClass('d-none');
@@ -385,8 +436,9 @@ $(document).ready(function() {
         const text = $ta.val();
         $ta.val(text.substring(0, pos) + emoji + text.substring(pos)).focus();
         $('#emojiPicker').addClass('d-none');
+        $ta[0].style.height = 'auto';
+        $ta[0].style.height = Math.min($ta[0].scrollHeight, 80) + 'px';
     });
-
 
     $(document).on('click', e => {
         if (!$(e.target).closest('.emoji-btn, #emojiPicker').length) {
@@ -394,6 +446,215 @@ $(document).ready(function() {
         }
     });
 
+    // 🆕 MODERN SINGLE-PAGE PDF Export
+   // 🆕 FIXED MODERN SINGLE-PAGE PDF Export
+$('#export-pdf').on('click', async function() {
+    if (typeof window.jspdf === 'undefined') {
+        Swal.fire('Error', 'PDF library not loaded. Please refresh the page.', 'error');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const $btn = $(this);
+    const originalHtml = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+    try {
+        const title = $('#pub-title').text().trim();
+        const content = $('#pub-content').text().trim();
+        const likes = $('#likes-count').text();
+        const dislikes = $('#dislikes-count').text();
+        
+        // Modern color scheme
+        const primaryColor = [33, 150, 243]; // Blue
+        const secondaryColor = [76, 175, 80]; // Green
+        const accentColor = [255, 193, 7]; // Yellow
+        const textColor = [33, 33, 33]; // Dark gray
+        
+        // Clean header background
+        doc.setFillColor(248, 249, 250);
+        doc.rect(0, 0, 210, 45, 'F');
+        
+        // Title with rounded background
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.roundedRect(15, 10, 180, 25, 5, 5, 'F');
+        
+        // Title text (clean, no emojis)
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        
+        // Split long titles to prevent overflow
+        const titleLines = doc.splitTextToSize(title, 160);
+        doc.text(titleLines, 20, 22, { align: 'left' });
+        
+        // Decorative line
+        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.setLineWidth(2);
+        doc.line(15, 38, 195, 38);
+        
+        // Metadata section
+        let yPos = 50;
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        // Author info with text icons (no Unicode)
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Author: ' + publicationData.author, 20, yPos);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text('Date: ' + publicationData.date, 20, yPos + 6);
+        
+        // Category badge
+        doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+        doc.roundedRect(20, yPos + 12, 50, 8, 3, 3, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        const categoryText = publicationData.category.length > 12 ? 
+            publicationData.category.substring(0, 12) + '...' : publicationData.category;
+        doc.text(' ' + categoryText + ' ', 23, yPos + 17, { align: 'center' });
+        
+        // Content section
+        yPos = 80;
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        
+        // Clean content - remove problematic characters and truncate
+        const cleanContent = content
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+            .replace(/[^\w\s.,!?-]/g, '') // Keep only basic characters
+            .substring(0, 800); // Limit length
+        
+        const contentLines = doc.splitTextToSize(cleanContent, 170);
+        const maxContentLines = 20; // Reserve space for other elements
+        const displayLines = contentLines.slice(0, maxContentLines);
+        
+        if (contentLines.length > maxContentLines) {
+            displayLines[maxContentLines - 1] = displayLines[maxContentLines - 1] + '...';
+        }
+        
+        doc.setFontSize(10);
+        doc.text(displayLines, 20, yPos);
+        yPos += (displayLines.length * 5) + 8;
+        
+        // FIXED: High-quality image processing
+        if (publicationData.hasImage && $('.publication-image').length) {
+            try {
+                // Temporarily hide image styles that cause blurriness
+                const $img = $('.publication-image');
+                const originalStyle = $img.attr('style');
+                $img.css({
+                    'max-height': 'none',
+                    'width': 'auto',
+                    'height': 'auto',
+                    'object-fit': 'contain'
+                });
+                
+                const canvas = await html2canvas($img[0], {
+                    scale: 2, // Higher scale for better quality
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: $img[0].naturalWidth || 400,
+                    height: $img[0].naturalHeight || 300,
+                    imageTimeout: 15000,
+                    removeContainer: true
+                });
+                
+                // Restore original style
+                $img.attr('style', originalStyle);
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.95); // High quality JPEG
+                const imgProps = doc.getImageProperties(imgData);
+                const maxImgHeight = Math.min(60, 260 - yPos); // Max height for single page
+                const pdfWidth = 160;
+                const pdfHeight = Math.min((imgProps.height * pdfWidth) / imgProps.width, maxImgHeight);
+                
+                if (yPos + pdfHeight < 240) { // Ensure space remains
+                    // Add image border
+                    doc.setDrawColor(230, 230, 230);
+                    doc.roundedRect(20, yPos, pdfWidth, pdfHeight, 3, 3, 'S');
+                    doc.addImage(imgData, 'JPEG', 21, yPos + 1, pdfWidth - 2, pdfHeight - 2);
+                    yPos += pdfHeight + 10;
+                }
+            } catch (imgError) {
+                console.warn('Image processing failed:', imgError);
+                // Continue without image
+            }
+        }
+        
+        // Reactions section with TEXT icons (no emojis)
+        if (yPos < 220) {
+            doc.setFillColor(249, 249, 249);
+            doc.rect(15, yPos - 3, 180, 22, 'F');
+            
+            doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Reactions', 20, yPos);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Likes: ${likes} | Dislikes: ${dislikes}`, 20, yPos + 6);
+            yPos += 18;
+        }
+        
+        // Modern footer
+        const footerY = 275;
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.roundedRect(10, footerY, 190, 15, 3, 3, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Publication #${publicationData.id}`, 15, footerY + 6);
+        
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(255, 255, 255, 0.9);
+        doc.text(`Generated on {{ now()->format('M d, Y H:i') }}`, 15, footerY + 11);
+        
+        // Page border for modern look
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.5);
+        doc.rect(5, 5, 200, 287, 'S');
+        
+        // Save with clean filename
+        const cleanTitle = title
+            .replace(/[^\w\s-]/g, '') // Remove special characters
+            .trim()
+            .substring(0, 50)
+            .replace(/\s+/g, '-')
+            .toLowerCase();
+        
+        doc.save(`publication-${publicationData.id}-${cleanTitle || 'document'}.pdf`);
+        
+        $btn.prop('disabled', false).html(originalHtml);
+        Swal.fire({
+            icon: 'success',
+            title: 'PDF Exported!',
+            text: 'High-quality single-page document created',
+            timer: 2500,
+            showConfirmButton: false
+        });
+        
+    } catch (error) {
+        console.error('PDF generation error:', error);
+        $btn.prop('disabled', false).html(originalHtml);
+        Swal.fire('Error', 'Failed to generate PDF: ' + error.message, 'error');
+    }
+});
+
+    // Your existing reaction and comment handlers (unchanged)
     $('.reaction-form').on('submit', function(e) {
         e.preventDefault(); e.stopPropagation();
         const $form = $(this), $btn = $form.find('button'), orig = $btn.html();
@@ -429,68 +690,59 @@ $(document).ready(function() {
     });
 
     $(document).on('click input', '#commentForm *', e => e.stopPropagation());
-    // Single publication view - Fixed reaction handling
-$(document).on('submit', '.reaction-form', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
     
-    console.log('Reaction form submitted'); // Debug
-    
-    const $form = $(this);
-    const $btn = $form.find('button');
-    const originalHtml = $btn.html();
-    const isLikeForm = $form.hasClass('like-form');
-    
-    // Disable button and show loading
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-    
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    });
-    
-    $.ajax({
-        url: $form.attr('action'),
-        method: 'POST',
-        data: $form.serialize(),
-        dataType: 'json',
-        success: function(data) {
-            console.log('Success response:', data); // Debug
-            
-            if (data.success) {
-                $('#likes-count').text(data.likes_count);
-                $('#dislikes-count').text(data.dislikes_count);
-                
-                // Update button states
-                const $likeBtn = $('.like-form button');
-                const $dislikeBtn = $('.dislike-form button');
-                
-                // Reset both buttons first
-                $likeBtn.removeClass('btn-success').addClass('btn-outline-success');
-                $dislikeBtn.removeClass('btn-danger').addClass('btn-outline-danger');
-                
-                if (data.user_reaction === 'like') {
-                    $likeBtn.removeClass('btn-outline-success').addClass('btn-success');
-                } else if (data.user_reaction === 'dislike') {
-                    $dislikeBtn.removeClass('btn-outline-danger').addClass('btn-danger');
+    $(document).on('submit', '.reaction-form', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $form = $(this);
+        const $btn = $form.find('button');
+        const originalHtml = $btn.html();
+        
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        $.ajax({
+            url: $form.attr('action'),
+            method: 'POST',
+            data: $form.serialize(),
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    $('#likes-count').text(data.likes_count);
+                    $('#dislikes-count').text(data.dislikes_count);
+                    
+                    const $likeBtn = $('.like-form button');
+                    const $dislikeBtn = $('.dislike-form button');
+                    
+                    $likeBtn.removeClass('btn-success').addClass('btn-outline-success');
+                    $dislikeBtn.removeClass('btn-danger').addClass('btn-outline-danger');
+                    
+                    if (data.user_reaction === 'like') {
+                        $likeBtn.removeClass('btn-outline-success').addClass('btn-success');
+                    } else if (data.user_reaction === 'dislike') {
+                        $dislikeBtn.removeClass('btn-outline-danger').addClass('btn-danger');
+                    }
                 }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Something went wrong';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                Swal.fire('Error', errorMsg, 'error');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalHtml);
             }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX Error:', xhr.responseText); // Debug
-            let errorMsg = 'Something went wrong';
-            if (xhr.responseJSON && xhr.responseJSON.error) {
-                errorMsg = xhr.responseJSON.error;
-            }
-            alert('Error: ' + errorMsg); // Temporary alert for debugging
-        },
-        complete: function() {
-            $btn.prop('disabled', false).html(originalHtml);
-        }
+        });
     });
-});
 });
 </script>
 @endsection
