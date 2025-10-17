@@ -3,6 +3,14 @@
 @section('content')
 <div class="container">
     <div class="page-inner">
+        <!-- Place the map above the list -->
+        <div class="card mb-4">
+            <div class="card-body p-3">
+                <h5 class="mb-3">All Warehouses Map</h5>
+                <div id="allWarehousesMap" style="height:450px;"></div>
+            </div>
+        </div>
+
         <div class="page-header mb-4">
             <h3 class="fw-bold mb-1">Warehouses Management</h3>
             <ul class="breadcrumbs mb-0">
@@ -329,6 +337,70 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data from server (precomputed in controller)
+    const warehouses = @json($warehousePoints);
+
+    const map = L.map('allWarehousesMap', { zoomControl: true }).setView([34.0, 9.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
+
+    const bounds = L.latLngBounds();
+    const partnerLayers = {}; // partnerName => L.layerGroup
+
+    warehouses.forEach(w => {
+        if (!w.latitude || !w.longitude) return; // skip missing coords
+        const lat = parseFloat(w.latitude);
+        const lng = parseFloat(w.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const popupHtml = `<strong>${escapeHtml(w.name)}</strong><br><small>${escapeHtml(w.partner)}</small><br>${escapeHtml(w.address || '')}`;
+
+        // create a marker
+        const marker = L.marker([lat, lng]).bindPopup(popupHtml);
+
+        // group by partner
+        const partnerName = w.partner || 'No partner';
+        if (!partnerLayers[partnerName]) {
+            partnerLayers[partnerName] = L.layerGroup();
+        }
+        partnerLayers[partnerName].addLayer(marker);
+
+        bounds.extend([lat, lng]);
+    });
+
+    // add all partner layers to map and build overlays control
+    const overlays = {};
+    Object.keys(partnerLayers).sort().forEach(partnerName => {
+        overlays[partnerName] = partnerLayers[partnerName];
+        partnerLayers[partnerName].addTo(map); // default: visible
+    });
+
+    // Add layer control to toggle partners
+    if (Object.keys(overlays).length) {
+        L.control.layers(null, overlays, { collapsed: false, position: 'topright' }).addTo(map);
+        map.fitBounds(bounds, { padding: [40, 40] });
+    } else {
+        // no coords: center to country
+        map.setView([34.0, 9.0], 6);
+    }
+
+    // helper: simple html escape
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"'`=\/]/g, function (c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c];
+        });
+    }
+});
+</script>
 
 <style>
 .card-stats .icon-big {

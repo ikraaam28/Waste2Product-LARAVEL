@@ -24,7 +24,9 @@ class Warehouse extends Model
         'contact_phone',
         'contact_email',
         'status',
-        'description'
+        'description',
+        'latitude',
+        'longitude',
     ];
 
     // Relation avec le partenaire

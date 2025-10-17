@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: laravel_app
+    command: >
+      sh -c "until nc -z db 3306; do echo 'Waiting for db'; sleep 1; done; php artisan migrate --force && php-fpm"
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: waste2product
+      DB_USERNAME: root
+      DB_PASSWORD: ''
+    networks:
+      - laravel
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: waste2product
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - laravel
+
+  webserver:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true" # pour éviter certains problèmes Elasticsearch
+    networks:
+      - laravel
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - laravel
+
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+    - "3000:3000"
+    environment:
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+    - laravel
+
+
+
+
+networks:
+  laravel:
+
+volumes:
+  db_data:

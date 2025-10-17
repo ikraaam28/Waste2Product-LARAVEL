@@ -40,4 +40,22 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
+
+    'huggingface' => [
+        'token' => env('HUGGINGFACE_TOKEN'),
+        'model' => env('HUGGINGFACE_MODEL', 'google/vit-base-patch16-224'),
+        'caption_model' => env('HUGGINGFACE_CAPTION_MODEL', 'Salesforce/blip-image-captioning-base'),
+        'secondary_model' => env('HUGGINGFACE_SECONDARY_MODEL', 'microsoft/resnet-50'),
+        'zeroshot_model' => env('HUGGINGFACE_ZEROSHOT_MODEL', 'openai/clip-vit-base-patch32'),
+    ],
+
+    // Optional local Python classifier (no API key). When enabled, PHP will run
+    // python/local_classifier.py to classify and caption images locally.
+    'local_classifier' => [
+        'enabled' => env('LOCAL_CLASSIFIER_ENABLED', false),
+        'python_bin' => env('LOCAL_PYTHON_BIN', 'python'),
+        'script_path' => env('LOCAL_CLASSIFIER_SCRIPT', base_path('python/local_classifier.py')),
+        'top_k' => env('LOCAL_CLASSIFIER_TOPK', 5),
+        'timeout' => env('LOCAL_CLASSIFIER_TIMEOUT', 60),
+    ],
 ];

@@ -119,6 +119,16 @@
                                         <textarea name="address" id="address" class="form-control" rows="2" 
                                                   placeholder="Enter complete address">{{ old('address', $warehouse->address) }}</textarea>
                                     </div>
+
+                                    <div class="mt-2 d-flex gap-2">
+                                        <button type="button" id="geocodeBtn" class="btn btn-sm btn-outline-primary">Rechercher adresse</button>
+                                        <small class="text-muted align-self-center">ou cliquez sur la carte pour positionner l'entrepôt</small>
+                                    </div>
+
+                                    <div id="map" class="mt-2"></div>
+
+                                    <input type="hidden" name="latitude" id="latitudeField" value="{{ old('latitude', $warehouse->latitude) }}">
+                                    <input type="hidden" name="longitude" id="longitudeField" value="{{ old('longitude', $warehouse->longitude) }}">
                                 </div>
 
                                 <!-- City -->
@@ -302,6 +312,43 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const latField = document.getElementById('latitudeField');
+    const lngField = document.getElementById('longitudeField');
+    const addressField = document.getElementById('address');
+    const geocodeBtn = document.getElementById('geocodeBtn');
+
+    const defaultLat = parseFloat(latField.value) || 34.0;
+    const defaultLng = parseFloat(lngField.value) || 9.0;
+    const defaultZoom = (latField.value && lngField.value) ? 13 : 6;
+
+    const map = L.map('map').setView([defaultLat, defaultLng], defaultZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+    if (latField.value && lngField.value) {
+        marker = L.marker([parseFloat(latField.value), parseFloat(lngField.value)], { draggable:true }).addTo(map);
+        marker.on('dragend', function(ev){ const p = ev.target.getLatLng(); latField.value = p.lat; lngField.value = p.lng; });
+    }
+
+    map.on('click', function(e) {
+        const {lat, lng} = e.latlng;
+        if (marker) marker.setLatLng([lat, lng]); else marker = L.marker([lat, lng], { draggable:true }).addTo(map);
+        latField.value = lat;
+        lngField.value = lng;
+    });
+
+    // keep existing geocoding / reverse logic if present...
+});
+</script>
+<style>#map{height:300px; border-radius:8px; border:1px solid #e9ecef;}</style>
 
 <style>
 .section-header {

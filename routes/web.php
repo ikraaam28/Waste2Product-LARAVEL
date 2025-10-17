@@ -20,6 +20,60 @@ use App\Http\Controllers\TutoController;
 use App\Http\Controllers\QuizController;
 use GuzzleHttp\Client;
 
+
+use Prometheus\CollectorRegistry;
+use Prometheus\Storage\InMemory;
+use Prometheus\Storage\APC;
+use Prometheus\RenderTextFormat;
+
+Route::get('/metrics', function() {
+    // prefer APCu (persiste entre requêtes PHP-FPM) sinon fallback InMemory
+    $adapter = null;
+    if (extension_loaded('apcu') && class_exists('APCIterator')) {
+        try {
+            $adapter = new APC();
+        } catch (\Throwable $e) {
+            // APC adapter not usable (ex: class missing internals), fallback below
+            $adapter = null;
+        }
+    }
+
+    if ($adapter === null) {
+        $adapter = new InMemory();
+    }
+
+    $registry = new CollectorRegistry($adapter);
+    $renderer = new RenderTextFormat();
+
+    // register safe (catch si déjà enregistré)
+    try {
+        $counter = $registry->registerCounter('app', 'requests_total', 'Total requests', ['method']);
+    } catch (\Exception $e) {
+        // metric probablement déjà enregistrée par une précédente requête
+    }
+
+    try {
+        if (isset($counter)) {
+            $counter->inc(['GET']);
+        }
+    } catch (\Throwable $e) {
+        // ignore increment errors
+    }
+
+    $metrics = $registry->getMetricFamilySamples();
+
+    if (empty($metrics)) {
+        return response("# no metrics yet\n", 200)
+            ->header('Content-Type', RenderTextFormat::MIME_TYPE);
+    }
+
+    $result = $renderer->render($metrics);
+    return response($result, 200)
+        ->header('Content-Type', RenderTextFormat::MIME_TYPE);
+});
+
+
+
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
