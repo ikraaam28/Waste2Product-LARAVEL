@@ -19,6 +19,60 @@ use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\CommentaireController;
 use App\Http\Controllers\TutoController;
 
+
+use Prometheus\CollectorRegistry;
+use Prometheus\Storage\InMemory;
+use Prometheus\Storage\APC;
+use Prometheus\RenderTextFormat;
+
+Route::get('/metrics', function() {
+    // prefer APCu (persiste entre requêtes PHP-FPM) sinon fallback InMemory
+    $adapter = null;
+    if (extension_loaded('apcu') && class_exists('APCIterator')) {
+        try {
+            $adapter = new APC();
+        } catch (\Throwable $e) {
+            // APC adapter not usable (ex: class missing internals), fallback below
+            $adapter = null;
+        }
+    }
+
+    if ($adapter === null) {
+        $adapter = new InMemory();
+    }
+
+    $registry = new CollectorRegistry($adapter);
+    $renderer = new RenderTextFormat();
+
+    // register safe (catch si déjà enregistré)
+    try {
+        $counter = $registry->registerCounter('app', 'requests_total', 'Total requests', ['method']);
+    } catch (\Exception $e) {
+        // metric probablement déjà enregistrée par une précédente requête
+    }
+
+    try {
+        if (isset($counter)) {
+            $counter->inc(['GET']);
+        }
+    } catch (\Throwable $e) {
+        // ignore increment errors
+    }
+
+    $metrics = $registry->getMetricFamilySamples();
+
+    if (empty($metrics)) {
+        return response("# no metrics yet\n", 200)
+            ->header('Content-Type', RenderTextFormat::MIME_TYPE);
+    }
+
+    $result = $renderer->render($metrics);
+    return response($result, 200)
+        ->header('Content-Type', RenderTextFormat::MIME_TYPE);
+});
+
+
+
 // Routes principales
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -188,7 +242,7 @@ Route::get('/commentaires/export/csv', [CommentaireController::class, 'exportCsv
     Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('admin.partners.update');
     Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('admin.partners.destroy');
 
-    // Warehouses Management 
+    // Warehouses Management
     Route::get('warehouses', [WarehouseController::class, 'index'])->name('admin.warehouses.index');
     Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('admin.warehouses.create');
     Route::post('warehouses', [WarehouseController::class, 'store'])->name('admin.warehouses.store');
@@ -237,9 +291,9 @@ Route::get('/commentaires/export/csv', [CommentaireController::class, 'exportCsv
     Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
 
     //tuto
-Route::get('/tutos', [TutoController::class, 'index'])->name('admin.tutos.index');
+Route::get('/tutos', [TutoController::class, 'adminIndex'])->name('admin.tutos.index');
 Route::get('/tutos/create', [TutoController::class, 'create'])->name('admin.tutos.create');
-Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('admin.tutos.show');
+Route::get('/tutos/{tuto}', [TutoController::class, 'adminShow'])->name('admin.tutos.show');
 Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store');
  Route::get('/tutos/{tuto}/edit', [TutoController::class, 'edit'])->name('admin.tutos.edit');
     Route::put('/tutos/{tuto}', [TutoController::class, 'update'])->name('admin.tutos.update');

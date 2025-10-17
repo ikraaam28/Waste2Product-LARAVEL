@@ -27,6 +27,27 @@
         </ul>
     </div>
 
+    <!-- Global Error Messages -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Success Message -->
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-check-circle"></i> Success!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
         @csrf
         
@@ -368,6 +389,55 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .invalid-feedback {
+        display: block !important;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .alert {
+        border-radius: 0.375rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert-success {
+        background-color: #d1edff;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 $(document).ready(function() {
@@ -447,39 +517,210 @@ $(document).ready(function() {
         }
     }
 
+    // Real-time validation
+    function validateField(fieldId, validationRules) {
+        const input = $(`#${fieldId}`);
+        const value = input.val().trim();
+        let isValid = true;
+        let errorMessage = '';
+
+        // Remove existing error messages
+        input.removeClass('is-invalid');
+        input.next('.invalid-feedback').remove();
+
+        // Check validation rules
+        if (validationRules.required && !value) {
+            isValid = false;
+            errorMessage = 'This field is required.';
+        } else if (validationRules.min && parseFloat(value) < validationRules.min) {
+            isValid = false;
+            errorMessage = `Value must be at least ${validationRules.min}.`;
+        } else if (validationRules.max && parseFloat(value) > validationRules.max) {
+            isValid = false;
+            errorMessage = `Value must not exceed ${validationRules.max}.`;
+        }
+
+        if (!isValid) {
+            input.addClass('is-invalid');
+            if (!input.next('.invalid-feedback').length) {
+                input.after(`<div class="invalid-feedback">${errorMessage}</div>`);
+            }
+        }
+
+        return isValid;
+    }
+
+    // Real-time validation on blur
+    $('#name').on('blur', function() {
+        validateField('name', { required: true });
+    });
+
+    $('#description').on('blur', function() {
+        validateField('description', { required: true });
+    });
+
+    $('#price').on('blur', function() {
+        validateField('price', { required: true, min: 0 });
+    });
+
+    $('#stock_quantity').on('blur', function() {
+        validateField('stock_quantity', { required: true, min: 0 });
+    });
+
+    $('#category_id').on('change', function() {
+        validateField('category_id', { required: true });
+    });
+
+    // Compare price validation
+    $('#compare_price').on('blur', function() {
+        const price = parseFloat($('#price').val());
+        const comparePrice = parseFloat($(this).val());
+
+        $(this).removeClass('is-invalid');
+        $(this).next('.invalid-feedback').remove();
+
+        if (comparePrice && comparePrice <= price) {
+            $(this).addClass('is-invalid');
+            $(this).after('<div class="invalid-feedback">Compare-at price must be greater than the regular price.</div>');
+        }
+    });
+
     // Form validation
     $('form').on('submit', function(e) {
         let isValid = true;
+        let errorMessages = [];
+
+        // Clear previous validation states
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
 
         // Check required fields
-        const requiredFields = ['name', 'description', 'price', 'stock_quantity', 'category_id'];
+        const requiredFields = [
+            { id: 'name', label: 'Product Name' },
+            { id: 'description', label: 'Description' },
+            { id: 'price', label: 'Price' },
+            { id: 'stock_quantity', label: 'Stock Quantity' },
+            { id: 'category_id', label: 'Category' }
+        ];
+
         requiredFields.forEach(field => {
-            const input = $(`#${field}`);
-            if (!input.val() || input.val().trim() === '') {
+            const input = $(`#${field.id}`);
+            const value = input.val();
+
+            if (!value || value.toString().trim() === '') {
                 isValid = false;
                 input.addClass('is-invalid');
-            } else {
-                input.removeClass('is-invalid');
+                input.after(`<div class="invalid-feedback">${field.label} is required.</div>`);
+                errorMessages.push(`${field.label} is required`);
             }
         });
 
-        // Check price comparison
+        // Validate numeric fields
         const price = parseFloat($('#price').val());
+        const stockQuantity = parseInt($('#stock_quantity').val());
         const comparePrice = parseFloat($('#compare_price').val());
+
+        if (price < 0) {
+            isValid = false;
+            $('#price').addClass('is-invalid');
+            $('#price').after('<div class="invalid-feedback">Price must be a positive number.</div>');
+            errorMessages.push('Price must be positive');
+        }
+
+        if (stockQuantity < 0) {
+            isValid = false;
+            $('#stock_quantity').addClass('is-invalid');
+            $('#stock_quantity').after('<div class="invalid-feedback">Stock quantity must be a positive number.</div>');
+            errorMessages.push('Stock quantity must be positive');
+        }
+
+        // Check price comparison
         if (comparePrice && comparePrice <= price) {
             isValid = false;
             $('#compare_price').addClass('is-invalid');
-            alert('Compare-at price must be greater than price.');
+            $('#compare_price').after('<div class="invalid-feedback">Compare-at price must be greater than the regular price.</div>');
+            errorMessages.push('Compare-at price must be greater than regular price');
         }
 
         if (!isValid) {
             e.preventDefault();
-            alert('Please fill in all required fields correctly.');
+
+            // Show toast notification
+            showErrorToast('Please fix the validation errors before submitting the form.');
+
+            // Scroll to first error
+            const firstError = $('.is-invalid').first();
+            if (firstError.length) {
+                $('html, body').animate({
+                    scrollTop: firstError.offset().top - 100
+                }, 500);
+                firstError.focus();
+            }
         }
     });
 
+    // Toast notification function
+    function showErrorToast(message) {
+        // Create toast if it doesn't exist
+        if (!$('#errorToast').length) {
+            $('body').append(`
+                <div class="toast-container position-fixed top-0 end-0 p-3">
+                    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-danger text-white">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong class="me-auto">Validation Error</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body"></div>
+                    </div>
+                </div>
+            `);
+        }
+
+        $('#errorToast .toast-body').text(message);
+        const toast = new bootstrap.Toast(document.getElementById('errorToast'));
+        toast.show();
+    }
+
     // Initialize score display
     $('#environmental_impact_score').trigger('input');
+
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+
+    // Add loading state to submit button
+    $('form').on('submit', function() {
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Creating Product...');
+
+        // Re-enable button after 10 seconds as fallback
+        setTimeout(function() {
+            submitBtn.prop('disabled', false);
+            submitBtn.html(originalText);
+        }, 10000);
+    });
+
+    // Add character counter for description
+    $('#description').on('input', function() {
+        const maxLength = 1000;
+        const currentLength = $(this).val().length;
+        const remaining = maxLength - currentLength;
+
+        let counterHtml = `<small class="form-text ${remaining < 50 ? 'text-danger' : 'text-muted'}">
+            ${currentLength}/${maxLength} characters ${remaining < 0 ? '(exceeded by ' + Math.abs(remaining) + ')' : ''}
+        </small>`;
+
+        $(this).next('.char-counter').remove();
+        $(this).after(`<div class="char-counter">${counterHtml}</div>`);
+    });
+
+    // Trigger character counter on page load
+    $('#description').trigger('input');
 });
 </script>
 @endpush

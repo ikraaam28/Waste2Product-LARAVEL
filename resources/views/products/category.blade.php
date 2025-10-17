@@ -19,8 +19,8 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('products') }}">Produits</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('products') }}">Products</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ $category->name }}</li>
             </ol>
         </nav>
@@ -29,20 +29,20 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <p class="text-muted mb-0">
-                    {{ $products->total() }} produit(s) trouvé(s)
+                    {{ $products->total() }} product(s) found
                 </p>
             </div>
             <div class="col-md-6 text-end">
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Trier par
+                        Sort by
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="?sort=name">Nom A-Z</a></li>
-                        <li><a class="dropdown-item" href="?sort=price_asc">Prix croissant</a></li>
-                        <li><a class="dropdown-item" href="?sort=price_desc">Prix décroissant</a></li>
-                        <li><a class="dropdown-item" href="?sort=newest">Plus récent</a></li>
-                        <li><a class="dropdown-item" href="?sort=popular">Plus populaire</a></li>
+                        <li><a class="dropdown-item" href="?sort=name">Name A-Z</a></li>
+                        <li><a class="dropdown-item" href="?sort=price_asc">Price Low to High</a></li>
+                        <li><a class="dropdown-item" href="?sort=price_desc">Price High to Low</a></li>
+                        <li><a class="dropdown-item" href="?sort=newest">Newest</a></li>
+                        <li><a class="dropdown-item" href="?sort=popular">Most Popular</a></li>
                     </ul>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                                 <div class="product-badges position-absolute top-0 start-0 p-2">
                                     @if($product->is_featured)
                                         <span class="badge bg-warning text-dark mb-1 d-block">
-                                            <i class="fas fa-star"></i> Vedette
+                                            <i class="fas fa-star"></i> Featured
                                         </span>
                                     @endif
                                     @if($product->compare_price && $product->compare_price > $product->price)
@@ -101,7 +101,7 @@
                                 <!-- Score environnemental -->
                                 @if($product->environmental_impact_score)
                                 <div class="environmental-score mb-3">
-                                    <small class="text-muted">Impact environnemental:</small>
+                                    <small class="text-muted">Environmental Impact:</small>
                                     <div class="progress" style="height: 6px;">
                                         <div class="progress-bar bg-success" style="width: {{ $product->environmental_impact_score }}%"></div>
                                     </div>
@@ -113,15 +113,15 @@
                                 <div class="stock-info mb-3">
                                     @if($product->stock_status === 'in_stock')
                                         <small class="text-success">
-                                            <i class="fas fa-check-circle"></i> En stock ({{ $product->stock_quantity }})
+                                            <i class="fas fa-check-circle"></i> In Stock ({{ $product->stock_quantity }})
                                         </small>
                                     @elseif($product->stock_status === 'out_of_stock')
                                         <small class="text-danger">
-                                            <i class="fas fa-times-circle"></i> Rupture de stock
+                                            <i class="fas fa-times-circle"></i> Out of Stock
                                         </small>
                                     @else
                                         <small class="text-warning">
-                                            <i class="fas fa-clock"></i> Sur commande
+                                            <i class="fas fa-clock"></i> On Order
                                         </small>
                                     @endif
                                 </div>
@@ -130,11 +130,11 @@
                                 <div class="product-actions">
                                     @if($product->stock_status === 'in_stock')
                                         <button class="btn btn-primary btn-sm" onclick="addToCart({{ $product->id }})">
-                                            <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                                            <i class="fas fa-shopping-cart"></i> Add to Cart
                                         </button>
                                     @else
                                         <a href="{{ route('products.show', $product->slug) }}" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-info-circle"></i> Plus d'infos
+                                            <i class="fas fa-info-circle"></i> More Info
                                         </a>
                                     @endif
                                 </div>
@@ -158,10 +158,10 @@
                 <div class="col-12 text-center">
                     <div class="no-products py-5">
                         <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">Aucun produit disponible</h4>
-                        <p class="text-muted">Aucun produit n'est actuellement disponible dans cette catégorie.</p>
+                        <h4 class="text-muted">No Products Available</h4>
+                        <p class="text-muted">No products are currently available in this category.</p>
                         <a href="{{ route('products') }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-left"></i> Voir toutes les catégories
+                            <i class="fas fa-arrow-left"></i> View All Categories
                         </a>
                     </div>
                 </div>
@@ -267,11 +267,11 @@
 @push('scripts')
 <script>
 function addToCart(productId) {
-    alert('Produit ajouté au panier ! (Fonctionnalité à implémenter)');
+    alert('Product added to cart! (Feature to be implemented)');
 }
 
 function addToWishlist(productId) {
-    alert('Produit ajouté à la liste de souhaits ! (Fonctionnalité à implémenter)');
+    alert('Product added to wishlist! (Feature to be implemented)');
 }
 </script>
 @endpush

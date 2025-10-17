@@ -1,25 +1,25 @@
 @extends('layouts.app')
 
 
-@section('title', 'Nos Produits - Waste2Product')
+@section('title', 'Our Products - Waste2Product')
 
 @section('content')
 <div class="container-fluid product py-5 my-5">
     <div class="container py-5">
         <!-- En-tête -->
         <div class="section-title text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-            <p class="fs-5 fw-medium fst-italic text-primary">Nos Produits</p>
+            <p class="fs-5 fw-medium fst-italic text-primary">Our Products</p>
             <h1 class="display-6">
                 @if($selectedCategory)
                     {{ $selectedCategory->name }}
                 @else
-                    Découvrez nos produits éco-responsables
+                    Discover our eco-friendly products
                 @endif
             </h1>
             @if($selectedCategory)
                 <p class="text-muted">{{ $selectedCategory->description }}</p>
             @else
-                <p class="text-muted">Des produits innovants créés à partir de déchets recyclés pour un avenir durable</p>
+                <p class="text-muted">Innovative products created from recycled waste for a sustainable future</p>
             @endif
         </div>
 
@@ -29,7 +29,7 @@
             <div class="col-lg-8">
                 <div class="text-center">
                     <a href="{{ route('products') }}" class="btn btn-outline-primary me-2 mb-2 {{ !request('category') ? 'active' : '' }}">
-                        Toutes les catégories
+                        All Categories
                     </a>
                     @foreach($categories as $category)
                         <a href="{{ route('products', ['category' => $category->slug]) }}"
@@ -64,7 +64,7 @@
                                         </div>
                                     </div>
                                     <a href="{{ route('products.category', $category->slug) }}" class="btn btn-outline-primary">
-                                        Voir tout <i class="fas fa-arrow-right ms-1"></i>
+                                        View All <i class="fas fa-arrow-right ms-1"></i>
                                     </a>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
                                             <div class="product-badges position-absolute top-0 start-0 p-2">
                                                 @if($product->is_featured)
                                                     <span class="badge bg-warning text-dark mb-1 d-block">
-                                                        <i class="fas fa-star"></i> Vedette
+                                                        <i class="fas fa-star"></i> Featured
                                                     </span>
                                                 @endif
                                                 @if($product->compare_price && $product->compare_price > $product->price)
@@ -97,7 +97,7 @@
                                                 @endif
                                                 @if($product->stock_quantity <= 5 && $product->stock_quantity > 0)
                                                     <span class="badge bg-warning text-dark mb-1 d-block">
-                                                        Stock limité
+                                                        Limited Stock
                                                     </span>
                                                 @endif
                                             </div>
@@ -131,7 +131,7 @@
                                             <!-- Score environnemental -->
                                             @if($product->environmental_impact_score)
                                             <div class="environmental-score mb-3">
-                                                <small class="text-muted">Impact environnemental:</small>
+                                                <small class="text-muted">Environmental Impact:</small>
                                                 <div class="progress" style="height: 6px;">
                                                     <div class="progress-bar bg-success" style="width: {{ $product->environmental_impact_score }}%"></div>
                                                 </div>
@@ -143,15 +143,15 @@
                                             <div class="stock-info mb-3">
                                                 @if($product->stock_status === 'in_stock')
                                                     <small class="text-success">
-                                                        <i class="fas fa-check-circle"></i> En stock ({{ $product->stock_quantity }})
+                                                        <i class="fas fa-check-circle"></i> In Stock ({{ $product->stock_quantity }})
                                                     </small>
                                                 @elseif($product->stock_status === 'out_of_stock')
                                                     <small class="text-danger">
-                                                        <i class="fas fa-times-circle"></i> Rupture de stock
+                                                        <i class="fas fa-times-circle"></i> Out of Stock
                                                     </small>
                                                 @else
                                                     <small class="text-warning">
-                                                        <i class="fas fa-clock"></i> Sur commande
+                                                        <i class="fas fa-clock"></i> On Order
                                                     </small>
                                                 @endif
                                             </div>
@@ -160,11 +160,11 @@
                                             <div class="product-actions">
                                                 @if($product->stock_status === 'in_stock')
                                                     <button class="btn btn-primary btn-sm" onclick="addToCart({{ $product->id }})">
-                                                        <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                                                        <i class="fas fa-shopping-cart"></i> Add to Cart
                                                     </button>
                                                 @else
                                                     <a href="{{ route('products.show', $product->slug) }}" class="btn btn-outline-primary btn-sm">
-                                                        <i class="fas fa-info-circle"></i> Plus d'infos
+                                                        <i class="fas fa-info-circle"></i> More Info
                                                     </a>
                                                 @endif
                                             </div>
@@ -182,17 +182,17 @@
                 <div class="col-12 text-center">
                     <div class="no-products py-5">
                         <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">Aucun produit disponible</h4>
+                        <h4 class="text-muted">No Products Available</h4>
                         <p class="text-muted">
                             @if($selectedCategory)
-                                Aucun produit n'est actuellement disponible dans cette catégorie.
+                                No products are currently available in this category.
                             @else
-                                Aucun produit n'est actuellement disponible. Revenez bientôt !
+                                No products are currently available. Come back soon!
                             @endif
                         </p>
                         @if($selectedCategory)
                             <a href="{{ route('products') }}" class="btn btn-primary">
-                                <i class="fas fa-arrow-left"></i> Voir toutes les catégories
+                                <i class="fas fa-arrow-left"></i> View All Categories
                             </a>
                         @endif
                     </div>
@@ -401,13 +401,13 @@
 @push('scripts')
 <script>
 function addToCart(productId) {
-    // Fonction pour ajouter au panier (à implémenter)
-    alert('Produit ajouté au panier ! (Fonctionnalité à implémenter)');
+    // Function to add to cart (to be implemented)
+    alert('Product added to cart! (Feature to be implemented)');
 }
 
 function addToWishlist(productId) {
-    // Fonction pour ajouter à la liste de souhaits (à implémenter)
-    alert('Produit ajouté à la liste de souhaits ! (Fonctionnalité à implémenter)');
+    // Function to add to wishlist (to be implemented)
+    alert('Product added to wishlist! (Feature to be implemented)');
 }
 </script>
 @endpush

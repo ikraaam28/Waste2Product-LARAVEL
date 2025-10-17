@@ -67,45 +67,102 @@ class CategoryController extends Controller
         \Log::info('Category creation attempt:', $request->all());
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:categories,name',
-            'slug' => 'nullable|string|max:255|unique:categories,slug',
+            'name' => 'required|string|min:2|max:255|unique:categories,name',
+            'slug' => 'nullable|string|max:255|unique:categories,slug|regex:/^[a-z0-9-]+$/',
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'icon' => 'nullable|string|max:100',
+            'icon' => 'nullable|string|max:100|regex:/^fa[srb]?\s+fa-[\w-]+$/',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'sort_order' => 'nullable|integer|min:0',
+            'sort_order' => 'nullable|integer|min:0|max:9999',
             'is_active' => 'nullable|in:on,1,true'
+        ], [
+            // Custom error messages
+            'name.required' => 'Category name is required.',
+            'name.min' => 'Category name must be at least 2 characters long.',
+            'name.max' => 'Category name cannot exceed 255 characters.',
+            'name.unique' => 'A category with this name already exists.',
+            'slug.max' => 'Slug cannot exceed 255 characters.',
+            'slug.unique' => 'This URL slug is already taken. Please choose a different one.',
+            'slug.regex' => 'Slug can only contain lowercase letters, numbers, and hyphens.',
+            'description.max' => 'Description cannot exceed 1000 characters.',
+            'image.image' => 'The uploaded file must be a valid image.',
+            'image.mimes' => 'Image must be in JPG, JPEG, PNG, GIF, or WEBP format.',
+            'image.max' => 'Image size must not exceed 2MB.',
+            'icon.max' => 'Icon class cannot exceed 100 characters.',
+            'icon.regex' => 'Please use a valid Font Awesome icon class (e.g., fas fa-tag).',
+            'color.regex' => 'Please use a valid hex color format (e.g., #007bff).',
+            'sort_order.integer' => 'Sort order must be a whole number.',
+            'sort_order.min' => 'Sort order cannot be negative.',
+            'sort_order.max' => 'Sort order cannot exceed 9999.',
         ]);
 
         if ($validator->fails()) {
             \Log::error('Category validation failed:', $validator->errors()->toArray());
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Please fix the validation errors below.');
         }
 
-        $categoryData = [
-            'name' => $request->name,
-            'slug' => $request->slug ?: Str::slug($request->name),
-            'description' => $request->description,
-            'icon' => $request->icon,
-            'color' => $request->color ?: '#007bff',
-            'sort_order' => $request->sort_order ?: 0,
-            'is_active' => $request->has('is_active'),
-        ];
+        try {
+            // Validate and process icon
+            $icon = $request->icon ?: 'fas fa-tag';
+            if ($request->icon && !preg_match('/^fa[srb]?\s+fa-[\w-]+$/', $request->icon)) {
+                $icon = 'fas fa-tag'; // Fallback to default if invalid
+            }
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('categories', 'public');
-            $categoryData['image'] = $path;
+            // Validate and process color
+            $color = $request->color ?: '#007bff';
+            if ($request->color && !preg_match('/^#[0-9A-Fa-f]{6}$/', $request->color)) {
+                $color = '#007bff'; // Fallback to default if invalid
+            }
+
+            $categoryData = [
+                'name' => trim($request->name),
+                'slug' => $request->slug ?: Str::slug($request->name),
+                'description' => $request->description ? trim($request->description) : null,
+                'icon' => $icon,
+                'color' => $color,
+                'sort_order' => $request->sort_order ?: 0,
+                'is_active' => $request->has('is_active'),
+            ];
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+
+                // Additional server-side validation
+                if ($image->getSize() > 2097152) { // 2MB
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Image size must not exceed 2MB.');
+                }
+
+                $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!in_array($image->getMimeType(), $allowedMimes)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Please upload a valid image file (JPG, PNG, GIF, WEBP).');
+                }
+
+                $path = $image->store('categories', 'public');
+                $categoryData['image'] = $path;
+            }
+
+            $category = Category::create($categoryData);
+
+            \Log::info('Category created successfully:', ['id' => $category->id, 'name' => $category->name]);
+
+            return redirect()->route('admin.categories.index')
+                ->with('success', 'Category created successfully!');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating category: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'An error occurred while creating the category. Please try again.');
         }
-
-        $category = Category::create($categoryData);
-
-        \Log::info('Category created successfully:', ['id' => $category->id, 'name' => $category->name]);
-
-        return redirect()->route('admin.categories.index')
-            ->with('success', 'Catégorie créée avec succès !');
     }
 
     /**

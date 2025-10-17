@@ -147,7 +147,7 @@ public function logout(Request $request)
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect()->route('login')
+    return redirect()->route('home')
         ->with('success', 'You have been logged out successfully.');
 }
  
@@ -282,7 +282,7 @@ public function updateProfile(Request $request)
         'newsletter_subscription' => $request->has('newsletter_subscription'),
     ]);
 
-    return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès !');
+    return redirect()->route('profile')->with('success', 'Profile updated successfully!');
 }
 
 /**

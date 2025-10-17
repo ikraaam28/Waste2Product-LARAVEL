@@ -100,6 +100,8 @@
                             </div>
                         @endif
 
+                        
+
                         <!-- Products Section -->
                         @if($event->products->count() > 0)
                             <div class="mb-4">
@@ -108,8 +110,16 @@
                                     @foreach($event->products as $product)
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center p-3 bg-light rounded-3">
-                                                @if($product->image)
-                                                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                @php
+                                                    $thumb = null;
+                                                    if (isset($product->images) && is_array($product->images) && count($product->images) > 0) {
+                                                        $thumb = $product->images[0];
+                                                    } elseif (!empty($product->image)) { // legacy single image support
+                                                        $thumb = $product->image;
+                                                    }
+                                                @endphp
+                                                @if($thumb)
+                                                    <img src="{{ Storage::url($thumb) }}" alt="{{ $product->name }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
                                                 @else
                                                     <div class="bg-primary text-white rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                                         <i class="fa fa-box"></i>
@@ -205,7 +215,7 @@
                                 </div>
                             @endif
 
-                            @if($existingFeedback)
+                            @if($existingFeedback && !session('feedback_success'))
                                 <div class="alert alert-info alert-dismissible fade show" role="alert">
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>You have already submitted feedback for this event.</strong> You can update your feedback below.

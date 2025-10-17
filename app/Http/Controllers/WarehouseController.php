@@ -14,7 +14,21 @@ class WarehouseController extends Controller
     public function index()
     {
         $warehouses = Warehouse::with('partner')->latest()->get();
-        return view('admin.warehouses.index', compact('warehouses'));
+
+        // Préparer un tableau simple pour la carte (évite les closures dans la vue)
+        $warehousePoints = $warehouses->map(function($w){
+            return [
+                'id' => $w->id,
+                'name' => $w->name,
+                'latitude' => $w->latitude,
+                'longitude' => $w->longitude,
+                'partner' => optional($w->partner)->name ?? 'No partner',
+                'address' => $w->address,
+                'city' => $w->city,
+            ];
+        })->values();
+
+        return view('admin.warehouses.index', compact('warehouses','warehousePoints'));
     }
 
     /**
@@ -53,6 +67,8 @@ class WarehouseController extends Controller
             'contact_person' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:50',
             'contact_email' => 'nullable|email',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'status' => 'required|in:active,inactive,maintenance',
             'description' => 'nullable|string',
         ]);
@@ -81,47 +97,48 @@ class WarehouseController extends Controller
      * Mettre à jour un entrepôt
      */
     public function update(Request $request, Warehouse $warehouse)
-{
-    // Si c'est juste un changement de status
-    if ($request->has('status') && !$request->has('name')) {
+    {
+        // Si c'est juste un changement de status
+        if ($request->has('status') && !$request->has('name')) {
+            $data = $request->validate([
+                'status' => 'required|in:active,inactive,maintenance',
+            ]);
+
+            $warehouse->update($data);
+
+            return redirect()->back()->with('success', 'Status mis à jour avec succès');
+        }
+
+        // Sinon, validation complète
         $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'partner_id' => 'required|exists:partners,id',
+            'location' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'capacity' => 'required|numeric|min:0',
+            'current_occupancy' => 'nullable|numeric|min:0',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_phone' => 'nullable|string|max:50',
+            'contact_email' => 'nullable|email',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'status' => 'required|in:active,inactive,maintenance',
+            'description' => 'nullable|string',
         ]);
+
+        // Validation de l'occupation
+        if (isset($data['current_occupancy']) && $data['current_occupancy'] > $data['capacity']) {
+            return back()->withErrors(['current_occupancy' => 'L\'occupation ne peut pas dépasser la capacité.'])->withInput();
+        }
 
         $warehouse->update($data);
 
-        return redirect()->back()->with('success', 'Status mis à jour avec succès');
+        return redirect()->route('admin.warehouses.index')
+                         ->with('success', 'Entrepôt mis à jour avec succès');
     }
-
-    // Sinon, validation complète
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'partner_id' => 'required|exists:partners,id',
-        'location' => 'nullable|string|max:255',
-        'address' => 'nullable|string',
-        'city' => 'nullable|string|max:100',
-        'postal_code' => 'nullable|string|max:20',
-        'country' => 'nullable|string|max:100',
-        'capacity' => 'required|numeric|min:0',
-        'current_occupancy' => 'nullable|numeric|min:0',
-        'contact_person' => 'nullable|string|max:255',
-        'contact_phone' => 'nullable|string|max:50',
-        'contact_email' => 'nullable|email',
-        'status' => 'required|in:active,inactive,maintenance',
-        'description' => 'nullable|string',
-    ]);
-
-    // Validation de l'occupation
-    if (isset($data['current_occupancy']) && $data['current_occupancy'] > $data['capacity']) {
-        return back()->withErrors(['current_occupancy' => 'L\'occupation ne peut pas dépasser la capacité.'])->withInput();
-    }
-
-    $warehouse->update($data);
-
-    return redirect()->route('admin.warehouses.index')
-                     ->with('success', 'Entrepôt mis à jour avec succès');
-}
-
 
     /**
      * Supprimer un entrepôt

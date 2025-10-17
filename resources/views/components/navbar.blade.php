@@ -13,7 +13,6 @@
                     <a href="{{ route('home') }}" class="nav-item nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                     <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
                     <a href="{{ route('products') }}" class="nav-item nav-link {{ request()->routeIs('products') ? 'active' : '' }}">Products</a>
-                    <a href="{{ route('store') }}" class="nav-item nav-link {{ request()->routeIs('store') ? 'active' : '' }}">Store</a>
                     <a href="{{ route('events') }}" class="nav-item nav-link {{ request()->routeIs('events') ? 'active' : '' }}">Events</a>
                     <a href="{{ route('tutos.index') }}" class="nav-item nav-link {{ request()->routeIs('tutos.*') ? 'active' : '' }}">Tutorials</a>
                     <a href="{{ route('publications.my') }}" class="nav-item nav-link {{ request()->routeIs('publications.my') ? 'active' : '' }}">Publications</a>
@@ -32,6 +31,7 @@
                 <div class="border-start ps-4 d-none d-lg-block">
                     <button type="button" class="btn btn-sm p-0 me-3"><i class="fa fa-search"></i></button>
                     @guest
+                        <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2">Login</a>
                         <a href="{{ route('signup') }}" class="btn btn-primary btn-sm rounded-pill px-3">Sign Up</a>
                     @endguest
                     @auth
