@@ -81,6 +81,31 @@ services:
     networks:
     - laravel
 
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql_exporter
+    environment:
+      - DATA_SOURCE_NAME=exporter:exporter@(db:3306)/waste2product
+    ports:
+      - "9104:9104"
+    networks:
+      - laravel
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_exporter
+    command:
+      - '-nginx.scrape-uri=http://webserver:80/stub_status'
+    ports:
+      - "9113:9113"
+    networks:
+      - laravel
+    depends_on:
+      - webserver
+
 
 
 
