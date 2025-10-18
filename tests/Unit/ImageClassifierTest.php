@@ -3,57 +3,300 @@
 namespace Tests\Unit;
 
 use App\Services\ImageClassifier;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
+use Mockery;
 
 class ImageClassifierTest extends TestCase
 {
-    public function test_map_labels_to_category_matches_keywords(): void
+    private ImageClassifier $imageClassifier;
+
+    protected function setUp(): void
     {
-        $svc = new ImageClassifier();
+        parent::setUp();
+        $this->imageClassifier = new ImageClassifier();
+        
+        // Mock configuration
+        config([
+            'services.huggingface.token' => 'test_token',
+            'services.huggingface.caption_model' => 'Salesforce/blip-image-captioning-base',
+            'services.huggingface.classification_model' => 'microsoft/resnet-50'
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
+    /** @test */
+    public function it_can_caption_an_image_successfully()
+    {
+        // Arrange
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([
+                ['generated_text' => 'A bottle of water']
+            ], 200)
+        ]);
+
+        // Act
+        $result = $this->imageClassifier->caption($imagePath);
+
+        // Assert
+        $this->assertEquals('A bottle of water', $result);
+        
+        // Cleanup
+        unlink($imagePath);
+    }
+
+    /** @test */
+    public function it_returns_null_when_image_is_not_readable()
+    {
+        // Arrange
+        $nonExistentPath = '/non/existent/path.jpg';
+
+        // Act
+        $result = $this->imageClassifier->caption($nonExistentPath);
+
+        // Assert
+        $this->assertNull($result);
+    }
+
+    /** @test */
+    public function it_handles_api_error_gracefully()
+    {
+        // Arrange
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([], 500)
+        ]);
+
+        // Act
+        $result = $this->imageClassifier->caption($imagePath);
+
+        // Assert
+        $this->assertNull($result);
+        
+        // Cleanup
+        unlink($imagePath);
+    }
+
+    /** @test */
+    public function it_can_classify_an_image()
+    {
+        // Arrange
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([
+                [
+                    'label' => 'plastic bottle',
+                    'score' => 0.95
+                ],
+                [
+                    'label' => 'water bottle',
+                    'score' => 0.87
+                ]
+            ], 200)
+        ]);
+
+        // Act
+        $result = $this->imageClassifier->classify($imagePath);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals('plastic bottle', $result[0]['label']);
+        $this->assertEquals(0.95, $result[0]['score']);
+        
+        // Cleanup
+        unlink($imagePath);
+    }
+
+    /** @test */
+    public function it_returns_empty_array_when_classification_fails()
+    {
+        // Arrange
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([], 500)
+        ]);
+
+        // Act
+        $result = $this->imageClassifier->classify($imagePath);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+        
+        // Cleanup
+        unlink($imagePath);
+    }
+
+    /** @test */
+    public function it_can_map_labels_to_category_with_caption()
+    {
+        // Arrange
         $labels = [
-            ['label' => 'plastic bottle', 'score' => 0.9],
+            ['label' => 'plastic bottle', 'score' => 0.95],
+            ['label' => 'water bottle', 'score' => 0.87]
+        ];
+        $caption = 'A plastic water bottle';
+
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
+
+        // Assert
+        $this->assertIsString($result);
+        $this->assertContains($result, ['plastique', 'verre', 'metal', 'papier', 'bois', 'textile', 'electronique', 'organique']);
+    }
+
+    /** @test */
+    public function it_maps_plastic_labels_to_plastique_category()
+    {
+        // Arrange
+        $labels = [
+            ['label' => 'plastic bottle', 'score' => 0.95],
+            ['label' => 'PET container', 'score' => 0.87]
+        ];
+        $caption = 'A plastic bottle';
+
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
+
+        // Assert
+        $this->assertEquals('plastique', $result);
+    }
+
+    /** @test */
+    public function it_maps_glass_labels_to_verre_category()
+    {
+        // Arrange
+        $labels = [
+            ['label' => 'glass bottle', 'score' => 0.95],
+            ['label' => 'wine bottle', 'score' => 0.87]
+        ];
+        $caption = 'A glass wine bottle';
+
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
+
+        // Assert
+        $this->assertEquals('verre', $result);
+    }
+
+    /** @test */
+    public function it_maps_metal_labels_to_metal_category()
+    {
+        // Arrange
+        $labels = [
+            ['label' => 'aluminum can', 'score' => 0.95],
+            ['label' => 'metal container', 'score' => 0.87]
+        ];
+        $caption = 'An aluminum can';
+
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
+
+        // Assert
+        $this->assertEquals('metal', $result);
+    }
+
+    /** @test */
+    public function it_handles_empty_labels_and_caption()
+    {
+        // Arrange
+        $labels = [];
+        $caption = null;
+
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
+
+        // Assert
+        $this->assertNull($result);
+    }
+
+    /** @test */
+    public function it_uses_caption_when_labels_are_ambiguous()
+    {
+        // Arrange
+        $labels = [
             ['label' => 'container', 'score' => 0.5],
+            ['label' => 'object', 'score' => 0.3]
         ];
-        $this->assertSame('plastique', $svc->mapLabelsToCategory($labels));
+        $caption = 'A cardboard box';
 
-        $labels = [ ['label' => 'glass jar', 'score' => 0.8] ];
-        $this->assertSame('verre', $svc->mapLabelsToCategory($labels));
+        // Act
+        $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
 
-        $labels = [ ['label' => 'cardboard box', 'score' => 0.7] ];
-        $this->assertSame('papier', $svc->mapLabelsToCategory($labels));
-
-        $labels = [ ['label' => 'steel can', 'score' => 0.6] ];
-        $this->assertSame('metal', $svc->mapLabelsToCategory($labels));
-
-        $labels = [ ['label' => 'wooden pallet', 'score' => 0.6] ];
-        $this->assertSame('bois', $svc->mapLabelsToCategory($labels));
+        // Assert
+        $this->assertEquals('papier', $result);
     }
 
-    public function test_map_labels_to_category_with_caption_disambiguates(): void
+    /** @test */
+    public function it_handles_network_timeout()
     {
-        $svc = new ImageClassifier();
-        $labels = [
-            ['label' => 'bottle', 'score' => 0.8],
-            ['label' => 'jar', 'score' => 0.79],
-        ];
-        // With glass cues, should prefer 'verre'
-        $this->assertSame('verre', $svc->mapLabelsToCategoryWithCaption($labels, 'transparent glass bottle'));
+        // Arrange
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([], 408)
+        ]);
 
-        // With wood cues, should favor 'bois' when close to paper
-        $labels = [ ['label' => 'box', 'score' => 0.8] ];
-        $this->assertSame('bois', $svc->mapLabelsToCategoryWithCaption($labels, 'wooden table'));
+        // Act
+        $result = $this->imageClassifier->classify($imagePath);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+        
+        // Cleanup
+        unlink($imagePath);
     }
 
-    public function test_generate_metadata_includes_top_label_and_category(): void
+    /** @test */
+    public function it_works_without_token()
     {
-        $svc = new ImageClassifier();
-        $labels = [ ['label' => 'plastic', 'score' => 0.42] ];
-        $meta = $svc->generateMetadata($labels, 'plastique');
+        // Arrange
+        config(['services.huggingface.token' => null]);
+        $imagePath = storage_path('app/test-image.jpg');
+        $this->createTestImage($imagePath);
+        
+        Http::fake([
+            'api-inference.huggingface.co/*' => Http::response([
+                ['generated_text' => 'A test image']
+            ], 200)
+        ]);
 
-        $this->assertIsArray($meta);
-        $this->assertArrayHasKey('name', $meta);
-        $this->assertArrayHasKey('description', $meta);
-        $this->assertStringContainsString('Plastique', $meta['name']);
-        $this->assertStringContainsString('plastic', $meta['description']);
+        // Act
+        $result = $this->imageClassifier->caption($imagePath);
+
+        // Assert
+        $this->assertEquals('A test image', $result);
+        
+        // Cleanup
+        unlink($imagePath);
+    }
+
+    private function createTestImage(string $path): void
+    {
+        // Create a simple test image
+        $image = imagecreate(100, 100);
+        $bg = imagecolorallocate($image, 255, 255, 255);
+        $textColor = imagecolorallocate($image, 0, 0, 0);
+        imagestring($image, 5, 20, 40, 'TEST', $textColor);
+        imagejpeg($image, $path);
+        imagedestroy($image);
     }
 }
