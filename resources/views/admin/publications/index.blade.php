@@ -93,7 +93,7 @@
                                 </form>
 
                                 <!-- Export Button -->
-                                <form action="{{ route('admin.publications.export') }}" method="POST" class="mt-2">
+                                <form action="{{ route('admin.publications.export') }}" method="GET" class="mt-2">
                                     @csrf
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-file-export"></i> Export
@@ -148,6 +148,11 @@
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
 
+                                                        <!-- Ban User Button with Modal -->
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banModal{{ $publication->id }}">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+
                                                         <!-- Delete Modal -->
                                                         <div class="modal fade" id="deleteModal{{ $publication->id }}" tabindex="-1" aria-hidden="true">
                                                             <div class="modal-dialog modal-dialog-centered">
@@ -164,6 +169,29 @@
                                                                             @csrf
                                                                             @method('DELETE')
                                                                             <button type="submit" class="btn btn-danger">Delete</button>
+                                                                        </form>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Ban Modal -->
+                                                        <div class="modal fade" id="banModal{{ $publication->id }}" tabindex="-1" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Confirm Ban</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        Are you sure you want to ban "{{ $publication->user->first_name ?? 'Deleted User' }} {{ $publication->user->last_name ?? '' }}"? This will delete all their publications and prevent further posting.
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <form action="{{ route('admin.publications.ban', $publication->id) }}" method="POST">
+                                                                            @csrf
+                                                                            @method('POST')
+                                                                            <button type="submit" class="btn btn-warning">Ban</button>
                                                                         </form>
                                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                                     </div>
@@ -211,29 +239,39 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: @json(array_keys($stats['monthly_trends'])),
-            datasets: [{
-                label: 'Publications per Month',
-                data: @json(array_values($stats['monthly_trends'])),
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Number of Publications' } },
-                x: { title: { display: true, text: 'Month' } }
+    // Safe access to monthly_trends with fallback
+    @if(isset($stats['monthly_trends']) && is_array($stats['monthly_trends']) && !empty($stats['monthly_trends']))
+        const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @json(array_keys($stats['monthly_trends'])),
+                datasets: [{
+                    label: 'Publications per Month',
+                    data: @json(array_values($stats['monthly_trends'])),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            plugins: { legend: { display: true, position: 'top' } }
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    @else
+        // Fallback: Hide or show empty chart message
+        console.warn('Monthly trends data not available');
+        const chartContainer = document.getElementById('monthlyTrendsChart').parentElement;
+        if (chartContainer) {
+            chartContainer.innerHTML = '<p class="text-muted text-center">Données mensuelles non disponibles.</p>';
         }
-    });
+    @endif
 });
 </script>
 

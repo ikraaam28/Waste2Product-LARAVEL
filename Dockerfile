@@ -1,13 +1,14 @@
 # Choisir l'image PHP avec FPM
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
-# Installer les dépendances, pdo_mysql, apcu et netcat pour le wait loop
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        default-libmysqlclient-dev libzip-dev zip unzip git netcat-openbsd \
-    && pecl install apcu \
-    && docker-php-ext-install pdo_mysql mysqli zip \
-    && docker-php-ext-enable apcu \
-    && rm -rf /var/lib/apt/lists/*
+# Installer les extensions PHP nécessaires
+RUN apt-get update && apt-get install -y \
+    git unzip curl libpng-dev libonig-dev libxml2-dev zip libzip-dev \
+    libfreetype6-dev libjpeg62-turbo-dev libgd-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && pecl install pcov \
+    && docker-php-ext-enable pcov
 
 # Installer Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer

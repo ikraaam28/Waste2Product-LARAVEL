@@ -36,7 +36,9 @@ class User extends Authenticatable
         'remember_token',
         'profile_picture',
         'google_id',
-        'avatar'
+        'avatar',
+        'banned_at', 
+
     ];
 
     /**
@@ -80,6 +82,8 @@ class User extends Authenticatable
                     ->withPivot(['earned_at', 'event_id'])
                     ->withTimestamps();
     }
+
+
 
     /**
      * Relation avec les événements participés
@@ -186,6 +190,14 @@ class User extends Authenticatable
         return $query->where('is_active', false);
     }
 
+protected $dates = ['banned_at'];
+
+    public function isBanned()
+    {
+        return !is_null($this->banned_at);
+    }
+
+
     /**
      * Publication et commentaire
      */
@@ -197,5 +209,43 @@ class User extends Authenticatable
     public function commentaires()
     {
         return $this->hasMany(Commentaire::class);
+    }
+    public function publicationReactions()
+    {
+        return $this->hasMany(PublicationReaction::class);
+    }
+
+    /**
+     * Get all publications liked by this user
+     */
+    public function likedPublications()
+    {
+        return $this->hasManyThrough(
+            Publication::class,
+            PublicationReaction::class,
+            'user_id', // Foreign key on reactions table
+            'id',      // Local key on publications table
+            'id',      // Local key on users table
+            'publication_id' // Foreign key on reactions table
+        )->whereHas('publicationReactions', function ($query) {
+            $query->where('type', 'like');
+        });
+    }
+
+    /**
+     * Get all publications disliked by this user
+     */
+    public function dislikedPublications()
+    {
+        return $this->hasManyThrough(
+            Publication::class,
+            PublicationReaction::class,
+            'user_id',
+            'id',
+            'id',
+            'publication_id'
+        )->whereHas('publicationReactions', function ($query) {
+            $query->where('type', 'dislike');
+        });
     }
 }
