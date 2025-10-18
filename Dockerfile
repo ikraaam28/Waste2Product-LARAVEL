@@ -4,6 +4,8 @@ FROM php:8.3-fpm
 # Installer les extensions PHP nécessaires
 RUN apt-get update && apt-get install -y \
     git unzip curl libpng-dev libonig-dev libxml2-dev zip libzip-dev \
+    libfreetype6-dev libjpeg62-turbo-dev libgd-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && pecl install pcov \
     && docker-php-ext-enable pcov

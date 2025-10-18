@@ -33,7 +33,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: 8.2
-        extensions: mbstring, bcmath, mysqli, pdo_mysql
+        extensions: mbstring, bcmath, mysqli, pdo_mysql, gd
         coverage: xdebug
 
     - name: Install Composer dependencies
@@ -58,12 +58,6 @@ jobs:
         DB_USERNAME: root
         DB_PASSWORD: root
       run: php artisan migrate:fresh --force
-
-    - name: Run Tests
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: ":memory:"
-      run: php artisan test || echo "Tests failed but continuing"
 
     - name: Run Unit Tests
       env:

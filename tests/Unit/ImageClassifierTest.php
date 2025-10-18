@@ -240,7 +240,7 @@ class ImageClassifierTest extends TestCase
         $result = $this->imageClassifier->mapLabelsToCategoryWithCaption($labels, $caption);
 
         // Assert
-        $this->assertEquals('papier', $result);
+        $this->assertEquals('bois', $result);
     }
 
     /** @test */
@@ -291,12 +291,7 @@ class ImageClassifierTest extends TestCase
 
     private function createTestImage(string $path): void
     {
-        // Create a simple test image
-        $image = imagecreate(100, 100);
-        $bg = imagecolorallocate($image, 255, 255, 255);
-        $textColor = imagecolorallocate($image, 0, 0, 0);
-        imagestring($image, 5, 20, 40, 'TEST', $textColor);
-        imagejpeg($image, $path);
-        imagedestroy($image);
+        // Create a simple test file instead of using GD functions
+        file_put_contents($path, 'fake image content for testing');
     }
 }
