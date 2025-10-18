@@ -6,7 +6,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\EventFeedback;
 use App\Models\Badge;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 class EventControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private User $adminUser;
     private User $regularUser;

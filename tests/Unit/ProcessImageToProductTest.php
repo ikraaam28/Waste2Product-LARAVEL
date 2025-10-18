@@ -6,7 +6,7 @@ use App\Jobs\ProcessImageToProduct;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ImageClassifier;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ use Mockery;
 
 class ProcessImageToProductTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private ImageClassifier $mockClassifier;
 
