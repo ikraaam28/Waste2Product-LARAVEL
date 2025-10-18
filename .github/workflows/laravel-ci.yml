@@ -2,9 +2,9 @@ name: Laravel CI
 
 on:
   push:
-    branches: [ ikram ]
+    branches: [ main ]
   pull_request:
-    branches: [ ikram ]
+    branches: [ main ]
 
 jobs:
   build:
