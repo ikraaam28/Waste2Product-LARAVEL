@@ -19,3 +19,4 @@ class TunisiaCitiesTest extends TestCase
         $this->assertCount(24, $cities);
     }
 }
+
