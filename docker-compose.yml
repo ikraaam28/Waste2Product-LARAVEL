@@ -4,8 +4,7 @@ services:
   app:
     build: .
     container_name: laravel_app
-    command: >
-      sh -c "until nc -z db 3306; do echo 'Waiting for db'; sleep 1; done; php artisan migrate --force && php-fpm"
+    command: php-fpm
     restart: unless-stopped
     volumes:
       - ./:/var/www
@@ -105,6 +104,23 @@ services:
       - laravel
     depends_on:
       - webserver
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ''
+      MYSQL_ROOT_PASSWORD: ''
+    ports:
+      - "8081:80"
+    networks:
+      - laravel
+    depends_on:
+      - db
 
 
 

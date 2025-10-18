@@ -26,3 +26,4 @@ class UserModelTest extends TestCase
         $this->assertSame('fas fa-crown', $user->role_icon);
     }
 }
+
