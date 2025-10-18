@@ -252,6 +252,14 @@ Route::get('/commentaires/export/csv', [CommentaireController::class, 'exportCsv
     Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
     Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
 
+
+Route::post('partners/{partner}/ai-report', [PartnerController::class, 'aiReport'])
+    ->name('admin.partners.ai_report')
+    ->middleware('auth'); // remove 'can:manage-partners' while debugging/if you don't use gates
+
+
+
+
     // Users Management
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
     Route::get('users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
