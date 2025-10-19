@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Quiz;
 use App\Models\QuizQuestion;
 use App\Models\Tuto;
+use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\QuizAttempt;
+
 class QuizController extends Controller
 {
     /**
@@ -32,7 +33,7 @@ class QuizController extends Controller
     /**
      * Frontend: Show a quiz for users to take
      */
- public function show(Quiz $quiz)
+    public function show(Quiz $quiz)
     {
         if (!$quiz->is_published && !Auth::check()) {
             abort(403, 'This quiz is not published.');
@@ -42,7 +43,6 @@ class QuizController extends Controller
         $attempt = Auth::check() ? QuizAttempt::where('user_id', Auth::id())->where('quiz_id', $quiz->id)->first() : null;
 
         if ($attempt) {
-            // User has already taken the quiz; show results directly
             return view('quizzes.show', [
                 'quiz' => $quiz,
                 'score' => $attempt->score,
@@ -70,8 +70,7 @@ class QuizController extends Controller
      */
     public function adminShow(Quiz $quiz)
     {
-        $this->authorize('view', $quiz);
-        $quiz->load(['tuto', 'questions']);
+        $quiz->load(['tuto', 'questions', 'attempts.user']);
         return view('admin.quiz.show', compact('quiz'));
     }
 
@@ -91,7 +90,7 @@ class QuizController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'tuto_id' => 'required|exists:tutos,id',
+            'tuto_id' => 'nullable|exists:tutos,id',
             'is_published' => 'required|boolean',
             'questions' => 'required|array|min:1',
             'questions.*.question_text' => 'required|string|max:255',
@@ -129,7 +128,6 @@ class QuizController extends Controller
      */
     public function edit(Quiz $quiz)
     {
-        $this->authorize('update', $quiz);
         $tutos = Tuto::where('is_published', true)->get();
         $quiz->load('questions');
         return view('admin.quiz.edit', compact('quiz', 'tutos'));
@@ -142,7 +140,7 @@ class QuizController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'tuto_id' => 'required|exists:tutos,id',
+            'tuto_id' => 'nullable|exists:tutos,id',
             'is_published' => 'required|boolean',
             'questions' => 'required|array|min:1',
             'questions.*.question_text' => 'required|string|max:255',
@@ -180,8 +178,6 @@ class QuizController extends Controller
      */
     public function destroy(Quiz $quiz)
     {
-        $this->authorize('delete', $quiz);
-
         try {
             DB::transaction(function () use ($quiz) {
                 $quiz->questions()->delete();
@@ -198,13 +194,12 @@ class QuizController extends Controller
     /**
      * Frontend: Submit quiz answers and display results
      */
-public function submit(Request $request, Quiz $quiz)
+    public function submit(Request $request, Quiz $quiz)
     {
         if (!Auth::check()) {
             abort(403, 'You must be logged in to submit a quiz.');
         }
 
-        // Check if the user has already attempted the quiz
         $existingAttempt = QuizAttempt::where('user_id', Auth::id())->where('quiz_id', $quiz->id)->first();
         if ($existingAttempt) {
             return redirect()->back()->with('error', 'You have already taken this quiz. Results are final.');
@@ -254,7 +249,6 @@ public function submit(Request $request, Quiz $quiz)
             $percentage = ($totalQuestions > 0) ? ($score / $totalQuestions) * 100 : 0;
             $status = $percentage >= 70 ? 'Validated' : 'Failed';
 
-            // Save the attempt
             QuizAttempt::create([
                 'user_id' => Auth::id(),
                 'quiz_id' => $quiz->id,
@@ -263,7 +257,6 @@ public function submit(Request $request, Quiz $quiz)
                 'status' => $status,
             ]);
 
-            // Reload questions to ensure data is fresh
             $quiz->load('questions');
 
             return view('quizzes.show', compact('quiz', 'score', 'totalQuestions', 'percentage', 'status', 'correctAnswers'));
@@ -272,8 +265,6 @@ public function submit(Request $request, Quiz $quiz)
             return redirect()->back()->with('error', 'An error occurred while processing your quiz. Please try again.');
         }
     }
-
-
 
     /**
      * Generate correct answers array based on existing attempt data
@@ -285,8 +276,8 @@ public function submit(Request $request, Quiz $quiz)
         $correctCount = round(($score / $totalQuestions) * $totalQuestions);
 
         foreach ($quiz->questions as $index => $question) {
-            $isCorrect = $index < $correctCount; // Simplified assumption for existing attempt
-            $userAnswer = $isCorrect ? $question->correct_answer : ($isCorrect ? 'No' : 'Yes'); // Mock data
+            $isCorrect = $index < $correctCount;
+            $userAnswer = $isCorrect ? $question->correct_answer : ($isCorrect ? 'No' : 'Yes');
             $correctAnswers[$question->id] = [
                 'user_answer' => $userAnswer,
                 'correct_answer' => $question->correct_answer,

@@ -36,7 +36,9 @@ class User extends Authenticatable
         'remember_token',
         'profile_picture',
         'google_id',
-        'avatar'
+        'avatar',
+       'ban_reason', 
+    'banned_until', 
     ];
 
     /**
@@ -61,6 +63,7 @@ class User extends Authenticatable
         'terms_accepted' => 'boolean',
         'is_active' => 'boolean',
         'supplier_categories' => 'array',
+        'banned_until' => 'datetime',
     ];
 
     /**
@@ -198,4 +201,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Commentaire::class);
     }
+
+
+    public function questions()
+{
+    return $this->hasMany(Question::class);
+}
 }

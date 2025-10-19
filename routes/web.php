@@ -268,6 +268,8 @@ Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store
  Route::get('/tutos/{tuto}/edit', [TutoController::class, 'edit'])->name('admin.tutos.edit');
     Route::put('/tutos/{tuto}', [TutoController::class, 'update'])->name('admin.tutos.update');
     Route::delete('/tutos/{tuto}', [TutoController::class, 'destroy'])->name('admin.tutos.destroy');
+    Route::delete('/questions/{question}', [TutoController::class, 'questionDestroy'])->name('questions.destroy');
+    Route::post('/users/{user}/ban', [TutoController::class, 'banUser'])->name('banUser');
   // Quiz Management
     Route::get('/quizzes', [QuizController::class, 'adminIndex'])->name('admin.quizzes.index');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('admin.quizzes.create');

@@ -138,6 +138,20 @@
 
 <div class="container">
     <div class="page-inner">
+        <!-- Flash Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="page-header">
             <h3 class="fw-bold mb-3">View Tutorial</h3>
             <ul class="breadcrumbs mb-3">
@@ -222,7 +236,7 @@
                                             'glass' => 'Glass',
                                             'other' => 'Other',
                                         ];
-                                        $englishCategory = $categories[$tuto->category] ?? ucfirst($tuto->category);
+                                        $englishCategory = $tuto->category ? ($categories[$tuto->category->name] ?? ucfirst($tuto->category->name)) : 'Uncategorized';
                                     @endphp
                                     <div class="d-flex flex-wrap align-items-center gap-3 text-muted mb-3">
                                         <div class="d-flex align-items-center gap-2">
@@ -301,7 +315,7 @@
             <div class="row g-4 mt-3">
                 @foreach ($tuto->questions->whereNull('parent_id') as $question)
                     <div class="col-12">
-                        <div class="question-card">
+                        <div class="question-card" id="question-{{ $question->id }}">
                             <!-- Question -->
                             <div class="p-4">
                                 <div class="d-flex align-items-start gap-3">
@@ -317,6 +331,21 @@
                                             </span>
                                         </div>
                                         <p class="text-dark lh-lg mb-3">{{ $question->question_text }}</p>
+                                        <!-- Admin Actions -->
+                                        @if (Auth::check() && Auth::user()->isAdmin())
+                                            <div class="d-flex gap-2">
+                                                <button onclick="deleteQuestion({{ $question->id }})" class="btn btn-danger btn-sm rounded-pill">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                                @if ($question->user->is_active)
+                                                    <button onclick="banUser({{ $question->user->id }}, 'question', {{ $question->id }})" class="btn btn-warning btn-sm rounded-pill">
+                                                        <i class="fas fa-ban"></i> Ban User
+                                                    </button>
+                                                @else
+                                                    <span class="badge bg-secondary">User Banned</span>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -325,7 +354,7 @@
                             @if ($question->replies->count() > 0)
                                 <div class="reply-section px-4 py-3">
                                     @foreach ($question->replies as $reply)
-                                        <div class="d-flex align-items-start gap-3 mb-3 ms-4">
+                                        <div class="d-flex align-items-start gap-3 mb-3 ms-4" id="reply-{{ $reply->id }}">
                                             <div class="reply-avatar avatar-circle">
                                                 {{ strtoupper(substr($reply->user->full_name, 0, 1)) }}
                                             </div>
@@ -335,6 +364,21 @@
                                                     <span class="text-muted small">{{ $reply->created_at->diffForHumans() }}</span>
                                                 </div>
                                                 <p class="text-dark small mb-0">{{ $reply->question_text }}</p>
+                                                <!-- Admin Actions for Replies -->
+                                                @if (Auth::check() && Auth::user()->isAdmin())
+                                                    <div class="d-flex gap-2 mt-2">
+                                                        <button onclick="deleteQuestion({{ $reply->id }})" class="btn btn-danger btn-sm rounded-pill">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                        @if ($reply->user->is_active)
+                                                            <button onclick="banUser({{ $reply->user->id }}, 'reply', {{ $reply->id }})" class="btn btn-warning btn-sm rounded-pill">
+                                                                <i class="fas fa-ban"></i> Ban User
+                                                            </button>
+                                                        @else
+                                                            <span class="badge bg-secondary">User Banned</span>
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
                                     @endforeach
@@ -347,4 +391,53 @@
         @endif
     </div>
 </div>
+
+<!-- AJAX Script -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    function deleteQuestion(questionId) {
+        if (confirm('Are you sure you want to delete this question or reply?')) {
+            axios.delete('/admin/questions/' + questionId, {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            }).then(response => {
+                document.getElementById('question-' + questionId)?.remove();
+                document.getElementById('reply-' + questionId)?.remove();
+                showAlert('success', response.data.message);
+            }).catch(error => {
+                showAlert('danger', error.response?.data?.message || 'Failed to delete question.');
+            });
+        }
+    }
+
+    function banUser(userId, type, elementId) {
+        if (confirm('Are you sure you want to ban this user?')) {
+            axios.post('/admin/users/' + userId + '/ban', {
+                _token: '{{ csrf_token() }}',
+                ban_reason: 'Inappropriate ' + type
+            }).then(response => {
+                const button = document.querySelector(`#${type}-${elementId} .btn-warning`);
+                if (button) {
+                    button.outerHTML = '<span class="badge bg-secondary">User Banned</span>';
+                }
+                showAlert('success', response.data.message);
+            }).catch(error => {
+                showAlert('danger', error.response?.data?.message || 'Failed to ban user.');
+            });
+        }
+    }
+
+    function showAlert(type, message) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.role = 'alert';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        document.querySelector('.page-inner').prepend(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+</script>
 @endsection
