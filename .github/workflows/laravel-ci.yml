@@ -45,7 +45,7 @@ jobs:
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=\":memory:\"" >> .env
         echo "QUEUE_CONNECTION=sync" >> .env
-        echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+        php artisan key:generate --force
 
     - name: Run migrations
       env:
@@ -61,5 +61,4 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: ":memory:"
-        APP_KEY: base64:$(openssl rand -base64 32)
       run: php artisan test
