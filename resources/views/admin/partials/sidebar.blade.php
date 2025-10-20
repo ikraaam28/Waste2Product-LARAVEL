@@ -88,6 +88,7 @@
             <ul class="nav nav-collapse">
               <li><a href="{{ route('admin.quizzes.index') }}"><span class="sub-item">List Quizzes</span></a></li>
               <li><a href="{{ route('admin.quizzes.create') }}"><span class="sub-item">Create Quiz</span></a></li>
+              <li><a href="{{ route('admin.quizzes.participants') }}"><span class="sub-item">Quiz Participants</span></a></li>
             </ul>
           </div>
         </li>

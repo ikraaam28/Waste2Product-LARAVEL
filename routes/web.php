@@ -272,6 +272,7 @@ Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store
     Route::post('/users/{user}/ban', [TutoController::class, 'banUser'])->name('banUser');
   // Quiz Management
     Route::get('/quizzes', [QuizController::class, 'adminIndex'])->name('admin.quizzes.index');
+    Route::get('/quizzes/participants', [QuizController::class, 'participants'])->name('admin.quizzes.participants');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('admin.quizzes.create');
     Route::post('/quizzes', [QuizController::class, 'store'])->name('admin.quizzes.store');
     Route::get('/quizzes/{quiz}', [QuizController::class, 'adminShow'])->name('admin.quizzes.show');

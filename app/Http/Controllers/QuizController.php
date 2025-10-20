@@ -301,4 +301,47 @@ class QuizController extends Controller
 
         return $correctAnswers;
     }
+
+
+     public function participants()
+    {
+        // Fetch tutorials with quizzes and their attempts
+        $tutos = Tuto::with(['quizzes.attempts.user'])
+            ->has('quizzes.attempts') // Only tutorials with quizzes that have attempts
+            ->get()
+            ->map(function ($tuto) {
+                // Calculate total score and certificate eligibility per user
+                $userData = $tuto->quizzes->flatMap->attempts
+                    ->groupBy('user_id')
+                    ->map(function ($attempts, $userId) use ($tuto) {
+                        $user = $attempts->first()->user;
+                        $totalScore = $attempts->sum('score');
+                        $totalQuestions = $tuto->quizzes->sum(function ($quiz) {
+                            return $quiz->questions()->count();
+                        });
+                        $averagePercentage = $attempts->isEmpty() ? 0 : $attempts->avg('percentage');
+                        $completedQuizzes = $attempts->count();
+                        $totalQuizzes = $tuto->quizzes->count();
+                        $hasCertificate = ($completedQuizzes === $totalQuizzes && $averagePercentage >= 70);
+
+                        return [
+                            'user' => $user,
+                            'total_score' => $totalScore,
+                            'total_questions' => $totalQuestions,
+                            'average_percentage' => $averagePercentage,
+                            'status' => $averagePercentage >= 70 ? 'Validated' : 'Failed',
+                            'has_certificate' => $hasCertificate,
+                        ];
+                    });
+
+                return [
+                    'tuto' => $tuto,
+                    'participants' => $userData->values(),
+                ];
+            });
+
+        return view('admin.quiz.participants', compact('tutos'));
+    }
+
+
 }
