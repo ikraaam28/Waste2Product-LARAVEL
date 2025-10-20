@@ -57,12 +57,22 @@ class QuizController extends Controller
     }
 
     /**
-     * Admin: List all quizzes
+     * Admin: List all quizzes grouped by tutorial
      */
     public function adminIndex()
     {
-        $quizzes = Quiz::with(['tuto'])->latest()->get();
-        return view('admin.quiz.index', compact('quizzes'));
+        // Fetch all tutorials with their quizzes, including quizzes without a tutorial
+        $tutos = Tuto::with(['quizzes' => function ($query) {
+            $query->withCount('questions')->latest();
+        }])->get();
+
+        // Fetch quizzes without a tutorial
+        $quizzesWithoutTuto = Quiz::withCount('questions')
+            ->whereNull('tuto_id')
+            ->latest()
+            ->get();
+
+        return view('admin.quiz.index', compact('tutos', 'quizzesWithoutTuto'));
     }
 
     /**

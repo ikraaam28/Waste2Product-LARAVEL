@@ -69,7 +69,7 @@
                         @endif
 
                         <!-- Participants -->
-                        <h4 class="mt-4">Participants</h4>
+                        <h5 class="mt-4">Participants</h5>
                         @if ($quiz->attempts->isEmpty())
                             <p class="text-muted">No participants have taken this quiz yet.</p>
                         @else
