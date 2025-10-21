@@ -125,7 +125,7 @@ class CategoryProductSeeder extends Seeder
                 'short_description' => 'Journal papier recyclable',
                 'price' => 0.10,
                 'sku' => 'PRD-PAP001',
-                'stock_quantity' => 300,
+                'stock_quantity' => 400,
                 'category_id' => $createdCategories[3]->id,
                 'created_by' => $user->id,
                 'materials' => 'Papier journal',
