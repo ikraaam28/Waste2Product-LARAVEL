@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Category;
+use App\Models\ProductCategory;
 use App\Models\Product;
 use App\Models\Event;
 use App\Models\EventFeedback;
@@ -78,7 +78,7 @@ class EventSeeder extends Seeder
 
         $createdCategories = [];
         foreach ($categories as $categoryData) {
-            $createdCategories[] = Category::create($categoryData);
+            $createdCategories[] = ProductCategory::create($categoryData);
         }
 
         // Créer 10 produits
@@ -86,19 +86,11 @@ class EventSeeder extends Seeder
             // Plastique
             [
                 'name' => 'Bouteille d\'eau en plastique',
-                'slug' => 'bouteille-deau-en-plastique',
                 'description' => 'Bouteille d\'eau 1.5L en PET recyclable',
-                'short_description' => 'Bouteille PET recyclable',
-                'price' => 0.50,
-                'sku' => 'PRD-PET001',
-                'stock_quantity' => 100,
                 'category_id' => $createdCategories[0]->id,
-                'created_by' => $createdUsers[0]->id,
-                'materials' => 'PET (Polyéthylène téréphtalate)',
-                'recycling_process' => 'Tri, broyage, lavage, transformation en granulés',
-                'environmental_impact_score' => 75,
-                'is_active' => true,
-                'published_at' => now()
+                'recyclable' => true,
+                'co2_saved_per_unit' => 0.15,
+                'points_value' => 5
             ],
             [
                 'name' => 'Emballage alimentaire',

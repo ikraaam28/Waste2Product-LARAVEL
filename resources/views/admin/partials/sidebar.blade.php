@@ -78,20 +78,35 @@
             </ul>
           </div>
         </li>
-<li class="nav-item">
-    <a data-bs-toggle="collapse" href="#publications">
-        <i class="fas fa-book"></i>
-        <p>Publications</p>
-        <span class="caret"></span>
-    </a>
-    <div class="collapse" id="publications">
-        <ul class="nav nav-collapse">
-            <li><a href="{{ route('admin.publications.index') }}"><span class="sub-item">Publications List</span></a></li>
-            <li><a href="{{ route('admin.commentaires.index') }}"><span class="sub-item">Commentaires List</span></a></li>
-        </ul>
-    </div>
-</li>
         
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#quizzes">
+            <i class="fas fa-question-circle"></i>
+            <p>Quizzes</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="quizzes">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.quizzes.index') }}"><span class="sub-item">List Quizzes</span></a></li>
+              <li><a href="{{ route('admin.quizzes.create') }}"><span class="sub-item">Create Quiz</span></a></li>
+              <li><a href="{{ route('admin.quizzes.participants') }}"><span class="sub-item">Quiz Participants</span></a></li>
+            </ul>
+          </div>
+        </li>
+        
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#publications">
+            <i class="fas fa-book"></i>
+            <p>Publications</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="publications">
+            <ul class="nav nav-collapse">
+              <li><a href="{{ route('admin.publications.index') }}"><span class="sub-item">Publications List</span></a></li>
+              <li><a href="{{ route('admin.commentaires.index') }}"><span class="sub-item">Commentaires List</span></a></li>
+            </ul>
+          </div>
+        </li>
         {{-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#base">
             <i class="fas fa-layer-group"></i>

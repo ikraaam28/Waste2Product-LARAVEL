@@ -37,8 +37,9 @@ class User extends Authenticatable
         'profile_picture',
         'google_id',
         'avatar',
-        'banned_at', 
-
+        'banned_at',
+        'ban_reason',
+        'banned_until',
     ];
 
     /**
@@ -210,6 +211,12 @@ protected $dates = ['banned_at'];
     {
         return $this->hasMany(Commentaire::class);
     }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
+
     public function publicationReactions()
     {
         return $this->hasMany(PublicationReaction::class);
