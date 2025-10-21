@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- reCAPTCHA v2 Script -->
-<!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 /* Custom styles for signup form */
 .form-control:focus {
@@ -833,76 +833,76 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Start verification
-    // checkRecaptchaLoaded();
+    checkRecaptchaLoaded();
     
-    // // Gestion du submit du formulaire
-    // form.addEventListener('submit', function(e) {
-    //     e.preventDefault();
+    // Gestion du submit du formulaire
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-    //     // Check form validity
-    //     if (form.checkValidity()) {
-    //         // Trigger invisible reCAPTCHA v2
-    //         if (typeof grecaptcha !== 'undefined') {
-    //             console.log('Executing reCAPTCHA...');
-    //             grecaptcha.execute();
-    //         } else {
-    //             console.error('reCAPTCHA not loaded');
-    //             alert('reCAPTCHA not loaded. Please refresh the page.');
-    //         }
-    //     } else {
-    //         // Afficher les erreurs
-    //         form.classList.add('was-validated');
-    //     }
-    // });
+        // Check form validity
+        if (form.checkValidity()) {
+            // Trigger invisible reCAPTCHA v2
+            if (typeof grecaptcha !== 'undefined') {
+                console.log('Executing reCAPTCHA...');
+                grecaptcha.execute();
+            } else {
+                console.error('reCAPTCHA not loaded');
+                alert('reCAPTCHA not loaded. Please refresh the page.');
+            }
+        } else {
+            // Afficher les erreurs
+            form.classList.add('was-validated');
+        }
+    });
     
-    // // reCAPTCHA v2 invisible - Callback function
-    // window.onRecaptchaSuccess = function(token) {
-    //     console.log('reCAPTCHA v2 success:', token);
+    // reCAPTCHA v2 invisible - Callback function
+    window.onRecaptchaSuccess = function(token) {
+        console.log('reCAPTCHA v2 success:', token);
         
-    //     // Ajouter le token reCAPTCHA au formulaire
-    //     const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
-    //     if (recaptchaInput) {
-    //         recaptchaInput.value = token;
-    //     } else {
-    //         // Create hidden input for reCAPTCHA token
-    //         const hiddenInput = document.createElement('input');
-    //         hiddenInput.type = 'hidden';
-    //         hiddenInput.name = 'g-recaptcha-response';
-    //         hiddenInput.value = token;
-    //         form.appendChild(hiddenInput);
-    //     }
+        // Ajouter le token reCAPTCHA au formulaire
+        const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
+        if (recaptchaInput) {
+            recaptchaInput.value = token;
+        } else {
+            // Create hidden input for reCAPTCHA token
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'g-recaptcha-response';
+            hiddenInput.value = token;
+            form.appendChild(hiddenInput);
+        }
         
-    //     // Disable button to prevent double submissions
-    //     const submitButton = form.querySelector('button[type="submit"]');
-    //     if (submitButton) {
-    //         submitButton.disabled = true;
-    //         submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
-    //     }
+        // Disable button to prevent double submissions
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating Account...';
+        }
         
-    //     // Submit form after reCAPTCHA validation
-    //     form.submit();
-    // };
+        // Submit form after reCAPTCHA validation
+        form.submit();
+    };
     
     
-    // // reCAPTCHA v2 invisible - Callback en cas d'erreur
-    // window.onRecaptchaError = function(error) {
-    //     console.error('reCAPTCHA v2 error:', error);
-    //     alert('reCAPTCHA verification failed. Please try again.');
+    // reCAPTCHA v2 invisible - Callback en cas d'erreur
+    window.onRecaptchaError = function(error) {
+        console.error('reCAPTCHA v2 error:', error);
+        alert('reCAPTCHA verification failed. Please try again.');
         
-    //     // Re-enable button
-    //     const submitButton = form.querySelector('button[type="submit"]');
-    //     if (submitButton) {
-    //         submitButton.disabled = false;
-    //         submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
-    //     }
-    // };
+        // Re-enable button
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fa fa-recycle me-2"></i>Join Waste2Product';
+        }
+    };
     
-    // // reCAPTCHA v2 invisible - Callback d'expiration
-    // window.onRecaptchaExpired = function() {
-    //     console.log('reCAPTCHA v2 expired');
-    //     if (typeof grecaptcha !== 'undefined') {
-    //         grecaptcha.reset();
-    //     }
+    // reCAPTCHA v2 invisible - Callback d'expiration
+    window.onRecaptchaExpired = function() {
+        console.log('reCAPTCHA v2 expired');
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.reset();
+        }
     };
     
     // Gestion du popup d'erreur

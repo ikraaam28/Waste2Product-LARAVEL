@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- reCAPTCHA v2 Script -->
-<!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 /* Custom styles for login form (reusing signup styles) */
 .form-control:focus {
@@ -691,125 +691,125 @@ document.addEventListener('DOMContentLoaded', function() {
     checkFormValidity();
 
     // Check if reCAPTCHA is loaded
-    // function checkRecaptchaLoaded() {
-    //     if (typeof grecaptcha !== 'undefined') {
-    //         console.log('reCAPTCHA loaded successfully');
-    //     } else {
-    //         console.log('Waiting for reCAPTCHA...');
-    //         setTimeout(checkRecaptchaLoaded, 100);
-    //     }
-    // }
+    function checkRecaptchaLoaded() {
+        if (typeof grecaptcha !== 'undefined') {
+            console.log('reCAPTCHA loaded successfully');
+        } else {
+            console.log('Waiting for reCAPTCHA...');
+            setTimeout(checkRecaptchaLoaded, 100);
+        }
+    }
 
-    // // Start checking
-    // checkRecaptchaLoaded();
+    // Start checking
+    checkRecaptchaLoaded();
 
-    // // Handle form submission
-    // form.addEventListener('submit', function(e) {
-    //     e.preventDefault();
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    //     // Check form validity
-    //     if (form.checkValidity()) {
-    //         // Trigger invisible reCAPTCHA v2
-    //         if (typeof grecaptcha !== 'undefined') {
-    //             console.log('Executing reCAPTCHA...');
-    //             grecaptcha.execute();
-    //         } else {
-    //             console.error('reCAPTCHA not loaded');
-    //             alert('reCAPTCHA not loaded. Please refresh the page.');
-    //         }
-    //     } else {
-    //         // Show errors
-    //         form.classList.add('was-validated');
-    //     }
-    // });
+        // Check form validity
+        if (form.checkValidity()) {
+            // Trigger invisible reCAPTCHA v2
+            if (typeof grecaptcha !== 'undefined') {
+                console.log('Executing reCAPTCHA...');
+                grecaptcha.execute();
+            } else {
+                console.error('reCAPTCHA not loaded');
+                alert('reCAPTCHA not loaded. Please refresh the page.');
+            }
+        } else {
+            // Show errors
+            form.classList.add('was-validated');
+        }
+    });
 
-    // // reCAPTCHA v2 invisible - Callback function
-    // window.onRecaptchaSuccess = function(token) {
-    //     console.log('reCAPTCHA v2 success:', token);
+    // reCAPTCHA v2 invisible - Callback function
+    window.onRecaptchaSuccess = function(token) {
+        console.log('reCAPTCHA v2 success:', token);
 
-    //     // Add reCAPTCHA token to the form
-    //     const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
-    //     if (recaptchaInput) {
-    //         recaptchaInput.value = token;
-    //     } else {
-    //         const hiddenInput = document.createElement('input');
-    //         hiddenInput.type = 'hidden';
-    //         hiddenInput.name = 'g-recaptcha-response';
-    //         hiddenInput.value = token;
-    //         form.appendChild(hiddenInput);
-    //     }
+        // Add reCAPTCHA token to the form
+        const recaptchaInput = form.querySelector('input[name="g-recaptcha-response"]');
+        if (recaptchaInput) {
+            recaptchaInput.value = token;
+        } else {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'g-recaptcha-response';
+            hiddenInput.value = token;
+            form.appendChild(hiddenInput);
+        }
 
-    //     // Disable button to prevent double submission
-    //     submitBtn.disabled = true;
-    //     submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Logging in...';
+        // Disable button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Logging in...';
 
-    //     // Submit the form after reCAPTCHA validation
-    //     form.submit();
-    // };
+        // Submit the form after reCAPTCHA validation
+        form.submit();
+    };
 
-    // // reCAPTCHA v2 invisible - Error callback
-    // window.onRecaptchaError = function(error) {
-    //     console.error('reCAPTCHA v2 error:', error);
-    //     alert('reCAPTCHA verification failed. Please try again.');
+    // reCAPTCHA v2 invisible - Error callback
+    window.onRecaptchaError = function(error) {
+        console.error('reCAPTCHA v2 error:', error);
+        alert('reCAPTCHA verification failed. Please try again.');
 
-    //     // Re-enable the button
-    //     submitBtn.disabled = false;
-    //     submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Log In';
-    // };
+        // Re-enable the button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa fa-sign-in-alt me-2"></i>Log In';
+    };
 
-    // // reCAPTCHA v2 invisible - Expiration callback
-    // window.onRecaptchaExpired = function() {
-    //     console.log('reCAPTCHA v2 expired');
-    //     if (typeof grecaptcha !== 'undefined') {
-    //         grecaptcha.reset();
-    //     }
-    // };
+    // reCAPTCHA v2 invisible - Expiration callback
+    window.onRecaptchaExpired = function() {
+        console.log('reCAPTCHA v2 expired');
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.reset();
+        }
+    };
 
-    // // Handle error popup
-    // const errorPopup = document.querySelector('.error-popup');
-    // if (errorPopup) {
-    //     setTimeout(() => {
-    //         if (errorPopup) {
-    //             errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-    //             setTimeout(() => {
-    //                 errorPopup.remove();
-    //             }, 500);
-    //         }
-    //     }, 8000);
+    // Handle error popup
+    const errorPopup = document.querySelector('.error-popup');
+    if (errorPopup) {
+        setTimeout(() => {
+            if (errorPopup) {
+                errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    errorPopup.remove();
+                }, 500);
+            }
+        }, 8000);
 
-    //     const closeBtn = errorPopup.querySelector('.error-close');
-    //     if (closeBtn) {
-    //         closeBtn.addEventListener('click', () => {
-    //             errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-    //             setTimeout(() => {
-    //                 errorPopup.remove();
-    //             }, 500);
-    //         });
-    //     }
-    // }
+        const closeBtn = errorPopup.querySelector('.error-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                errorPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    errorPopup.remove();
+                }, 500);
+            });
+        }
+    }
 
-    // // Handle success popup
-    // const successPopup = document.querySelector('.success-popup');
-    // if (successPopup) {
-    //     setTimeout(() => {
-    //         if (successPopup) {
-    //             successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-    //             setTimeout(() => {
-    //                 successPopup.remove();
-    //             }, 500);
-    //         }
-    //     }, 5000);
+    // Handle success popup
+    const successPopup = document.querySelector('.success-popup');
+    if (successPopup) {
+        setTimeout(() => {
+            if (successPopup) {
+                successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    successPopup.remove();
+                }, 500);
+            }
+        }, 5000);
 
-    //     const closeBtn = successPopup.querySelector('.success-close');
-    //     if (closeBtn) {
-    //         closeBtn.addEventListener('click', () => {
-    //             successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
-    //             setTimeout(() => {
-    //                 successPopup.remove();
-    //             }, 500);
-    //         });
-    //     }
-    // }
+        const closeBtn = successPopup.querySelector('.success-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                successPopup.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => {
+                    successPopup.remove();
+                }, 500);
+            });
+        }
+    }
 });
 </script>
 @endsection

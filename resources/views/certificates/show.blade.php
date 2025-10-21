@@ -236,12 +236,10 @@
 
 <!-- Download Button -->
 <div class="text-center mt-4 mb-5">
-    <form action="{{ route('certificates.download', $tuto) }}" method="POST">
-        @csrf
-        <button type="submit" class="download-btn">
-            <i class="fas fa-download me-2"></i>Download PDF
-        </button>
-    </form>
+    <!-- Client-side download: generate PDF from #certificate -->
+    <button type="button" id="downloadCertificateBtn" class="download-btn">
+        <i class="fas fa-download me-2"></i>Download PDF
+    </button>
     
     <a href="{{ route('tutos.show', $tuto) }}" class="btn btn-outline-primary mt-3">
         <i class="fas fa-arrow-left me-2"></i>Back to Tutorial
@@ -250,14 +248,60 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const downloadForm = document.querySelector('form[action*="certificates.download"]');
-    const downloadBtn = downloadForm.querySelector('button[type="submit"]');
-    
-    downloadForm.addEventListener('submit', function(e) {
-        // Change button text
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
-        downloadBtn.disabled = true;
+    const btn = document.getElementById('downloadCertificateBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', function() {
+        btn.classList.add('disabled');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+
+        // target the certificate element already on this page
+        const cert = document.getElementById('certificate');
+        if (!cert) {
+            alert('Certificat introuvable.');
+            btn.classList.remove('disabled');
+            btn.innerHTML = '<i class="fas fa-download me-2"></i>Download PDF';
+            return;
+        }
+
+        // prepare wrapper with inline styles to ensure correct rendering
+        const wrapper = document.createElement('div');
+        wrapper.style.padding = '20px';
+        wrapper.style.background = '#ffffff';
+        wrapper.style.color = '#000';
+        wrapper.style.width = '800px';
+        wrapper.style.boxSizing = 'border-box';
+
+        // clone certificate and remove interactive elements
+        wrapper.appendChild(cert.cloneNode(true));
+        wrapper.querySelectorAll('button, a.btn, form').forEach(el => el.remove());
+
+        const title = ("{{ $tuto->title ?? 'certificate' }}").replace(/\s+/g, '_').replace(/[^\w\-\.]/g, '');
+        const filename = 'certificate_' + title + '.pdf';
+
+        const opt = {
+            margin:       10,
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        setTimeout(function() {
+            html2pdf().set(opt).from(wrapper).save().then(function() {
+                btn.classList.remove('disabled');
+                btn.innerHTML = '<i class="fas fa-download me-2"></i>Download PDF';
+            }).catch(function(err) {
+                console.error('PDF generation error', err);
+                btn.classList.remove('disabled');
+                btn.innerHTML = '<i class="fas fa-download me-2"></i>Download PDF';
+                alert('Erreur lors de la génération du PDF.');
+            });
+        }, 200);
     });
 });
 </script>
+
+<!-- html2pdf client-side library (no composer) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 @endsection

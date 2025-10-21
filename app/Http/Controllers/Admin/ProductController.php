@@ -239,107 +239,72 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified product
      */
-    public function edit(Product $product)
+    public function edit(\App\Models\Product $product)
     {
-        $categories = Category::active()->ordered()->get();
+        // load related data expected by the view
+        $product->load(['category']); // si besoin
+        $categories = \App\Models\Category::active()->ordered()->get();
+
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
     /**
      * Update the specified product
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, \App\Models\Product $product)
     {
-        $validator = Validator::make($request->all(), [
+        // règles de validation de base (adapter selon vos champs)
+        $rules = [
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
+            'slug' => 'nullable|string|max:255|unique:products,slug,'.$product->id,
             'description' => 'required|string',
             'short_description' => 'nullable|string|max:500',
             'price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0|gt:price',
-            'sku' => 'nullable|string|max:100|unique:products,sku,' . $product->id,
+            'compare_price' => 'nullable|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'weight' => 'nullable|numeric|min:0',
-            'dimensions' => 'nullable|string|max:100',
-            'materials' => 'nullable|string|max:500',
-            'recycling_process' => 'nullable|string|max:1000',
-            'environmental_impact_score' => 'nullable|integer|min:1|max:100',
-            'certifications' => 'nullable|array',
-            'tags' => 'nullable|array',
+            'images.*' => 'nullable|image|max:2048',
+            'gallery.*' => 'nullable|image|max:2048',
             'published_at' => 'nullable|date',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $productData = [
-            'name' => $request->name,
-            'slug' => $request->slug ?: Str::slug($request->name),
-            'description' => $request->description,
-            'short_description' => $request->short_description,
-            'price' => $request->price,
-            'compare_price' => $request->compare_price,
-            'sku' => $request->sku,
-            'stock_quantity' => $request->stock_quantity,
-            'manage_stock' => $request->has('manage_stock'),
-            'stock_status' => $request->stock_quantity > 0 ? 'in_stock' : 'out_of_stock',
-            'is_featured' => $request->has('is_featured'),
-            'is_active' => $request->has('is_active'),
-            'weight' => $request->weight,
-            'dimensions' => $request->dimensions,
-            'materials' => $request->materials,
-            'recycling_process' => $request->recycling_process,
-            'environmental_impact_score' => $request->environmental_impact_score,
-            'certifications' => $request->certifications,
-            'tags' => $request->tags,
-            'published_at' => $request->published_at,
-            'category_id' => $request->category_id,
         ];
 
-        // Handle main images upload
+        $data = $request->validate($rules);
+
+        // traiter checkbox (coerce en bool)
+        $data['is_active'] = $request->has('is_active') ? 1 : 0;
+        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
+        $data['manage_stock'] = $request->has('manage_stock') ? 1 : 0;
+
+        // tags => array => json si vous stockez ainsi
+        if ($request->filled('tags')) {
+            $tags = array_map('trim', explode(',', $request->input('tags')));
+            $data['tags'] = $tags;
+        }
+
+        // upload images (exemple simple)
         if ($request->hasFile('images')) {
-            // Delete old images
-            if ($product->images) {
-                foreach ($product->images as $image) {
-                    Storage::disk('public')->delete($image);
-                }
+            $paths = [];
+            foreach ($request->file('images') as $img) {
+                $paths[] = $img->store('products', 'public');
             }
-            
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $images[] = $path;
-            }
-            $productData['images'] = $images;
+            $data['images'] = $paths; // adapter selon votre colonne (json/array)
         }
 
-        // Handle gallery images upload
         if ($request->hasFile('gallery')) {
-            // Delete old gallery images
-            if ($product->gallery) {
-                foreach ($product->gallery as $image) {
-                    Storage::disk('public')->delete($image);
-                }
+            $gpaths = [];
+            foreach ($request->file('gallery') as $img) {
+                $gpaths[] = $img->store('products/gallery', 'public');
             }
-            
-            $gallery = [];
-            foreach ($request->file('gallery') as $image) {
-                $path = $image->store('products/gallery', 'public');
-                $gallery[] = $path;
-            }
-            $productData['gallery'] = $gallery;
+            $data['gallery'] = $gpaths;
         }
 
-        $product->update($productData);
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Produit mis à jour avec succès !');
+        try {
+            $product->update($data);
+            return redirect()->route('admin.products.edit', $product)->with('success', 'Produit mis à jour');
+        } catch (\Throwable $e) {
+            \Log::error('Admin Product update error: '.$e->getMessage(), ['id' => $product->id, 'payload' => $data]);
+            return back()->withInput()->withErrors(['general' => 'Impossible de mettre à jour le produit.']);
+        }
     }
 
     /**

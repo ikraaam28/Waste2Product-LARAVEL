@@ -52,14 +52,13 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="category">Category</label>
-                                            <select name="category" id="category" required class="form-control">
+                                            <select name="category_id" id="category" required class="form-control">
                                                 <option value="" disabled>Select a category</option>
-                                                <option value="plastic" {{ old('category', $tuto->category) == 'plastic' ? 'selected' : '' }}>Plastic</option>
-                                                <option value="wood" {{ old('category', $tuto->category) == 'wood' ? 'selected' : '' }}>Wood</option>
-                                                <option value="paper" {{ old('category', $tuto->category) == 'paper' ? 'selected' : '' }}>Paper</option>
-                                                <option value="metal" {{ old('category', $tuto->category) == 'metal' ? 'selected' : '' }}>Metal</option>
-                                                <option value="glass" {{ old('category', $tuto->category) == 'glass' ? 'selected' : '' }}>Glass</option>
-                                                <option value="other" {{ old('category', $tuto->category) == 'other' ? 'selected' : '' }}>Other</option>
+                                                @foreach($categories as $cat)
+                                                    <option value="{{ $cat->id }}" {{ old('category_id', $tuto->category_id) == $cat->id ? 'selected' : '' }}>
+                                                        {{ $cat->name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                             @error('category')
                                                 <span class="text-danger">{{ $message }}</span>
@@ -70,7 +69,17 @@
                                         <div class="form-group">
                                             <label>Steps</label>
                                             <div id="steps-container">
-                                                @foreach (old('steps', $tuto->steps) as $index => $step)
+                                                @php
+                                                    $steps = old('steps', $tuto->steps ?? []);
+                                                    if (!is_array($steps)) {
+                                                        $decoded = json_decode($steps, true);
+                                                        $steps = is_array($decoded) ? $decoded : [];
+                                                    }
+                                                    if (empty($steps)) {
+                                                        $steps = [''];
+                                                    }
+                                                @endphp
+                                                @foreach ($steps as $index => $step)
                                                     <div class="input-group mb-3 step-group">
                                                         <input type="text" name="steps[]" class="form-control" value="{{ $step }}" placeholder="Step {{ $index + 1 }}" required>
                                                         <div class="input-group-append">
@@ -78,12 +87,12 @@
                                                         </div>
                                                     </div>
                                                 @endforeach
-                                            </div>
-                                            <button type="button" class="btn btn-primary mt-2" id="add-step">Add Step</button>
-                                            @error('steps.*')
-                                                <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
+                                             </div>
+                                             <button type="button" class="btn btn-primary mt-2" id="add-step">Add Step</button>
+                                             @error('steps.*')
+                                                 <span class="text-danger">{{ $message }}</span>
+                                             @enderror
+                                         </div>
                                         <div class="form-group">
                                             <label for="media">Media (Images or Videos)</label>
                                             <input type="file" name="media[]" id="media" class="form-control-file" multiple accept="image/*,video/mp4">

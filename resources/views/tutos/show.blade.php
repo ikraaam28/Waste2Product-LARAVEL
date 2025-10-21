@@ -429,22 +429,20 @@
                                     View Certificate
                                 </a>
                                 
-                                <form action="{{ route('certificates.download', $tuto) }}" method="POST" class="d-inline" id="downloadForm">
-                                    @csrf
-                                    <button type="submit" class="btn certificate-btn" id="downloadBtn">
-                                        <span class="btn-text">
-                                            <i class="fas fa-download me-2"></i>
-                                            Download PDF
-                                        </span>
-                                        <div class="loading-spinner">
-                                            <div class="spinner-border spinner-border-sm me-2" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            Generating PDF...
+                                <!-- Client-side PDF export (fetch the certificate page and render #certificate) -->
+                                <button type="button" class="btn certificate-btn" id="downloadClientBtn" aria-label="Download certificate as PDF">
+                                    <span class="btn-text">
+                                        <i class="fas fa-download me-2"></i>
+                                        Télécharger PDF
+                                    </span>
+                                    <div class="loading-spinner">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
-                                    </button>
-                                </form>
-                            </div>
+                                        Génération du PDF...
+                                    </div>
+                                </button>
+                             </div>
                             
                             <p class="mt-3 mb-0 opacity-75">
                                 <small>Your personalized certificate is ready for download</small>
@@ -614,17 +612,80 @@ function toggleReplyForm(questionId) {
     }
 }
 
-// PDF download loading animation
+// PDF download loading animation and client-side generation
 document.addEventListener('DOMContentLoaded', function() {
-    const downloadForm = document.getElementById('downloadForm');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    if (downloadForm && downloadBtn) {
-        downloadForm.addEventListener('submit', function() {
-            downloadBtn.classList.add('certificate-loading');
-        });
-    }
+    const downloadBtn = document.getElementById('downloadClientBtn');
+    if (!downloadBtn) return;
+
+    // URL of the certificate page (same origin)
+    const certUrl = "{{ route('certificates.show', $tuto) }}";
+
+    downloadBtn.addEventListener('click', function() {
+        downloadBtn.classList.add('certificate-loading');
+
+        fetch(certUrl, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.text();
+            })
+            .then(html => {
+                // parse returned HTML and extract certificate element + style tags
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const certEl = doc.querySelector('#certificate');
+                if (!certEl) throw new Error('Certificate element not found in fetched page');
+
+                // collect <style> content from fetched doc (to preserve certificate styles)
+                const styles = Array.from(doc.querySelectorAll('style')).map(s => s.innerHTML).join('\n');
+
+                // build printable wrapper
+                const wrapper = document.createElement('div');
+                wrapper.style.background = '#ffffff';
+                wrapper.style.color = '#000';
+                wrapper.style.boxSizing = 'border-box';
+                wrapper.style.padding = '20px';
+                wrapper.style.width = '800px';
+
+                if (styles) {
+                    const styleTag = document.createElement('style');
+                    styleTag.innerHTML = styles;
+                    wrapper.appendChild(styleTag);
+                }
+
+                // clone the certificate node from fetched doc into wrapper
+                wrapper.appendChild(document.importNode(certEl, true));
+                wrapper.querySelectorAll('button, a.btn, form').forEach(el => el.remove());
+
+                const title = ("{{ $tuto->title ?? 'certificate' }}").replace(/\s+/g, '_').replace(/[^\w\-\.]/g, '');
+                const filename = 'certificate_' + title + '.pdf';
+
+                const opt = {
+                    margin:       10,
+                    filename:     filename,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                setTimeout(function() {
+                    html2pdf().set(opt).from(wrapper).save().then(function() {
+                        downloadBtn.classList.remove('certificate-loading');
+                    }).catch(function(err) {
+                        console.error('PDF generation error', err);
+                        downloadBtn.classList.remove('certificate-loading');
+                    });
+                }, 200);
+            })
+            .catch(err => {
+                console.error('Failed to fetch certificate page:', err);
+                downloadBtn.classList.remove('certificate-loading');
+                alert('Impossible de récupérer le certificat pour génération PDF.');
+            });
+    });
 });
 </script>
 
-@endsection
+<!-- html2pdf client-side library (no composer) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+</body>
+</html>

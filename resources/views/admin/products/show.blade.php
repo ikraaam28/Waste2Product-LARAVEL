@@ -412,6 +412,12 @@
                         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
                             <i class="fa fa-arrow-left"></i> Back to list
                         </a>
+
+<!-- Export CSV (exports all products according to current filters) -->
+                        <a href="{{ route('admin.products.export') }}" class="btn btn-outline-success mt-2">
+                            <i class="fa fa-file-csv"></i> Export CSV
+                        </a>
+
                     </div>
                 </div>
             </div>

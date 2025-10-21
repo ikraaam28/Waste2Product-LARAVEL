@@ -188,49 +188,55 @@ class CategoryController extends Controller
     /**
      * Update the specified category
      */
-    public function update(Request $request, Category $category)
+    public function update(\Illuminate\Http\Request $request, \App\Models\Category $category)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'slug' => 'nullable|string|max:255|unique:categories,slug,' . $category->id,
-            'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'icon' => 'nullable|string|max:100',
-            'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+        \Log::debug('Category update attempt', ['id' => $category->id, 'payload' => $request->all()]);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:categories,slug,'.$category->id,
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string|max:255',
+            'color' => 'nullable|string|size:7', // #rrggbb
             'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'boolean'
+            'image' => 'nullable|image|max:2048', // 2MB
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        // checkbox: convertir en bool
+        $data['is_active'] = $request->has('is_active') ? 1 : 0;
+
+        // générer slug si vide
+        if (empty($data['slug']) && !empty($data['name'])) {
+            $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
         }
 
-        $categoryData = [
-            'name' => $request->name,
-            'slug' => $request->slug ?: Str::slug($request->name),
-            'description' => $request->description,
-            'icon' => $request->icon,
-            'color' => $request->color ?: '#007bff',
-            'sort_order' => $request->sort_order ?: 0,
-            'is_active' => $request->has('is_active'),
-        ];
-
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
+        // traiter l'image si fournie
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            try {
+                $path = $request->file('image')->store('categories', 'public');
+                // supprimer ancienne image si besoin (optionnel)
+                if ($category->image) {
+                    try {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($category->image);
+                    } catch (\Throwable $e) {
+                        \Log::warning('Failed to delete old category image', ['err' => $e->getMessage()]);
+                    }
+                }
+                $data['image'] = $path;
+            } catch (\Throwable $e) {
+                \Log::error('Category image upload failed: '.$e->getMessage());
+                return back()->withErrors(['image' => 'Erreur lors de l\'upload de l\'image'])->withInput();
             }
-            $path = $request->file('image')->store('categories', 'public');
-            $categoryData['image'] = $path;
         }
 
-        $category->update($categoryData);
-
-        return redirect()->route('admin.categories.index')
-            ->with('success', 'Catégorie mise à jour avec succès !');
+        try {
+            $category->update($data);
+            \Log::info('Category updated', ['id' => $category->id]);
+            return redirect()->route('admin.categories.index')->with('success', 'Category mise à jour');
+        } catch (\Throwable $e) {
+            \Log::error('Category update failed: '.$e->getMessage(), ['id' => $category->id, 'data' => $data]);
+            return back()->withErrors(['general' => 'Impossible de mettre à jour la catégorie'])->withInput();
+        }
     }
 
     /**

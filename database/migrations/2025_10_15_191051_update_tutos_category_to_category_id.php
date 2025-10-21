@@ -1,69 +1,89 @@
 <?php
 
-   use Illuminate\Database\Migrations\Migration;
-   use Illuminate\Database\Schema\Blueprint;
-   use Illuminate\Support\Facades\Schema;
-   use App\Models\Category;
-   use App\Models\Tuto;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use App\Models\Category;
+use App\Models\Tuto;
 
-   class UpdateTutosCategoryToCategoryId extends Migration
-   {
-       public function up()
-       {
-           // Add temporary category_id column
-           Schema::table('tutos', function (Blueprint $table) {
-               $table->foreignId('category_id')->nullable()->after('description')->constrained()->onDelete('cascade');
-           });
+class UpdateTutosCategoryToCategoryId extends Migration
+{
+    public function up()
+    {
+        // Ensure category_id exists (idempotent)
+        if (!Schema::hasColumn('tutos', 'category_id')) {
+            Schema::table('tutos', function (Blueprint $table) {
+                $table->unsignedBigInteger('category_id')->nullable()->after('title');
+            });
 
-           // Map existing categories to category_id
-           $categoryMap = [
-               'plastique' => Category::where('slug', 'plastique')->first()->id ?? null,
-               'bois' => Category::where('slug', 'bois')->first()->id ?? null,
-               'papier' => Category::where('slug', 'papier')->first()->id ?? null,
-               'metal' => Category::where('slug', 'metal')->first()->id ?? null,
-               'verre' => Category::where('slug', 'verre')->first()->id ?? null,
-               'autre' => Category::where('slug', 'autre')->first()->id ?? null,
-           ];
+            if (Schema::hasTable('categories')) {
+                Schema::table('tutos', function (Blueprint $table) {
+                    // attempt to add FK; if categories table exists this is safe
+                    $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+                });
+            }
+        }
 
-           foreach ($categoryMap as $oldCategory => $categoryId) {
-               if ($categoryId) {
-                   Tuto::where('category', $oldCategory)->update(['category_id' => $categoryId]);
-               }
-           }
+        // Only migrate old enum/string 'category' values when column exists
+        if (Schema::hasColumn('tutos', 'category') && Schema::hasTable('categories')) {
+            $slugs = ['plastique', 'bois', 'papier', 'metal', 'verre', 'autre'];
 
-           // Drop the old category column
-           Schema::table('tutos', function (Blueprint $table) {
-               $table->dropColumn('category');
-           });
-       }
+            foreach ($slugs as $old) {
+                $cat = Category::where('slug', $old)->first();
+                $categoryId = $cat ? $cat->id : null;
+                if ($categoryId) {
+                    Tuto::where('category', $old)->update(['category_id' => $categoryId]);
+                }
+            }
 
-       public function down()
-       {
-           // Revert by adding back the category enum column
-           Schema::table('tutos', function (Blueprint $table) {
-               $table->enum('category', ['plastique', 'bois', 'papier', 'metal', 'verre', 'autre'])->after('description');
-           });
+            // Drop the old category column only if it exists
+            Schema::table('tutos', function (Blueprint $table) {
+                if (Schema::hasColumn('tutos', 'category')) {
+                    $table->dropColumn('category');
+                }
+            });
+        }
+    }
 
-           // Map category_id back to category
-           $categoryMap = [
-               Category::where('slug', 'plastique')->first()->id ?? null => 'plastique',
-               Category::where('slug', 'bois')->first()->id ?? null => 'bois',
-               Category::where('slug', 'papier')->first()->id ?? null => 'papier',
-               Category::where('slug', 'metal')->first()->id ?? null => 'metal',
-               Category::where('slug', 'verre')->first()->id ?? null => 'verre',
-               Category::where('slug', 'autre')->first()->id ?? null => 'autre',
-           ];
+    public function down()
+    {
+        // Add back enum column if missing
+        if (!Schema::hasColumn('tutos', 'category')) {
+            Schema::table('tutos', function (Blueprint $table) {
+                $table->enum('category', ['plastique', 'bois', 'papier', 'metal', 'verre', 'autre'])->after('description');
+            });
+        }
 
-           foreach ($categoryMap as $categoryId => $oldCategory) {
-               if ($categoryId) {
-                   Tuto::where('category_id', $categoryId)->update(['category' => $oldCategory]);
-               }
-           }
+        // Map category_id back to category when possible
+        if (Schema::hasColumn('tutos', 'category_id') && Schema::hasTable('categories')) {
+            $categories = Category::pluck('slug', 'id')->toArray(); // [id => slug]
 
-           // Drop the category_id column
-           Schema::table('tutos', function (Blueprint $table) {
-               $table->dropForeign(['category_id']);
-               $table->dropColumn('category_id');
-           });
-       }
-   }
+            foreach ($categories as $id => $slug) {
+                if ($slug) {
+                    Tuto::where('category_id', $id)->update(['category' => $slug]);
+                }
+            }
+
+            // Drop foreign + column if present (wrap in try to avoid errors)
+            try {
+                Schema::table('tutos', function (Blueprint $table) {
+                    if (Schema::hasColumn('tutos', 'category_id')) {
+                        $table->dropForeign(['category_id']);
+                        $table->dropColumn('category_id');
+                    }
+                });
+            } catch (\Throwable $e) {
+                // Best-effort: try to drop column only
+                try {
+                    Schema::table('tutos', function (Blueprint $table) {
+                        if (Schema::hasColumn('tutos', 'category_id')) {
+                            $table->dropColumn('category_id');
+                        }
+                    });
+                } catch (\Throwable $e) {
+                    // ignore — migration rollback best-effort
+                }
+            }
+        }
+    }
+}

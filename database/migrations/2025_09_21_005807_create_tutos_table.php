@@ -12,7 +12,7 @@ class CreateTutosTable extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
-            $table->foreignId('category_id')->constrained()->onDelete('cascade'); 
+            $table->unsignedBigInteger('category_id')->nullable(); // Remove foreign key constraint for now
             $table->json('media')->nullable();
             $table->unsignedBigInteger('views')->default(0);
             $table->unsignedBigInteger('likes_count')->default(0);
