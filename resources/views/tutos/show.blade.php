@@ -343,7 +343,6 @@
 
                             <!-- Details Section -->
                             <div class="col-lg-6">
-                                
                                 <!-- Meta Info and Description -->
                                 <div class="tuto-card p-4 mb-4">
                                     @php
@@ -355,7 +354,12 @@
                                             'verre' => 'Glass',
                                             'autre' => 'Other',
                                         ];
-                                        $englishCategory = $categories[$tuto->category] ?? ucfirst($tuto->category);
+                                        $categoryKey = $tuto->category && is_object($tuto->category) && property_exists($tuto->category, 'slug') 
+                                            ? strtolower(trim($tuto->category->slug)) 
+                                            : null;
+                                        $englishCategory = $categoryKey && array_key_exists($categoryKey, $categories) 
+                                            ? $categories[$categoryKey] 
+                                            : ($categoryKey ? ucfirst($categoryKey) : 'Unknown');
                                     @endphp
                                     <div class="d-flex flex-wrap align-items-center gap-3 text-muted mb-3">
                                         <div class="d-flex align-items-center gap-2">
@@ -387,7 +391,7 @@
                                 <!-- Progress Bar (Always Displayed) -->
                                 <div class="progress-bar-container">
                                     <p>Progress: {{ $completedQuizzes }}/{{ $totalQuizzes }} (Average: {{ number_format($averagePercentage, 2) }}%)</p>
-                                    <div class="progress-bar" style="width: {{ ($completedQuizzes / $totalQuizzes) * 100 }}%;"></div>
+                                    <div class="progress-bar" style="width: {{ ($totalQuizzes > 0 ? ($completedQuizzes / $totalQuizzes) * 100 : 0) }}%;"></div>
                                 </div>
                             </div>
                         </div>

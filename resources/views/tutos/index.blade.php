@@ -50,7 +50,7 @@
             <div class="row g-4">
                 @foreach ($tutos as $tuto)
                     <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="store-item position-relative text-center">
+                        <div class="card position-relative text-center" style="border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); min-height: 350px;">
                             @php
                                 $mediaUrl = null;
                                 $isVideo = false;
@@ -66,21 +66,21 @@
                             @endphp
                             @if ($mediaUrl)
                                 @if ($isVideo)
-                                    <video class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" loop muted autoplay>
+                                    <video class="card-img-top" style="width: 100%; height: auto; max-height: 200px; object-fit: contain;" loop muted autoplay>
                                         <source src="{{ $mediaUrl }}" type="{{ $mimeType }}">
                                         Your browser does not support the video tag.
                                     </video>
                                 @else
-                                    <img class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" src="{{ $mediaUrl }}" alt="{{ $tuto->title }}">
+                                    <img class="card-img-top" style="width: 100%; height: auto; max-height: 200px; object-fit: contain;" src="{{ $mediaUrl }}" alt="{{ $tuto->title }}">
                                 @endif
                             @else
-                                <img class="img-fluid" src="{{ asset('assets/img/placeholder.jpg') }}" alt="Placeholder">
+                                <img class="card-img-top" src="{{ asset('assets/img/placeholder.jpg') }}" alt="Placeholder" style="width: 100%; height: auto; max-height: 200px; object-fit: contain;">
                             @endif
-                            <div class="p-4">
-                                <h4 class="mb-3"><a href="{{ route('tutos.show', $tuto) }}">{{ $tuto->title }}</a></h4>
-                                <p>{{ $tuto->category ? ucfirst($tuto->category->name) : 'Uncategorized' }}</p>
-                                <p>{{ \Illuminate\Support\Str::limit($tuto->description, 100) }}</p>
-                                <p>Views: {{ $tuto->views }} | 👍 {{ $tuto->likes_count }} | 👎 {{ $tuto->dislikes_count }}</p>
+                            <div class="card-body p-3">
+                                <h4 class="card-title mb-2" style="font-size: 1.25rem;"><a href="{{ route('tutos.show', $tuto) }}" class="text-decoration-none text-dark">{{ $tuto->title }}</a></h4>
+                                <p class="text-muted mb-2" style="font-size: 0.9rem;">{{ $tuto->category ? ucfirst($tuto->category->name) : 'Uncategorized' }}</p>
+                                <p style="font-size: 0.85rem;">{{ \Illuminate\Support\Str::limit($tuto->description, 80) }}</p>
+                                <p class="text-muted" style="font-size: 0.8rem;">Views: {{ $tuto->views }} | 👍 {{ $tuto->likes_count }} | 👎 {{ $tuto->dislikes_count }}</p>
                             </div>
                         </div>
                     </div>
