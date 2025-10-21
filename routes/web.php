@@ -205,7 +205,7 @@ Route::delete('/publications/{id}/delete', [PublicationController::class, 'admin
     Route::get('categories/list', [AdminCategoryController::class, 'getCategories'])->name('admin.categories.list');
 
     //tuto
-Route::get('/tutos', [TutoController::class, 'index'])->name('admin.tutos.index');
+Route::get('/tutos', [TutoController::class, 'Adminindex'])->name('admin.tutos.index');
 Route::get('/tutos/create', [TutoController::class, 'create'])->name('admin.tutos.create');
 Route::get('/tutos/{tuto}', [TutoController::class, 'show'])->name('admin.tutos.show');
 Route::post('/tutos', [TutoController::class, 'store'])->name('admin.tutos.store');
