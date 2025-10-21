@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\PublicationReactionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\WarehouseController;
@@ -138,6 +139,18 @@ Route::get('/store', [StoreController::class, 'index'])->name('store');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 
 
+Route::post('/generate-title', [PublicationController::class, 'generateTitle'])->name('publications.generateTitle');
+Route::get('/publications/{id}/translate', [PublicationController::class, 'translate']);
+
+
+Route::get('/test-title', function() {
+    return [
+        'token' => !empty(env('HUGGINGFACE_TOKEN')) ? '✅ Present' : '❌ Missing',
+        'content' => request('content'),
+        'timestamp' => now()
+    ];
+});
+
 // Routes pour publications
 Route::middleware('auth')->group(function () {
     // Redéfinir la route pour /publications vers myPublications
@@ -146,6 +159,20 @@ Route::middleware('auth')->group(function () {
 
     // Garder resource pour les autres méthodes (store, show, etc.) si nécessaire
     Route::resource('publications', PublicationController::class)->except(['index']);
+    // Routes pour les commentaires
+    Route::post('publications/{publication}/commentaires', [CommentaireController::class, 'store'])
+        ->name('commentaires.store');
+    Route::get('commentaires/{commentaire}/edit', [CommentaireController::class, 'edit'])
+        ->name('commentaires.edit');
+    Route::put('commentaires/{commentaire}', [CommentaireController::class, 'update'])
+        ->name('commentaires.update');
+    Route::delete('commentaires/{commentaire}', [CommentaireController::class, 'destroy'])
+        ->name('commentaires.destroy');
+
+    Route::post('/publications/{id}/like', [PublicationReactionController::class, 'like'])
+        ->name('publications.like');
+    Route::post('/publications/{id}/dislike', [PublicationReactionController::class, 'dislike'])
+        ->name('publications.dislike');
 });
 // Admin
 Route::prefix('admin')->middleware(['auth'])->group(function () {
@@ -162,7 +189,12 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 Route::get('/publications', [PublicationController::class, 'adminIndex'])->name('admin.publications.index');
 Route::delete('/publications/{id}/delete', [PublicationController::class, 'adminDestroy'])->name('admin.publications.destroy');
     Route::get('/publications/export/csv', [PublicationController::class, 'exportCsv'])->name('admin.publications.export');
+    Route::post('/publications/{id}/ban', [PublicationController::class, 'adminBanUser'])->name('admin.publications.ban');
 
+    // New routes for commentaires
+    Route::get('/commentaires', [CommentaireController::class, 'adminIndex'])->name('admin.commentaires.index');
+    Route::delete('/commentaires/{id}/delete', [CommentaireController::class, 'adminDestroy'])->name('admin.commentaires.destroy');
+Route::get('/commentaires/export/csv', [CommentaireController::class, 'exportCsv'])->name('admin.commentaires.export');
     // Forms
     Route::view('/forms/forms', 'admin.forms.forms')->name('admin.forms.forms');
 
@@ -221,6 +253,14 @@ Route::delete('/publications/{id}/delete', [PublicationController::class, 'admin
     Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('admin.warehouses.update');
     Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('admin.warehouses.destroy');
     Route::get('partners/{partner}/warehouses', [WarehouseController::class, 'getByPartner'])->name('admin.partners.warehouses');
+
+
+Route::post('partners/{partner}/ai-report', [PartnerController::class, 'aiReport'])
+    ->name('admin.partners.ai_report')
+    ->middleware('auth'); // remove 'can:manage-partners' while debugging/if you don't use gates
+
+
+
 
     // Users Management
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');

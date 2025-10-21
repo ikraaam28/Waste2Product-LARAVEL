@@ -78,7 +78,7 @@
             </ul>
           </div>
         </li>
-                <li class="nav-item">
+        <li class="nav-item">
           <a data-bs-toggle="collapse" href="#quizzes">
             <i class="fas fa-question-circle"></i>
             <p>Quizzes</p>
@@ -94,13 +94,14 @@
         </li>
         <li class="nav-item">
           <a data-bs-toggle="collapse" href="#publications">
-            <i class="fas fa-book"></i> <!-- Use an appropriate Font Awesome icon -->
+            <i class="fas fa-book"></i>
             <p>Publications</p>
             <span class="caret"></span>
           </a>
           <div class="collapse" id="publications">
             <ul class="nav nav-collapse">
               <li><a href="{{ route('admin.publications.index') }}"><span class="sub-item">Publications List</span></a></li>
+              <li><a href="{{ route('admin.commentaires.index') }}"><span class="sub-item">Commentaires List</span></a></li>
             </ul>
           </div>
         </li>

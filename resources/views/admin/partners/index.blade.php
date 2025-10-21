@@ -266,6 +266,15 @@
                                                                 title="Delete">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
+
+                                                        <!-- AI Report button -->
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-info ai-report"
+                                                                data-id="{{ $partner->id }}"
+                                                                data-name="{{ $partner->name }}"
+                                                                title="Generate AI Report">
+                                                            <i class="fas fa-robot"></i>
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -320,6 +329,31 @@
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Delete Partner</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Report Modal -->
+<div class="modal fade" id="aiReportModal" tabindex="-1" aria-labelledby="aiReportLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">AI Report for <span id="aiPartnerName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="aiReportLoading" class="text-center py-4">
+                    <div class="spinner-border text-info" role="status"></div>
+                    <p class="mt-2">Generating report... this may take a few seconds</p>
+                </div>
+                <div id="aiReportContent" class="d-none">
+                    <!-- Report HTML will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="aiReportClose" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="aiReportDownload" class="btn btn-primary d-none" href="#" target="_blank">Download as PDF</a>
             </div>
         </div>
     </div>
@@ -432,6 +466,161 @@ document.addEventListener('DOMContentLoaded', function() {
         searchButton.addEventListener('click', filterTable);
         searchInput.addEventListener('keyup', filterTable);
     }
+
+    // AI report handler
+    var aiModalEl = document.getElementById('aiReportModal');
+    var aiModal = new bootstrap.Modal(aiModalEl);
+    var aiReportContent = document.getElementById('aiReportContent');
+    var aiReportLoading = document.getElementById('aiReportLoading');
+    var aiPartnerName = document.getElementById('aiPartnerName');
+    var aiDownload = document.getElementById('aiReportDownload');
+
+    // Route template (will be replaced with partner id)
+    var aiRouteTemplate = "{{ route('admin.partners.ai_report', ['partner' => 'PARTNER_ID']) }}";
+
+    document.querySelectorAll('.ai-report').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+            var id = this.getAttribute('data-id');
+            var name = this.getAttribute('data-name');
+            aiPartnerName.textContent = name;
+            aiReportContent.innerHTML = '';
+            aiReportContent.classList.add('d-none');
+            aiReportLoading.classList.remove('d-none');
+            aiDownload.classList.add('d-none');
+
+            // disable button to avoid duplicate requests
+            btn.disabled = true;
+            btn.classList.add('disabled');
+
+            aiModal.show();
+
+            // build URL from template
+            var url = aiRouteTemplate.replace('PARTNER_ID', id);
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({}) // server reads partner id from URL, keep body minimal
+                });
+
+                // network-level error
+                if (!res.ok) {
+                    let text = await res.text().catch(()=>null);
+                    aiReportLoading.classList.add('d-none');
+                    aiReportContent.classList.remove('d-none');
+                    aiReportContent.innerHTML = '<div class="alert alert-danger">Échec de la requête (HTTP '+res.status+').</div>';
+                    console.error('AI request failed', res.status, text);
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (data.success && data.report) {
+                    // Render Markdown to safe HTML using marked + DOMPurify
+                    var raw = data.report || '';
+                    var rendered = raw;
+                    try {
+                        rendered = marked.parse(raw, { gfm: true, breaks: true });
+                    } catch (e) {
+                        // fallback: preserve line breaks
+                        rendered = raw.replace(/(\r\n|\r|\n)/g, '<br>');
+                    }
+                    // sanitize to avoid XSS
+                    var clean = DOMPurify.sanitize(rendered);
+
+                    // Optional: add bootstrap table class to tables produced by markdown
+                    clean = clean.replace(/<table>/g, '<table class="table table-sm">');
+
+                    aiReportContent.innerHTML = '<div class="report-content" style="word-break:break-word;">' + clean + '</div>';
+                    aiReportLoading.classList.add('d-none');
+                    aiReportContent.classList.remove('d-none');
+
+                    // prepare PDF download using html2pdf.js (client-side, no composer)
+                    aiDownload.href = '#';
+                    aiDownload.classList.remove('d-none');
+                    // remove any previous handler to avoid duplicates
+                    aiDownload.replaceWith(aiDownload.cloneNode(true));
+                    aiDownload = document.getElementById('aiReportDownload');
+                    aiDownload.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const filename = 'report-' + (name ? name.replace(/\s+/g,'_') : 'partner') + '.pdf';
+
+                        // target the rendered report content inside the modal
+                        var target = document.querySelector('#aiReportContent .report-content') || aiReportContent;
+                        if (!target) {
+                            console.error('Report content not found for PDF generation');
+                            return;
+                        }
+
+                        // save current inline styles to restore later
+                        var old = {
+                            background: target.style.background || '',
+                            color: target.style.color || '',
+                            width: target.style.width || '',
+                            boxSizing: target.style.boxSizing || ''
+                        };
+
+                        // Force printable styles so html2canvas renders correctly
+                        target.style.background = '#ffffff';
+                        target.style.color = '#000000';
+                        target.style.width = '800px';
+                        target.style.boxSizing = 'border-box';
+
+                        const opt = {
+                            margin:       10,
+                            filename:     filename,
+                            image:        { type: 'jpeg', quality: 0.98 },
+                            html2canvas:  { scale: 2, useCORS: true, logging: false },
+                            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        };
+
+                        // small delay to ensure DOM/CSS settled (helps browsers/layout engines)
+                        setTimeout(function() {
+                            html2pdf().set(opt).from(target).save().then(function() {
+                                // restore inline styles
+                                target.style.background = old.background;
+                                target.style.color = old.color;
+                                target.style.width = old.width;
+                                target.style.boxSizing = old.boxSizing;
+                            }).catch(function(err){
+                                console.error('PDF generation error', err);
+                                // restore inline styles
+                                target.style.background = old.background;
+                                target.style.color = old.color;
+                                target.style.width = old.width;
+                                target.style.boxSizing = old.boxSizing;
+                            });
+                        }, 200);
+                    });
+                } else {
+                    aiReportLoading.classList.add('d-none');
+                    aiReportContent.classList.remove('d-none');
+                    const msg = (data.error) ? ('Erreur: '+data.error) : 'Échec de génération du rapport.';
+                    aiReportContent.innerHTML = '<div class="alert alert-danger">'+msg+'</div>';
+                }
+            } catch (e) {
+                aiReportLoading.classList.add('d-none');
+                aiReportContent.classList.remove('d-none');
+                aiReportContent.innerHTML = '<div class="alert alert-danger">Erreur réseau ou timeout lors de la génération du rapport.</div>';
+                console.error('AI report exception:', e);
+            } finally {
+                // re-enable button
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            }
+        });
+    });
 });
 </script>
+
+<!-- load lightweight Markdown renderer + sanitizer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+<!-- html2pdf (bundled jsPDF + html2canvas) - client PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 @endsection

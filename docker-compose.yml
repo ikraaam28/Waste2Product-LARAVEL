@@ -1,11 +1,11 @@
 version: '3.8'
 
+
 services:
   app:
     build: .
     container_name: laravel_app
-    command: >
-      sh -c "until nc -z db 3306; do echo 'Waiting for db'; sleep 1; done; php artisan migrate --force && php-fpm"
+    command: php-fpm
     restart: unless-stopped
     volumes:
       - ./:/var/www
@@ -80,6 +80,48 @@ services:
     - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
     - laravel
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql_exporter
+    environment:
+      - DATA_SOURCE_NAME=exporter:exporter@(db:3306)/waste2product
+    ports:
+      - "9104:9104"
+    networks:
+      - laravel
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_exporter
+    command:
+      - '-nginx.scrape-uri=http://webserver:80/stub_status'
+    ports:
+      - "9113:9113"
+    networks:
+      - laravel
+    depends_on:
+      - webserver
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ''
+      MYSQL_ROOT_PASSWORD: ''
+    ports:
+      - "8081:80"
+    networks:
+      - laravel
+    depends_on:
+      - db
 
 
 
