@@ -175,7 +175,7 @@ Route::middleware('auth')->group(function () {
         ->name('publications.dislike');
 });
 // Admin
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/components/avatars', 'admin.components.avatars')->name('admin.components.avatars');
     Route::view('/components/buttons', 'admin.components.buttons')->name('admin.components.buttons');
@@ -415,4 +415,4 @@ Route::get('/test-pdfco', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
-  
+ 
